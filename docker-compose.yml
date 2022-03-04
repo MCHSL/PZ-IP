@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=wklejka
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=haslo123
+  web:
+    build: ./Backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db

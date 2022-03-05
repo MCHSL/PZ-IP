@@ -14,6 +14,10 @@ from pathlib import Path
 import environ
 import os
 
+import django
+from django.utils.encoding import force_str
+django.utils.encoding.force_text = force_str # https://stackoverflow.com/a/70833150
+
 env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False)
@@ -46,6 +50,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+	'wklejki',
+	"graphene_django",
+    "django_filters",
 ]
 
 MIDDLEWARE = [
@@ -127,3 +134,19 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'wklejki.CustomUser'
+
+AUTHENTICATION_BACKENDS = [
+    'graphql_jwt.backends.JSONWebTokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+GRAPHENE = {
+    "SCHEMA": "Backend.schema.schema",
+    "SCHEMA_INDENT": 2,
+    "MIDDLEWARE": [
+		"graphene_django.debug.DjangoDebugMiddleware",
+		"graphql_jwt.middleware.JSONWebTokenMiddleware",
+	],
+}

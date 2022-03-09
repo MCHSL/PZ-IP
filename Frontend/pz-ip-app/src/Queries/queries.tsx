@@ -17,6 +17,7 @@ export const login = gql`
       dateJoined
       lastLogin
       isActive
+      isSuperuser
       }
     }
     `

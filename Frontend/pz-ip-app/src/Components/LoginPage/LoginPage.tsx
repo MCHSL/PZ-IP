@@ -8,13 +8,14 @@ const LoginPage = () => {
    const [email, setEmail] = useState("");
    const [password, setPassword] = useState("");
    const [token, setToken] = useState<Token>();
-   const [setUser] = useMutation(login);
+   const [setUser] = 
    useMutation(login, {
       variables: {
         email: email,
         password: password,
       },
       onCompleted: (data) => {
+        console.log(data)
         setToken(data.tokenAuth.token)
         console.log(token)
       },

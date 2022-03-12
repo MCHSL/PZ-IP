@@ -10,8 +10,8 @@ class UserType(DjangoObjectType):
 		exclude = ['password']
 
 class Query(graphene.ObjectType):
-	users = graphene.List(UserType)
-	me = graphene.Field(UserType)
+	users = graphene.List(UserType, description = "A list of all users in the database")
+	me = graphene.Field(UserType, description = "The currently logged in user")
 
 	def resolve_users(self, info):
 		return get_user_model().objects.all()

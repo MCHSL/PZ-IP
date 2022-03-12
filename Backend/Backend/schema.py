@@ -9,7 +9,8 @@ class Query(
     wklejki.schema.Query,
     graphene.ObjectType,
 ):
-    debug = graphene.Field(DjangoDebug, name="_debug")
+	pass
+    #debug = graphene.Field(DjangoDebug, name="_debug")
 
 class Mutation(wklejki.schema.Mutation, graphene.ObjectType):
     token_auth = graphql_jwt.ObtainJSONWebToken.Field()

@@ -1,4 +1,4 @@
 #!/bin/bash
 
 while !</dev/tcp/db/5432; do sleep 1; done;
-gunicorn Backend.wsgi --bind 0.0.0.0:8000 --reload
+gunicorn Backend.wsgi --bind 0.0.0.0:8000 --reload --workers=8 --threads=4

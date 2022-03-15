@@ -155,6 +155,13 @@ GRAPHENE = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://cache:6379',
+    }
+}
+
 # CORS_ALLOWED_ORIGINS = [
 #	'http://localhost:8000',
 # ]

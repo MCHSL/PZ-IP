@@ -3,24 +3,36 @@ import graphene
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import BaseUserManager
 from graphql_jwt.decorators import staff_member_required, login_required, superuser_required
+from django.core.cache import cache
+from .models import Paste
 
 class UserType(DjangoObjectType):
 	class Meta:
 		model = get_user_model()
 		exclude = ['password']
 
-class Query(graphene.ObjectType):
+class UserQuery(graphene.ObjectType):
 	users = graphene.List(UserType, description = "A list of all users in the database")
 	me = graphene.Field(UserType, description = "The currently logged in user")
+	user = graphene.Field(UserType, id = graphene.Int(required=False), username = graphene.String(required=False), description = "Look up user by ID or username")
 
 	def resolve_users(self, info):
 		return get_user_model().objects.all()
+
+	def resolve_user(self, info, id=None, username=None):
+		if id is not None:
+			return cache.get_or_set(f"user_{id}", lambda: get_user_model().objects.get(pk=id))
+		elif username is not None:
+			return cache.get_or_set(f"username_{username}", lambda: get_user_model().objects.get(username=username))
+		else:
+			raise Exception("Must specify id or username")
 
 	@login_required
 	def resolve_me(self, info):
 		return info.context.user
 
 class CreateUser(graphene.Mutation):
+	""" Register a new user """
 	user = graphene.Field(UserType)
 
 	class Arguments:
@@ -39,6 +51,7 @@ class CreateUser(graphene.Mutation):
 		return CreateUser(user=user)
 
 class UpdateUser(graphene.Mutation):
+	""" Change username, email or staff status of a user. """
 	user = graphene.Field(UserType)
 
 	class Arguments:
@@ -61,6 +74,7 @@ class UpdateUser(graphene.Mutation):
 		return UpdateUser(user=user)
 
 class DeleteUser(graphene.Mutation):
+	""" Delete a user """
 	ok = graphene.Boolean()
 
 	class Arguments:
@@ -72,10 +86,89 @@ class DeleteUser(graphene.Mutation):
 		user.delete()
 		return DeleteUser(ok=True)
 
-class Mutation(graphene.ObjectType):
+class UserMutation(graphene.ObjectType):
 	create_user = CreateUser.Field()
 	update_user = UpdateUser.Field()
 	delete_user = DeleteUser.Field()
 
 
-schema = graphene.Schema(query=Query, mutation=Mutation)
+class PasteType(DjangoObjectType):
+	class Meta:
+		model = Paste
+
+class PasteQuery(graphene.ObjectType):
+	pastes = graphene.List(PasteType)
+	paste = graphene.Field(PasteType, id = graphene.Int(required=True), description = "Look up paste by ID")
+
+	def resolve_pastes(self, info):
+		return Paste.objects.all()
+
+	def resolve_paste(self, info, id):
+		return cache.get_or_set(f"paste_{id}", lambda: Paste.objects.get(pk=id))
+		#return Paste.objects.get(pk=id)
+
+class CreatePaste(graphene.Mutation):
+	"""Creates a new paste"""
+
+	paste = graphene.Field(PasteType)
+
+	class Arguments:
+		title = graphene.String(required=True)
+		content = graphene.String(required=True)
+
+	@login_required
+	def mutate(self, info, title, content):
+		paste = Paste(
+			author=info.context.user,
+			title=title,
+			content=content,
+		)
+		paste.save()
+		return CreatePaste(paste=paste)
+
+class UpdatePaste(graphene.Mutation):
+	"""Updates an existing paste with new title and content"""
+
+	paste = graphene.Field(PasteType)
+
+	class Arguments:
+		id = graphene.Int(required=True)
+		title = graphene.String(required=True)
+		content = graphene.String(required=True)
+
+	@login_required
+	def mutate(self, info, id, title, content):
+		paste = Paste.objects.get(pk=id)
+		if info.context.user != paste.author:
+			raise Exception("You are not the author of this paste")
+		paste.title = title
+		paste.content = content
+		paste.save()
+		return UpdatePaste(paste=paste)
+
+class DeletePaste(graphene.Mutation):
+	"""Deletes a paste"""
+
+	ok = graphene.Boolean()
+
+	class Arguments:
+		id = graphene.Int(required=True)
+
+	@login_required
+	def mutate(self, info, id):
+		paste = Paste.objects.get(pk=id)
+		if info.context.user != paste.author and not info.context.user.is_staff:
+			raise Exception("You do not have permission to delete this paste")
+		paste.delete()
+		return DeletePaste(ok=True)
+
+class PasteMutation(graphene.ObjectType):
+	create_paste = CreatePaste.Field()
+	update_paste = UpdatePaste.Field()
+	delete_paste = DeletePaste.Field()
+
+class Query(UserQuery, PasteQuery, graphene.ObjectType):
+	pass
+
+class Mutation(UserMutation, PasteMutation, graphene.ObjectType):
+	pass

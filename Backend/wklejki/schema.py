@@ -61,7 +61,7 @@ class UpdateUser(graphene.Mutation):
 		is_staff = graphene.Boolean(description="New staff status (optional)")
 
 	#@superuser_required
-	def mutate(self, info, username=None, email=None, is_staff=None):
+	def mutate(self, info, id, username=None, email=None, is_staff=None):
 		user = get_user_model().objects.get(pk=id)
 		if username is not None:
 			user.username = username
@@ -82,6 +82,7 @@ class DeleteUser(graphene.Mutation):
 
 	#@staff_member_required
 	def mutate(self, info, id):
+		print("deleting user with id: " + str(id))
 		user = get_user_model().objects.get(pk=id)
 		user.delete()
 		return DeleteUser(ok=True)

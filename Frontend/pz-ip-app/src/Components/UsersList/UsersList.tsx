@@ -3,9 +3,20 @@ import { useMutation, useQuery } from '@apollo/client';
 import { User } from "./../../Types/Types";
 import { getUsers } from "./../../Queries/queries";
 import UserRow from "./UsersRow";
+import { CreateUserModal } from '../Modals/CreateUserModal';
+import { EditUserModal } from '../Modals/EditUserModal';
 
 const UserList = () => {
   const [user, setUser]=useState<any>();
+  const [isVisibleCreate, setIsVisibleCreate] = useState<boolean>(false)
+  const [isVisibleEdit, setIsVisibleEdit] = useState<boolean>(false)
+
+  function toggleModalCreate() {
+    setIsVisibleCreate(!isVisibleCreate);
+  }
+  function toggleModalEdit() {
+    setIsVisibleEdit(!isVisibleEdit);
+  }
   useQuery(getUsers, {
     variables: {
     },
@@ -19,6 +30,9 @@ const UserList = () => {
   })
      return(
         <div>
+        <CreateUserModal isVisible={isVisibleCreate} handleClose={toggleModalCreate}/>
+        <EditUserModal isVisibleEdit={isVisibleEdit} handleClose={toggleModalEdit}/>
+        <button className='btn btn-success float-end m-2' onClick={()=>{setIsVisibleCreate(true)}}>Dodaj użytkownika</button>
         <h4 className="text-center p-2">
             Lista użytkowników
         </h4>
@@ -33,17 +47,27 @@ const UserList = () => {
                 <th>Aktywny</th>
                 <th>isSuperUser</th>
                 <th>isStaff</th>
+                <th></th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
                 {user ? user.users.map((element:any) =>(
                 <UserRow key={element.id} id={element.id} username={element.username}
                 email={element.email} dateJoined={element.dateJoined} lastLogin={element.lastLogin}
-                isActive={element.isActive}  isSuperUser={element.isSuperUser} isStaff={element.isStaff}/>
-                )) : console.log("wczytywanie")}
+                isActive={element.isActive}  isSuperuser={element.isSuperuser} isStaff={element.isStaff} isVisibleEdit={isVisibleEdit} handleClose={toggleModalEdit}/>
+                )) : console.log("Render_user_list")}
             </tbody>
         </table>
         </div>
      );
  };
  export default UserList;
+function True(True: any) {
+  throw new Error('Function not implemented.');
+}
+
+function setStateAction<T>(arg0: boolean): [any, any] {
+  throw new Error('Function not implemented.');
+}
+

@@ -15,8 +15,12 @@ import UserList from './Components/UsersList/UsersList';
 
 function App() {
   const client = new ApolloClient({
-    uri: 'http://localhost:8000/graphql',
-    cache: new InMemoryCache()
+    uri: 'http://localhost/graphql',
+    cache: new InMemoryCache(),
+    // headers:
+    // {
+    //   "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImVtYWlsQGVtYWlsLnBsIiwiZXhwIjoxNjQ3MzQzMTMyLCJvcmlnSWF0IjoxNjQ3MzQyODMyfQ.50Zj9PyLUO4qqhe-FX4Z81kIAIrDJ5Ol_DHrI-T1QbY"
+    // }
   });
 
   return (

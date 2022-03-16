@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { User } from "./../../Types/Types";
 import { getUsers } from "./../../Queries/queries";
@@ -9,13 +9,9 @@ import { EditUserModal } from '../Modals/EditUserModal';
 const UserList = () => {
   const [user, setUser]=useState<any>();
   const [isVisibleCreate, setIsVisibleCreate] = useState<boolean>(false)
-  const [isVisibleEdit, setIsVisibleEdit] = useState<boolean>(false)
-
+  const reload=()=>window.location.reload();
   function toggleModalCreate() {
     setIsVisibleCreate(!isVisibleCreate);
-  }
-  function toggleModalEdit() {
-    setIsVisibleEdit(!isVisibleEdit);
   }
   useQuery(getUsers, {
     variables: {
@@ -30,8 +26,7 @@ const UserList = () => {
   })
      return(
         <div>
-        <CreateUserModal isVisible={isVisibleCreate} handleClose={toggleModalCreate}/>
-        <EditUserModal isVisibleEdit={isVisibleEdit} handleClose={toggleModalEdit}/>
+        <CreateUserModal isVisible={isVisibleCreate} handleClose={toggleModalCreate} reload={reload}/>
         <button className='btn btn-success float-end m-2' onClick={()=>{setIsVisibleCreate(true)}}>Dodaj użytkownika</button>
         <h4 className="text-center p-2">
             Lista użytkowników
@@ -51,11 +46,12 @@ const UserList = () => {
                 <th></th>
             </tr>
             </thead>
+
             <tbody>
                 {user ? user.users.map((element:any) =>(
                 <UserRow key={element.id} id={element.id} username={element.username}
                 email={element.email} dateJoined={element.dateJoined} lastLogin={element.lastLogin}
-                isActive={element.isActive}  isSuperuser={element.isSuperuser} isStaff={element.isStaff} isVisibleEdit={isVisibleEdit} handleClose={toggleModalEdit}/>
+                isActive={element.isActive}  isSuperuser={element.isSuperuser} isStaff={element.isStaff}/>
                 )) : console.log("Render_user_list")}
             </tbody>
         </table>

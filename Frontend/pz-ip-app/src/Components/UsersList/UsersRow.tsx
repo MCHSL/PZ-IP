@@ -1,24 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation } from '@apollo/client';
 import { delete_user} from "./../../Queries/queries";
+import { EditUserModal } from '../Modals/EditUserModal';
+import { resolveReadonlyArrayThunk } from 'graphql';
 
 interface Props {
     id: Number,
-    username: String,
-    email: String,
+    username: string,
+    email: string,
     dateJoined: any,
     lastLogin: any,
-    isActive: Boolean,
-    isSuperuser: Boolean,
-    isStaff: Boolean,
-    isVisibleEdit: Boolean,
-    handleClose: () => void,
+    isActive: boolean,
+    isSuperuser: boolean,
+    isStaff: boolean,
   }
 
-const UserRow:React.FC<Props> = ({ id, username, email, dateJoined, lastLogin, isActive, isSuperuser, isStaff, isVisibleEdit, handleClose }) => {
+const UserRow:React.FC<Props> = ({ id, username, email, dateJoined, lastLogin, isActive, isSuperuser, isStaff }) => {
+  const [isVisibleEdit, setIsVisibleEdit] = useState<boolean>(false)
+  const reload=()=>window.location.reload();
+  function toggleModalEdit() {
+    setIsVisibleEdit(!isVisibleEdit);
+  }
   const [deleteUser] = useMutation(delete_user, {
     variables: {
-      email: email,
+      id: Number(id),
     },
     onCompleted: (data) => {
       console.log(data)
@@ -28,7 +33,13 @@ const UserRow:React.FC<Props> = ({ id, username, email, dateJoined, lastLogin, i
       console.log(error)
     }
   })
+  function deleteUserFun() {
+    deleteUser({variables: {id: Number(id)}})
+    reload()
+  }
        return(
+         <>
+              <EditUserModal isVisibleEdit={isVisibleEdit} handleClose={toggleModalEdit} id={id} email={email} username={username} isStaff={isStaff} reload={reload}/>
               <tr className='align-middle'>
                 <td>{id}</td>
                 <td>{username}</td>
@@ -38,9 +49,10 @@ const UserRow:React.FC<Props> = ({ id, username, email, dateJoined, lastLogin, i
                 <td>{isActive ? "Tak" : "Nie"}</td>
                 <td>{isSuperuser ? "Tak" : "Nie"}</td>
                 <td>{isStaff ? "Tak" : "Nie"}</td>
-                <td><button className='btn btn-primary' onClick={() => {handleClose()}} >Edytuj</button></td>
-                <td><button className='btn btn-danger' onClick={() => {deleteUser({variables: {email: email}})}}>Usuń</button></td>
+                <td><button className='btn btn-primary' onClick={() => {toggleModalEdit()}} >Edytuj</button></td>
+                <td><button className='btn btn-danger' onClick={() => {deleteUserFun()}}>Usuń</button></td>
               </tr>
+              </>
        );
    };
 

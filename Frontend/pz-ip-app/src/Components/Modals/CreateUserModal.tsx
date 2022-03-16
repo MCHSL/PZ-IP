@@ -5,9 +5,10 @@ import { create_user } from "./../../Queries/queries";
 interface Props {
     isVisible: boolean,
     handleClose: () => void,
+    reload: () => void,
 };
 
-export const CreateUserModal = ({ isVisible, handleClose }: Props) => {
+export const CreateUserModal = ({ isVisible, handleClose, reload }: Props) => {
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -25,6 +26,10 @@ export const CreateUserModal = ({ isVisible, handleClose }: Props) => {
         console.log(error)
       }
     })
+    function closeModal() {
+      setUser({variables: {email: email, password: password, username: username}})
+      reload()
+    }
     return(
         <Modal
         show={isVisible}
@@ -50,7 +55,7 @@ export const CreateUserModal = ({ isVisible, handleClose }: Props) => {
         </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={() => {setUser({variables: {email: email, password: password, username: username}})}}>Dodaj</Button>
+          <Button variant="primary" onClick={() => {closeModal()}}>Dodaj</Button>
         </Modal.Footer>
       </Modal>
       );

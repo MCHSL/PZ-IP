@@ -23,8 +23,8 @@ export const login = gql`
     `
 
 export const delete_user = gql`
-    mutation ($email: String!)  {
-        deleteUser(email: $email) {
+    mutation ($id: Int!)  {
+        deleteUser(id: $id) {
             ok
         }
     }`
@@ -40,8 +40,8 @@ export const create_user = gql`
     }`
 
 export const update_user = gql`
-    mutation ($email: String!, $username: String!, $isStaff: Boolean!)  {
-        updateUser(email: $email, username: $username, isStaff: $isStaff) {
+    mutation ($id: Int!, $email: String!, $username: String!, $isStaff: Boolean!)  {
+        updateUser(id: $id, email: $email, username: $username, isStaff: $isStaff) {
             user {
                 id
                 username

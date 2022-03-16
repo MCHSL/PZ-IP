@@ -7,17 +7,17 @@ export const login = gql`
         }
     }`
 
-export const getUsers = gql`
+export const get_users = gql`
     query {
       users {
-      id
-      username
-      isStaff
-      email
-      dateJoined
-      lastLogin
-      isActive
-      isSuperuser
+        id
+        username
+        isStaff
+        email
+        dateJoined
+        lastLogin
+        isActive
+        isSuperuser
       }
     }
     `
@@ -50,3 +50,12 @@ export const update_user = gql`
             }
         }
     }`
+
+export const get_current_user = gql`
+    query {
+        me {
+            id
+            username
+        }
+    }
+    `

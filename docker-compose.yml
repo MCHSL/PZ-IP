@@ -8,15 +8,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=haslo123
 
-  cache:
-    image: redis
-    volumes:
-      - ./data/cache:/data
-    environment:
-      - REDIS_DB=0
-    expose:
-      - "6379"
-
   backend:
     build: ./Backend
     expose:

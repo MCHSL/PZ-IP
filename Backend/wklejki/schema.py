@@ -3,10 +3,10 @@ import graphene
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import BaseUserManager
 from graphql_jwt.decorators import staff_member_required, login_required, superuser_required
-from django.core.cache import cache
 from .models import Paste
+import graphene_django_optimizer as gql_optimizer
 
-class UserType(DjangoObjectType):
+class UserType(gql_optimizer.OptimizedDjangoObjectType):
 	class Meta:
 		model = get_user_model()
 		exclude = ['password']
@@ -17,13 +17,13 @@ class UserQuery(graphene.ObjectType):
 	user = graphene.Field(UserType, id = graphene.Int(required=False), username = graphene.String(required=False), description = "Look up user by ID or username")
 
 	def resolve_users(self, info):
-		return get_user_model().objects.all()
+		return gql_optimizer.query(get_user_model().objects.all(), info)
 
 	def resolve_user(self, info, id=None, username=None):
 		if id is not None:
-			return cache.get_or_set(f"user_{id}", lambda: get_user_model().objects.get(pk=id))
+			return gql_optimizer.query(get_user_model().objects.get(pk=id), info)
 		elif username is not None:
-			return cache.get_or_set(f"username_{username}", lambda: get_user_model().objects.get(username=username))
+			return gql_optimizer.query(get_user_model().objects.get(username=username), info)
 		else:
 			raise Exception("Must specify id or username")
 
@@ -92,20 +92,19 @@ class UserMutation(graphene.ObjectType):
 	delete_user = DeleteUser.Field()
 
 
-class PasteType(DjangoObjectType):
+class PasteType(gql_optimizer.OptimizedDjangoObjectType):
 	class Meta:
 		model = Paste
 
 class PasteQuery(graphene.ObjectType):
-	pastes = graphene.List(PasteType)
+	pastes = graphene.List(PasteType, description = "A list of all pastes in the database")
 	paste = graphene.Field(PasteType, id = graphene.Int(required=True), description = "Look up paste by ID")
 
 	def resolve_pastes(self, info):
-		return Paste.objects.all()
+		return gql_optimizer.query(Paste.objects.all(), info)
 
 	def resolve_paste(self, info, id):
-		return cache.get_or_set(f"paste_{id}", lambda: Paste.objects.get(pk=id))
-		#return Paste.objects.get(pk=id)
+		return gql_optimizer.query(Paste.objects.get(pk=id), info)
 
 class CreatePaste(graphene.Mutation):
 	"""Creates a new paste"""

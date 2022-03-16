@@ -148,19 +148,11 @@ GRAPHENE = {
     "SCHEMA": "Backend.schema.schema",
     "SCHEMA_INDENT": 2,
     "MIDDLEWARE": [
-		"graphene_django.debug.DjangoDebugMiddleware",
 		"graphql_jwt.middleware.JSONWebTokenMiddleware",
 	],
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://cache:6379',
-    }
-}
 
 # CORS_ALLOWED_ORIGINS = [
 #	'http://localhost:8000',

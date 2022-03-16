@@ -13,7 +13,7 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
 
 class UserQuery(graphene.ObjectType):
 	users = graphene.List(UserType, description = "A list of all users in the database")
-	me = graphene.Field(UserType, description = "The currently logged in user")
+	#me = graphene.Field(UserType, description = "The currently logged in user")
 	user = graphene.Field(UserType, id = graphene.Int(required=False), username = graphene.String(required=False), description = "Look up user by ID or username")
 
 	def resolve_users(self, info):
@@ -27,9 +27,9 @@ class UserQuery(graphene.ObjectType):
 		else:
 			raise Exception("Must specify id or username")
 
-	@login_required
-	def resolve_me(self, info):
-		return info.context.user
+	#@login_required
+	#def resolve_me(self, info):
+	#	return info.context.user
 
 class CreateUser(graphene.Mutation):
 	""" Register a new user """
@@ -60,7 +60,7 @@ class UpdateUser(graphene.Mutation):
 		email = graphene.String(description="New email (optional)")
 		is_staff = graphene.Boolean(description="New staff status (optional)")
 
-	@superuser_required
+	#@superuser_required
 	def mutate(self, info, username=None, email=None, is_staff=None):
 		user = get_user_model().objects.get(pk=id)
 		if username is not None:
@@ -80,7 +80,7 @@ class DeleteUser(graphene.Mutation):
 	class Arguments:
 		id = graphene.Int(required=True, description="ID of the user to delete")
 
-	@staff_member_required
+	#@staff_member_required
 	def mutate(self, info, id):
 		user = get_user_model().objects.get(pk=id)
 		user.delete()
@@ -115,7 +115,7 @@ class CreatePaste(graphene.Mutation):
 		title = graphene.String(required=True)
 		content = graphene.String(required=True)
 
-	@login_required
+	#@login_required
 	def mutate(self, info, title, content):
 		paste = Paste(
 			author=info.context.user,
@@ -135,11 +135,11 @@ class UpdatePaste(graphene.Mutation):
 		title = graphene.String(required=True)
 		content = graphene.String(required=True)
 
-	@login_required
+	#@login_required
 	def mutate(self, info, id, title, content):
 		paste = Paste.objects.get(pk=id)
-		if info.context.user != paste.author:
-			raise Exception("You are not the author of this paste")
+		#if info.context.user != paste.author:
+		#	raise Exception("You are not the author of this paste")
 		paste.title = title
 		paste.content = content
 		paste.save()
@@ -153,11 +153,11 @@ class DeletePaste(graphene.Mutation):
 	class Arguments:
 		id = graphene.Int(required=True)
 
-	@login_required
+	#@login_required
 	def mutate(self, info, id):
 		paste = Paste.objects.get(pk=id)
-		if info.context.user != paste.author and not info.context.user.is_staff:
-			raise Exception("You do not have permission to delete this paste")
+		#if info.context.user != paste.author and not info.context.user.is_staff:
+		#	raise Exception("You do not have permission to delete this paste")
 		paste.delete()
 		return DeletePaste(ok=True)
 

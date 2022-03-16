@@ -16,6 +16,7 @@ class UserQuery(graphene.ObjectType):
 	me = graphene.Field(UserType, description = "The currently logged in user")
 	user = graphene.Field(UserType, id = graphene.Int(required=False), username = graphene.String(required=False), description = "Look up user by ID or username")
 
+	@staff_member_required
 	def resolve_users(self, info):
 		return gql_optimizer.query(get_user_model().objects.all(), info)
 

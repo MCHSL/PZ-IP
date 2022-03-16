@@ -62,7 +62,7 @@ class UpdateUser(graphene.Mutation):
 		email = graphene.String(description="New email (optional)")
 		is_staff = graphene.Boolean(description="New staff status (optional)")
 
-	#@superuser_required
+	@superuser_required
 	def mutate(self, info, id, username=None, email=None, is_staff=None):
 		user = get_user_model().objects.get(pk=id)
 		if username is not None:
@@ -82,7 +82,7 @@ class DeleteUser(graphene.Mutation):
 	class Arguments:
 		id = graphene.Int(required=True, description="ID of the user to delete")
 
-	#@staff_member_required
+	@staff_member_required
 	def mutate(self, info, id):
 		print("deleting user with id: " + str(id))
 		user = get_user_model().objects.get(pk=id)
@@ -118,7 +118,7 @@ class CreatePaste(graphene.Mutation):
 		title = graphene.String(required=True)
 		content = graphene.String(required=True)
 
-	#@login_required
+	@login_required
 	def mutate(self, info, title, content):
 		paste = Paste(
 			author=info.context.user,
@@ -138,11 +138,11 @@ class UpdatePaste(graphene.Mutation):
 		title = graphene.String(required=True)
 		content = graphene.String(required=True)
 
-	#@login_required
+	@login_required
 	def mutate(self, info, id, title, content):
 		paste = Paste.objects.get(pk=id)
-		#if info.context.user != paste.author:
-		#	raise Exception("You are not the author of this paste")
+		if info.context.user != paste.author:
+			raise Exception("You are not the author of this paste")
 		paste.title = title
 		paste.content = content
 		paste.save()
@@ -156,11 +156,11 @@ class DeletePaste(graphene.Mutation):
 	class Arguments:
 		id = graphene.Int(required=True)
 
-	#@login_required
+	@login_required
 	def mutate(self, info, id):
 		paste = Paste.objects.get(pk=id)
-		#if info.context.user != paste.author and not info.context.user.is_staff:
-		#	raise Exception("You do not have permission to delete this paste")
+		if info.context.user != paste.author and not info.context.user.is_staff:
+			raise Exception("You do not have permission to delete this paste")
 		paste.delete()
 		return DeletePaste(ok=True)
 

@@ -19,21 +19,22 @@ export const EditUserModal = ({ isVisibleEdit, handleClose, id, email, username,
   const [updateUser] = useMutation(update_user, {
     variables: {
       id: Number(id),
-      email: email,
-      username: username,
-      isStaff: isStaff,
+      email: newEmail,
+      username: newUsername,
+      isStaff: newIsStaff,
     },
     onCompleted: (data) => {
+      console.log(newEmail, newUsername, newIsStaff)
       console.log(data)
-      console.log("deleted")
+      console.log("edited")
+      reload()
     },
     onError: (error) => {
       console.log(error)
     }
   })
   function closeModal() {
-    updateUser({variables: {email: email, id: Number(id), username: username, isStaff: isStaff}})
-    reload()
+    updateUser({variables: {email: newEmail, id: Number(id), username: newUsername, isStaff: newIsStaff}})
   }
     return(
         <Modal

@@ -21,6 +21,7 @@ export const CreateUserModal = ({ isVisible, handleClose, reload }: Props) => {
       onCompleted: (data) => {
         console.log(data)
         console.log("done")
+        reload()
       },
       onError: (error) => {
         console.log(error)
@@ -28,7 +29,6 @@ export const CreateUserModal = ({ isVisible, handleClose, reload }: Props) => {
     })
     function closeModal() {
       setUser({variables: {email: email, password: password, username: username}})
-      reload()
     }
     return(
         <Modal
@@ -43,15 +43,15 @@ export const CreateUserModal = ({ isVisible, handleClose, reload }: Props) => {
         <Modal.Body>
         <div className="form-group mt-3">
           <label htmlFor="exampleInputEmail1">Email</label>
-          <input type="email" className="form-control" placeholder="jan.kowalski@wp.pl" onChange={(e) => setEmail(e.target.value)}/>
+          <input type="email" className="form-control" placeholder="jan.kowalski@wp.pl" onChange={(e) => setEmail(e.target.value)} required/>
         </div>
         <div className="form-group mt-3">
           <label htmlFor="exampleInputPassword1">Nazwa użytkownika</label>
-          <input type="name" className="form-control" placeholder="jan_k" onChange={(e) => setUsername(e.target.value)}/>
+          <input type="name" className="form-control" placeholder="jan_k" onChange={(e) => setUsername(e.target.value)} required/>
         </div>
         <div className="form-group mt-3">
           <label htmlFor="exampleInputPassword1">Hasło</label>
-          <input type="password" className="form-control" placeholder="******" onChange={(e) => setPassword(e.target.value)}/>
+          <input type="password" className="form-control" placeholder="******" onChange={(e) => setPassword(e.target.value)} required/>
         </div>
         </Modal.Body>
         <Modal.Footer>

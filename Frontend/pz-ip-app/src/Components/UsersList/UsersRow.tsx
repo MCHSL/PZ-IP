@@ -8,7 +8,7 @@ interface Props {
     id: Number,
     username: string,
     email: string,
-    dateJoined: any,
+    dateJoined: Date,
     lastLogin: any,
     isActive: boolean,
     isSuperuser: boolean,
@@ -28,6 +28,7 @@ const UserRow:React.FC<Props> = ({ id, username, email, dateJoined, lastLogin, i
     onCompleted: (data) => {
       console.log(data)
       console.log("deleted")
+      reload()
     },
     onError: (error) => {
       console.log(error)
@@ -35,7 +36,7 @@ const UserRow:React.FC<Props> = ({ id, username, email, dateJoined, lastLogin, i
   })
   function deleteUserFun() {
     deleteUser({variables: {id: Number(id)}})
-    reload()
+
   }
        return(
          <>

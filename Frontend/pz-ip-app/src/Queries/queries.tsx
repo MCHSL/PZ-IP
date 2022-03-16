@@ -7,7 +7,7 @@ export const login = gql`
         }
     }`
 
-    export const getUsers = gql`
+export const getUsers = gql`
     query {
       users {
       id
@@ -40,20 +40,13 @@ export const create_user = gql`
     }`
 
 export const update_user = gql`
-    mutation ($id: Int!, $email: String!, $username: String!, $isStaff: Boolean!)  {
+    mutation ($id: Int, $email: String, $username: String, $isStaff: Boolean)  {
         updateUser(id: $id, email: $email, username: $username, isStaff: $isStaff) {
             user {
                 id
                 username
+                email
+                isStaff
             }
         }
     }`
-
-        // mutation {
-        //     createUser(email:"test5@test.pl", password:"123", username: "user5") {
-        //     user {
-        //         username
-        //         email
-        //     }
-        //     }
-        // }

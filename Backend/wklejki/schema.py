@@ -13,7 +13,7 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
 
 class UserQuery(graphene.ObjectType):
 	users = graphene.List(UserType, description = "A list of all users in the database")
-	#me = graphene.Field(UserType, description = "The currently logged in user")
+	me = graphene.Field(UserType, description = "The currently logged in user")
 	user = graphene.Field(UserType, id = graphene.Int(required=False), username = graphene.String(required=False), description = "Look up user by ID or username")
 
 	def resolve_users(self, info):
@@ -27,9 +27,9 @@ class UserQuery(graphene.ObjectType):
 		else:
 			raise Exception("Must specify id or username")
 
-	#@login_required
-	#def resolve_me(self, info):
-	#	return info.context.user
+	@login_required
+	def resolve_me(self, info):
+		return info.context.user
 
 class CreateUser(graphene.Mutation):
 	""" Register a new user """
@@ -41,6 +41,8 @@ class CreateUser(graphene.Mutation):
 		email = graphene.String(required=True)
 
 	def mutate(self, info, username, password, email):
+		if not username or not password or not email:
+			raise Exception("Missing required fields")
 		user = get_user_model()(
 			username=username,
 			email=BaseUserManager.normalize_email(email),

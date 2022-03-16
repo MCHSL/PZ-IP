@@ -25,7 +25,7 @@ const UserList = () => {
     }
   })
      return(
-        <div>
+        <div className='container'>
         <CreateUserModal isVisible={isVisibleCreate} handleClose={toggleModalCreate} reload={reload}/>
         <button className='btn btn-success float-end m-2' onClick={()=>{setIsVisibleCreate(true)}}>Dodaj użytkownika</button>
         <h4 className="text-center p-2">
@@ -46,7 +46,6 @@ const UserList = () => {
                 <th></th>
             </tr>
             </thead>
-
             <tbody>
                 {user ? user.users.map((element:any) =>(
                 <UserRow key={element.id} id={element.id} username={element.username}

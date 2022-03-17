@@ -1,25 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery } from '@apollo/client';
-import { resolveReadonlyArrayThunk } from 'graphql';
+
+import { useQuery } from "@apollo/client";
 import { get_current_user } from "./../Queries/queries";
+import { useNavigate } from "react-router-dom";
+import { useApolloClient } from "@apollo/client";
 
-const CurrentUser = ()  =>{
-	const [currentUserInfo, setCurrentUserInfo] = useState<any>();
-
-	useQuery(get_current_user, {
-		onCompleted: (data) => {
-		setCurrentUserInfo(data.me);
+const CurrentUser = () =>
+{
+	const client = useApolloClient();
+	const navigate = useNavigate();
+	const { loading, error, data } = useQuery(get_current_user, {
+		onCompleted: (data) =>
+		{
+			console.log(data);
 		},
-		onError: (error) => {
-		console.log(error)
-		}
-	})
+		onError: (error) =>
+		{
+			console.log(error);
+		},
+	});
 
-    return(
-        <div>
-            {currentUserInfo ? <span className='mt-1'> Witaj, {currentUserInfo.username} 👋</span> : null}
-        </div>
-    );
-   };
+	function logout()
+	{
+		localStorage.removeItem("token");
+		client.cache.reset()
+		navigate("/login");
+	}
 
-   export default CurrentUser;
+	if (loading)
+	{
+		return <div>Ładowanie profilu...</div>;
+	}
+
+	if (error)
+	{
+		return <div>Błąd pobierania profilu</div>;
+	}
+
+	return (
+		<div>
+			<span className="mt-1 h4 align-middle">
+				Witaj, {data.me.username} 👋
+			</span>
+			<button className="btn btn-danger mt-1" onClick={logout}>
+				Wyloguj
+			</button>
+		</div>
+	);
+};
+
+export default CurrentUser;

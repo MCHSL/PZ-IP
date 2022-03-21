@@ -1,18 +1,17 @@
 import { Dispatch, SetStateAction } from 'react';
-import { delete_user } from "./../../Queries/queries";
+import { delete_paste } from "../../Queries/queries";
 import RefreshingModal from "./RefreshingModal";
 
 interface Props
 {
 	id: Number
-	username: string
-
+	title: string
 	isVisible: boolean
 	setVisible: Dispatch<SetStateAction<boolean>>
 	refetch: () => void
 };
 
-export const DeleteUserModal = ({ id, username, isVisible, setVisible, refetch }: Props) =>
+export const DeletePasteModal = ({ id, title, isVisible, setVisible, refetch }: Props) =>
 {
 
 	return (
@@ -20,13 +19,13 @@ export const DeleteUserModal = ({ id, username, isVisible, setVisible, refetch }
 			isVisible={isVisible}
 			setVisible={setVisible}
 			refetch={refetch}
-			title="Usuń użytkownika"
+			title="Usuń wklejkę"
 			confirmText="Usuń"
-			mutation={delete_user}
+			mutation={delete_paste}
 			mutationArgs={{ id: Number(id) }}
 		>
 			<div className="text-center">
-				<h3>Czy na pewno chcesz usunąć użytkownika <b>{username}</b>?</h3>
+				<h3>Czy na pewno chcesz usunąć wklejkę <b>{title}</b>?</h3>
 			</div>
 		</RefreshingModal>
 	);

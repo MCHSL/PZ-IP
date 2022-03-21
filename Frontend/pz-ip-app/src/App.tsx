@@ -6,6 +6,12 @@ import LoginPage from "./Components/LoginPage/LoginPage";
 import UserList from "./Components/UsersList/UsersList";
 import { setContext } from "@apollo/client/link/context";
 import { createHttpLink } from "@apollo/client";
+import { UserProvider } from "./Components/Context/CurrentUserContext";
+import PasteIndex from "./Components/Paste/PasteIndex";
+import CreatePaste from "./Components/Paste/CreatePaste";
+import ProfilePage from "./Components/Profile/ProfilePage";
+import Menu from "./Components/Menu/Menu";
+import AllPastes from "./Components/Paste/AllPastes";
 
 function App()
 {
@@ -31,13 +37,21 @@ function App()
 
 	return (
 		<ApolloProvider client={client}>
-			<Router>
-				<Routes>
-					<Route path="/login" element={<LoginPage />}></Route>
-					<Route path="/" element={<UserList />}></Route>
-				</Routes>
-			</Router>
-		</ApolloProvider>
+			<UserProvider>
+				<Router>
+					<Menu />
+					<Routes>
+						<Route path="/" element={<CreatePaste />}></Route>
+						<Route path="/login" element={<LoginPage />}></Route>
+						<Route path="/users" element={<UserList />}></Route>
+						<Route path="/paste/:id" element={<PasteIndex />}></Route>
+						<Route path="/paste/new" element={<CreatePaste />}></Route>
+						<Route path="/profile" element={<ProfilePage />}></Route>
+						<Route path="/pastes" element={<AllPastes />}></Route>
+					</Routes>
+				</Router>
+			</UserProvider>
+		</ApolloProvider >
 	);
 }
 

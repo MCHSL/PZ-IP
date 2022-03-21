@@ -3,21 +3,17 @@ import { useQuery } from "@apollo/client";
 import { get_users } from "./../../Queries/queries";
 import UserRow from "./UsersRow";
 import { CreateUserModal } from "../Modals/CreateUserModal";
-import CurrentUser from "../CurrentUser";
+import CurrentUser from "./CurrentUser";
+import PaginableList from "../List/PaginatingList";
+import { getUsersPaginated } from "../../Queries/PaginatingQuery";
 
 const UserList = () =>
 {
 	const [isCreateVisible, setCreateVisible] = useState<boolean>(false);
-	const { loading, error, data, refetch } = useQuery(get_users, {
-		onCompleted: (data) =>
-		{
-			console.log(data);
-		},
-		onError: (error) =>
-		{
-			console.log(error);
-		},
-	});
+	const [page, setPage] = useState<number>(0);
+	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+
+	const { loading, error, previousData, data = previousData, refetch } = getUsersPaginated(page, itemsPerPage);
 
 	return (
 		<div className="container">
@@ -35,42 +31,46 @@ const UserList = () =>
 			>
 				Dodaj użytkownika
 			</button>
-			<CurrentUser />
-			<h4 className="text-center p-2">Lista użytkowników</h4>
-			<table className="table table-sm table-striped">
-				<thead>
-					<tr>
-						<th>ID</th>
-						<th>Nazwa użytkownika</th>
-						<th>Email</th>
-						<th>Data dołączenia</th>
-						<th>Data ostatniego logowania</th>
-						<th>Aktywny</th>
-						<th>isSuperUser</th>
-						<th>isStaff</th>
-						<th></th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					{loading || error
-						? null
-						: data.users.map((element: any) => (
+			<PaginableList visible={data} totalItems={data?.userCount} page={page} setPage={setPage} itemsPerPage={itemsPerPage} setItemsPerPage={setItemsPerPage}>
+				<h2 className="text-center p-2 mt-4">Lista użytkowników</h2>
+				<table className="table table-sm table-striped mt-3">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Nazwa użytkownika</th>
+							<th>Email</th>
+							<th>Data dołączenia</th>
+							<th>Aktywny</th>
+							<th>isSuperUser</th>
+							<th>isStaff</th>
+							<th></th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						{data?.users.map((element: any) => (
 							<UserRow
 								key={element.id}
 								id={element.id}
 								username={element.username}
 								email={element.email}
 								dateJoined={element.dateJoined}
-								lastLogin={element.lastLogin}
 								isActive={element.isActive}
 								isSuperuser={element.isSuperuser}
 								isStaff={element.isStaff}
 								refetch={refetch}
 							/>
 						))}
-				</tbody>
-			</table>
+					</tbody>
+				</table>
+			</PaginableList>
+		</div>
+	);
+};
+
+export default UserList;
+
+/*
 			{loading ? (
 				<div className="text-center">
 					<h3>Ładowando...</h3>
@@ -80,9 +80,4 @@ const UserList = () =>
 				<div className="text-center">
 					<h3>Wystąpił błąd podczas pobierania zasobów</h3>
 				</div>
-			) : null}
-		</div>
-	);
-};
-
-export default UserList;
+			) : null}*/

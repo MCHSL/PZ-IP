@@ -3,7 +3,8 @@ import { Dispatch, SetStateAction, } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import { DocumentNode } from '@apollo/client';
 
-interface Props {
+interface Props
+{
 	mutation: DocumentNode,
 	mutationArgs: any,
 	refetch: () => void,
@@ -16,7 +17,8 @@ interface Props {
 	onQueryError?: (error: any) => void,
 }
 
-export const RefreshingModal = ({mutation, mutationArgs, refetch, setVisible, isVisible, title, confirmText, children}: Props) => {
+export const RefreshingModal = ({ mutation, mutationArgs, refetch, setVisible, isVisible, title, confirmText, children }: Props) =>
+{
 	const [doMutation] = useMutation(mutation, {
 		onCompleted: (data) =>
 		{
@@ -29,32 +31,34 @@ export const RefreshingModal = ({mutation, mutationArgs, refetch, setVisible, is
 		}
 	})
 
-	function onCancel() {
+	function onCancel()
+	{
 		setVisible(false);
 	}
 
-	function onConfirm() {
-		doMutation({"variables": mutationArgs});
+	function onConfirm()
+	{
+		doMutation({ variables: mutationArgs });
 	}
 
-    return(
-        <Modal
-        show={isVisible}
-        onHide={onCancel}
-        backdrop="static"
-        keyboard={false}
-      >
+	return (
+		<Modal
+			show={isVisible}
+			onHide={onCancel}
+			backdrop="static"
+			keyboard={false}
+		>
 			<Modal.Header closeButton>
 				<Modal.Title>{title}</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
-			{children}
+				{children}
 			</Modal.Body>
 			<Modal.Footer>
 				<Button variant="primary" onClick={onConfirm}>{confirmText}</Button>
 			</Modal.Footer>
 		</Modal>
-      );
+	);
 };
 
 export default RefreshingModal;

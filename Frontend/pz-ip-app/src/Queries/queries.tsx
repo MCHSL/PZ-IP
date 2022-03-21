@@ -8,14 +8,14 @@ export const login = gql`
     }`
 
 export const get_users = gql`
-    query {
-      users {
+    query($skip: Int, $take: Int) {
+	  userCount
+      users(skip: $skip, take: $take) {
         id
         username
         isStaff
         email
         dateJoined
-        lastLogin
         isActive
         isSuperuser
       }
@@ -56,6 +56,95 @@ export const get_current_user = gql`
         me {
             id
             username
+			isStaff
+			isSuperuser
         }
     }
     `
+
+export const get_paste = gql`
+	query ($id: Int!) {
+		paste(id: $id) {
+			id
+			title
+			content
+			author {
+				id
+				username
+			}
+		}
+	}
+	`
+
+export const update_paste = gql`
+	mutation ($id: Int!, $title: String!, $content: String!)  {
+		updatePaste(id: $id, title: $title, content: $content) {
+			paste {
+				id
+			}
+		}
+	}`
+
+export const create_paste = gql`
+	mutation ($title: String!, $content: String!)  {
+		createPaste(title: $title, content: $content) {
+			paste {
+				id
+			}
+		}
+	}`
+
+export const delete_paste = gql`
+	mutation ($id: Int!)  {
+		deletePaste(id: $id) {
+			ok
+		}
+	}`
+
+export const get_pastes = gql`
+	query($skip: Int, $take: Int) {
+		pasteCount
+		pastes(skip: $skip, take: $take) {
+			id
+			title
+			content
+			author {
+				id
+				username
+			}
+		}
+	}
+	`
+
+export const get_paste_titles = gql`
+	query($skip: Int, $take: Int) {
+		pasteCount
+		pastes(skip: $skip, take: $take) {
+			id
+			title
+			createdAt
+			updatedAt
+			author {
+				id
+				username
+			}
+		}
+	}
+	`
+
+export const get_paste_titles_for_user = gql`
+	query ($userId: Int!, $skip: Int, $take: Int) {
+		user(id: $userId) {
+			pasteCount
+			pastes(skip: $skip, take: $take) {
+				id
+				title
+				createdAt
+				updatedAt
+				author {
+					id
+					username
+				}
+			}
+		}
+	}`

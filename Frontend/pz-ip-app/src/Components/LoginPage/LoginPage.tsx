@@ -13,7 +13,7 @@ const LoginPage = () =>
 	}
 
 	return (
-		<div className="container">
+		<div className="container col-3 mt-5">
 			{isLoggingIn ? (
 				<LoginComponent setRegistering={toggleMenu} />
 			) : (

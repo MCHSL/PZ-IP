@@ -16,3 +16,4 @@ services:
       - "80:80"
     depends_on:
       - db
+    init: true

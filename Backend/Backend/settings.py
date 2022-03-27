@@ -169,8 +169,18 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'WARNING'),
+            'level': env('DJANGO_LOG_LEVEL'),
             'handlers': ['file', 'console'],
+        },
+        'django.request': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.security': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
         },
     },
     'formatters': {

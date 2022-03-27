@@ -1,3 +1,4 @@
+from django.http import Http404
 from graphene_django import DjangoObjectType
 import graphene
 from django.contrib.auth import get_user_model
@@ -7,8 +8,10 @@ from .models import Paste
 import graphene_django_optimizer as gql_optimizer
 import time
 import logging
+from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class UserType(gql_optimizer.OptimizedDjangoObjectType):
@@ -25,19 +28,30 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
 
 	@gql_optimizer.resolver_hints(model_field='pastes')
 	def resolve_pastes(self, info, skip, take):
-		if skip is None and take is None:
-			logging.debug(f"returning all pastes for user {self}")
-			return self.pastes.all().order_by('-created_at')
+		if info.context.user == self:
+			logger.debug(f"Resolving public+private pastes for user '{self}'")
+			pastes = self.pastes.all().order_by('-created_at')
 		else:
-			logging.debug(
-			    f"returning paginated pastes for user {self}: skip={skip}, take={take}"
+			logger.debug(f"Resolving public pastes for user '{self}'")
+			pastes = self.pastes.all().order_by('-created_at').filter(
+			    private=False)
+
+		if skip is None and take is None:
+			logger.debug(f"Returning all pastes for user '{self}'")
+			return pastes
+		else:
+			logger.debug(
+			    f"Returning pastes for user '{self}' with skip={skip} and take={take}"
 			)
-			return self.pastes.all().order_by('-created_at')[skip:skip + take]
+			return pastes[skip:skip + take]
 
 	@gql_optimizer.resolver_hints(model_field='pastes')
 	def resolve_paste_count(self, info):
 		logger.debug("returning paste count")
-		return self.pastes.count()
+		if info.context.user == self:
+			return self.pastes.count()
+		else:
+			return self.pastes.filter(private=False).count()
 
 
 class UserQuery(graphene.ObjectType):
@@ -185,22 +199,38 @@ class PasteQuery(graphene.ObjectType):
 
 	@gql_optimizer.resolver_hints(model_field='pastes')
 	def resolve_pastes(self, info, skip, take):
-		if skip is None and take is None:
-			logging.debug("returning all pastes")
-			return Paste.objects.all().order_by('-created_at')
+		if info.context.user.is_authenticated:
+			pastes = Paste.objects.all().order_by('-created_at').filter(
+			    Q(private=False)
+			    | Q(Q(private=True) & Q(author=info.context.user)))
 		else:
-			logging.debug(
+			pastes = Paste.objects.all().order_by('-created_at').filter(
+			    private=False)
+
+		if skip is None and take is None:
+			logger.debug("returning all pastes")
+			return pastes
+		else:
+			logger.debug(
 			    f"returning paginated pastes: skip={skip}, take={take}")
-			return Paste.objects.all().order_by('-created_at')[skip:skip +
-			                                                   take]
+			return pastes[skip:skip + take]
 
 	def resolve_paste(self, info, id):
 		logging.debug(f"returning paste by id: {id}")
-		return Paste.objects.get(pk=id)
+		paste = Paste.objects.get(pk=id)
+		if paste.private and not info.context.user.is_authenticated or paste.author != info.context.user:
+			raise Paste.DoesNotExist("Paste matching query does not exist.")
+
+		return paste
 
 	def resolve_paste_count(self, info):
 		logging.debug("returning paste count")
-		return Paste.objects.count()
+		if info.context.user.is_authenticated:
+			return Paste.objects.filter(
+			    Q(private=False)
+			    | Q(Q(private=True) & Q(author=info.context.user))).count()
+		else:
+			return Paste.objects.filter(private=False).count()
 
 
 class CreatePaste(graphene.Mutation):
@@ -211,17 +241,21 @@ class CreatePaste(graphene.Mutation):
 	class Arguments:
 		title = graphene.String(required=True)
 		content = graphene.String(required=True)
+		private = graphene.Boolean(required=True)
 
 	@login_required
-	def mutate(self, info, title, content):
-		paste = Paste(
-		    author=info.context.user,
-		    title=title,
-		    content=content,
-		)
+	def mutate(self, info, title, content, private):
+		paste = Paste(author=info.context.user,
+		              title=title,
+		              content=content,
+		              private=private)
 		paste.save()
 
-		logging.info(f"Created paste '{paste}' by user '{info.context.user}'")
+		content = content[:15] + "..." if len(content) > 15 else content
+
+		logging.info(
+		    f"Created paste '{paste}' by user '{info.context.user}': {content}"
+		)
 
 		return CreatePaste(paste=paste)
 
@@ -235,20 +269,22 @@ class UpdatePaste(graphene.Mutation):
 		id = graphene.Int(required=True)
 		title = graphene.String(required=True)
 		content = graphene.String(required=True)
+		private = graphene.Boolean(required=True)
 
 	@login_required
-	def mutate(self, info, id, title, content):
+	def mutate(self, info, id, title, content, private):
 		paste = Paste.objects.get(pk=id)
 		if info.context.user != paste.author:
 			raise Exception("You are not the author of this paste")
 		paste.title = title
 		paste.content = content
+		paste.private = private
 		paste.save()
 
 		content = content[:15] + "..." if len(content) > 15 else content
 
 		logging.info(
-		    f"Updated paste '{paste}' by user '{info.context.user}': title='{title}', content='{content}'"
+		    f"Updated paste '{paste}' by user '{info.context.user}': title='{title}', content='{content}', private='{private}'"
 		)
 
 		return UpdatePaste(paste=paste)

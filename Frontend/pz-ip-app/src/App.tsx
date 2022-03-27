@@ -46,7 +46,7 @@ function App()
 						<Route path="/users" element={<UserList />}></Route>
 						<Route path="/paste/:id" element={<PasteIndex />}></Route>
 						<Route path="/paste/new" element={<CreatePaste />}></Route>
-						<Route path="/profile" element={<ProfilePage />}></Route>
+						<Route path="/profile" element={<ProfilePage />} />
 						<Route path="/pastes" element={<AllPastes />}></Route>
 					</Routes>
 				</Router>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { login } from "./../../Queries/queries";
 import { useMutation } from '@apollo/client';
-import { useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useUser } from '../Context/CurrentUserContext';
 import { Spinner } from 'react-bootstrap';
 
@@ -13,21 +13,23 @@ interface Props
 
 const LoginForm = ({ setRegistering }: Props) =>
 {
-	const navigate = useNavigate();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
-	const { userLoading, refetchUser } = useUser();
+	const { user, userLoading, refetchUser } = useUser();
+	const [loggingIn, setLoggingIn] = useState(false);
+	const location = useLocation();
+	const navigate = useNavigate();
 
-	const [doLogin, { loading }] = useMutation(login, {
+	const [doLogin] = useMutation(login, {
 		onCompleted: (data) =>
 		{
-			localStorage.setItem("token", data.tokenAuth.token)
-			refetchUser();
-			navigate("/profile");
+			localStorage.setItem("token", data.tokenAuth.token);
+			refetchUser().then(() => setLoggingIn(false));
 		},
 		onError: (error) =>
 		{
+			setLoggingIn(false);
 			setError(error.message);
 		}
 	});
@@ -35,6 +37,7 @@ const LoginForm = ({ setRegistering }: Props) =>
 	function submit()
 	{
 		setError("");
+		setLoggingIn(true);
 		doLogin({ variables: { email, password } });
 	}
 
@@ -50,8 +53,10 @@ const LoginForm = ({ setRegistering }: Props) =>
 				<input type="password" value={password} onChange={(e) => { setPassword(e.target.value) }} className="form-control" placeholder="Wprowadź hasło" />
 			</div>
 			{error ? <div className="alert alert-danger mt-3 text-center">{error}</div> : null}
-			{(userLoading || loading) ?
-				<div className='form-group mt-5 justify-content-center text-center'><Spinner animation="border" /></div>
+			{(loggingIn) ?
+				<div className='form-group mt-5 justify-content-center text-center'>
+					<Spinner animation="border" />
+				</div>
 				:
 				<div className='form-group mt-3'>
 					<button type="submit" className="btn btn-primary mt-3 col-12" onClick={submit}>Zaloguj</button>

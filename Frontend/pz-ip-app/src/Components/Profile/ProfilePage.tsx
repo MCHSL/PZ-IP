@@ -1,20 +1,10 @@
-import { Stack } from "react-bootstrap";
 import PasteList from "../Paste/PasteList";
-import { useUser } from "../Context/CurrentUserContext";
-import { useNavigate } from "react-router-dom";
+import { Stack } from "react-bootstrap";
+import withLogin from "../Misc/LoginRequired";
 
 
 const ProfilePage = () =>
 {
-	const { userLoading, user } = useUser();
-	const navigate = useNavigate();
-
-	if (!user && !userLoading)
-	{
-		navigate("/login");
-		return null;
-	}
-
 	return (
 		<Stack gap={3} className="col-md-5 m-auto mt-5">
 			<PasteList currentUserOnly={true} />
@@ -22,4 +12,4 @@ const ProfilePage = () =>
 	)
 }
 
-export default ProfilePage;
+export default withLogin(ProfilePage);

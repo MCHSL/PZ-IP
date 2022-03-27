@@ -5,6 +5,8 @@ import { useState } from "react";
 import PaginableList from "../List/PaginatingList";
 import { getPasteTitlesPaginated } from "../../Queries/PaginatingQuery";
 import Countdown from 'react-countdown';
+import { useApolloClient } from "@apollo/client";
+import { get_paste } from "../../Queries/queries";
 
 interface PasteInfo
 {
@@ -12,7 +14,8 @@ interface PasteInfo
 	title: string,
 	author: any,
 	createdAt: Date,
-	updatedAt: Date
+	updatedAt: Date,
+	isPrivate: boolean,
 }
 
 interface Props
@@ -22,11 +25,11 @@ interface Props
 
 const PasteList = ({ currentUserOnly }: Props) =>
 {
+	const client = useApolloClient();
 	const [page, setPage] = useState(0);
 	const [itemsPerPage, setItemsPerPage] = useState(10);
-	const [refetching, setRefetching] = useState(false);
 	const { userLoading, user } = useUser();
-	const { loading, error, previousData, data = previousData, refetch } = getPasteTitlesPaginated(currentUserOnly ? Number(user?.id) : null, page, itemsPerPage, userLoading);
+	const { previousData, data = previousData, refetch } = getPasteTitlesPaginated(currentUserOnly ? Number(user?.id) : null, page, itemsPerPage, userLoading);
 
 	console.log("rendering list");
 
@@ -58,6 +61,7 @@ const PasteList = ({ currentUserOnly }: Props) =>
 						<th className="text-muted col-5">Tytuł</th>
 						<th className="text-muted col-4">Utworzona</th>
 						<th className="text-muted col-4">Zmieniona</th>
+						<th className="text-muted col-4">Prywatna</th>
 						<th className="text-muted col-4"></th>
 					</tr>
 				</thead>
@@ -65,7 +69,7 @@ const PasteList = ({ currentUserOnly }: Props) =>
 					{pastes.map((paste: PasteInfo) =>
 					{
 						return (
-							<PasteRow key={paste.id.toString()} id={paste.id} title={paste.title} author={paste.author} createdAt={paste.createdAt} updatedAt={paste.updatedAt} refetch={refetch} returnTo={currentUserOnly ? "/profile" : "/pastes"} />
+							<PasteRow key={paste.id.toString()} id={paste.id} title={paste.title} author={paste.author} createdAt={paste.createdAt} updatedAt={paste.updatedAt} isPrivate={paste.isPrivate} refetch={refetch} />
 						);
 					})}
 				</tbody>

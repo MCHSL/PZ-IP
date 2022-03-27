@@ -68,6 +68,7 @@ export const get_paste = gql`
 			id
 			title
 			content
+			isPrivate: private
 			author {
 				id
 				username
@@ -77,8 +78,8 @@ export const get_paste = gql`
 	`
 
 export const update_paste = gql`
-	mutation ($id: Int!, $title: String!, $content: String!)  {
-		updatePaste(id: $id, title: $title, content: $content) {
+	mutation ($id: Int!, $title: String!, $content: String!, $isPrivate: Boolean!)  {
+		updatePaste(id: $id, title: $title, content: $content, private: $isPrivate) {
 			paste {
 				id
 			}
@@ -86,8 +87,8 @@ export const update_paste = gql`
 	}`
 
 export const create_paste = gql`
-	mutation ($title: String!, $content: String!)  {
-		createPaste(title: $title, content: $content) {
+	mutation ($title: String!, $content: String!, $isPrivate: Boolean!)  {
+		createPaste(title: $title, content: $content, private: $isPrivate) {
 			paste {
 				id
 			}
@@ -108,6 +109,7 @@ export const get_pastes = gql`
 			id
 			title
 			content
+			isPrivate: private
 			author {
 				id
 				username
@@ -124,6 +126,7 @@ export const get_paste_titles = gql`
 			title
 			createdAt
 			updatedAt
+			isPrivate: private
 			author {
 				id
 				username
@@ -135,12 +138,14 @@ export const get_paste_titles = gql`
 export const get_paste_titles_for_user = gql`
 	query ($userId: Int!, $skip: Int, $take: Int) {
 		user(id: $userId) {
+			id
 			pasteCount
 			pastes(skip: $skip, take: $take) {
 				id
 				title
 				createdAt
 				updatedAt
+				isPrivate: private
 				author {
 					id
 					username

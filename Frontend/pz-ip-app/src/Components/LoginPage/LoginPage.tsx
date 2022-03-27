@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
 import { useUser } from "../Context/CurrentUserContext";
 
 import LoginComponent from "./LoginComponent";
@@ -8,13 +8,13 @@ import RegisterComponent from "./RegisterComponent";
 const LoginPage = () =>
 {
 	const [isLoggingIn, setIsLoggingIn] = useState(true);
-	const { user } = useUser();
-	const navigate = useNavigate();
+	const { user, userLoading } = useUser();
+	const location = useLocation();
 
-	if (user)
+	if (user && !userLoading)
 	{
-		navigate("/profile");
-		return null;
+		const newLoc = location.state ? (location.state as any).returnTo : "/profile";
+		return <Navigate to={newLoc} replace />;
 	}
 
 	function toggleMenu()

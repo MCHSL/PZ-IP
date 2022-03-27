@@ -6,9 +6,12 @@ import { CreateUserModal } from "../Modals/CreateUserModal";
 import CurrentUser from "./CurrentUser";
 import PaginableList from "../List/PaginatingList";
 import { getUsersPaginated } from "../../Queries/PaginatingQuery";
+import { withStaff } from "../Misc/LoginRequired";
 
 const UserList = () =>
 {
+	console.log("loading users list");
+
 	const [isCreateVisible, setCreateVisible] = useState<boolean>(false);
 	const [page, setPage] = useState<number>(0);
 	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
@@ -68,16 +71,4 @@ const UserList = () =>
 	);
 };
 
-export default UserList;
-
-/*
-			{loading ? (
-				<div className="text-center">
-					<h3>Ładowando...</h3>
-				</div>
-			) : null}
-			{error ? (
-				<div className="text-center">
-					<h3>Wystąpił błąd podczas pobierania zasobów</h3>
-				</div>
-			) : null}*/
+export default withStaff(UserList);

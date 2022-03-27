@@ -22,17 +22,16 @@ const UserContext = React.createContext({} as IUserContext);
 export const UserProvider = ({ children }: { children: JSX.Element }) =>
 {
 	const client = useApolloClient();
-	const { loading, error, previousData, data=previousData, refetch } = useQuery(get_current_user);
+	const { loading, error, previousData, data = previousData, refetch } = useQuery(get_current_user);
 
-	function logout() {
+	function logout()
+	{
 		localStorage.removeItem("token");
 		return client.resetStore()
 	}
 
-	console.log("updating context")
-
 	return (
-		<UserContext.Provider value={{ userLoading: loading, userError: error, user: (error || loading ? null : data?.me), refetchUser: refetch, logout }}>
+		<UserContext.Provider value={{ userLoading: loading, userError: error, user: ((error || loading) ? null : data?.me), refetchUser: refetch, logout }}>
 			{children}
 		</UserContext.Provider>
 	);

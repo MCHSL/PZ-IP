@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { create_user } from "./../../Queries/queries";
+import { Spinner } from "react-bootstrap";
 
 interface Props
 {
@@ -12,15 +13,17 @@ const LoginForm = ({ setLoggingIn }: Props) =>
 	const [email, setEmail] = useState("");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
+	const [error, setError] = useState("");
 
-	const [doRegister] = useMutation(create_user, {
+	const [doRegister, { loading }] = useMutation(create_user, {
 		onCompleted: (data) =>
 		{
+			setError("");
 			setLoggingIn();
 		},
 		onError: (error) =>
 		{
-			console.log(error);
+			setError(error.message);
 		},
 	});
 
@@ -63,27 +66,34 @@ const LoginForm = ({ setLoggingIn }: Props) =>
 						setPassword(e.target.value);
 					}}
 					className="form-control"
-					placeholder="Wprowadź hasło użytkownika"
+					placeholder="Wprowadź hasło"
 				/>
 			</div>
-			<div className="form-group mt-3">
-				<button
-					type="submit"
-					className="btn btn-primary mt-3 col-12"
-					onClick={() =>
-						doRegister({ variables: { email, username, password } })
-					}
-				>
-					Zarejestruj
-				</button>
-				<button
-					type="submit"
-					className="btn btn-secondary mt-3 col-12"
-					onClick={setLoggingIn}
-				>
-					Powrót do logowania
-				</button>
-			</div>
+			{error && <div className="alert alert-danger mt-3">{error}</div>}
+			{loading ?
+				<div className='form-group mt-5 justify-content-center text-center'>
+					<Spinner animation="border" />
+				</div>
+				:
+				<div className="form-group mt-3">
+					<button
+						type="submit"
+						className="btn btn-primary mt-3 col-12"
+						onClick={() =>
+							doRegister({ variables: { email, username, password } })
+						}
+					>
+						Zarejestruj
+					</button>
+					<button
+						type="submit"
+						className="btn btn-secondary mt-3 col-12"
+						onClick={setLoggingIn}
+					>
+						Powrót do logowania
+					</button>
+				</div>
+			}
 		</>
 	);
 };

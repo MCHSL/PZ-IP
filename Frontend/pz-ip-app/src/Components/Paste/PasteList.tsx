@@ -15,11 +15,12 @@ interface PasteInfo
 	updatedAt: Date
 }
 
-interface Props {
+interface Props
+{
 	currentUserOnly: boolean
 }
 
-const PasteList = ({currentUserOnly}: Props) =>
+const PasteList = ({ currentUserOnly }: Props) =>
 {
 	const [page, setPage] = useState(0);
 	const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -29,7 +30,7 @@ const PasteList = ({currentUserOnly}: Props) =>
 
 	console.log("rendering list");
 
-	let message = null;
+	//let message = null;
 	/*if (loading && !previousData)
 	{
 		message =
@@ -50,7 +51,7 @@ const PasteList = ({currentUserOnly}: Props) =>
 	const pastes = (currentUserOnly ? data?.user?.pastes : data?.pastes) ?? [];
 
 	return (
-		<PaginableList visible={!loading && !userLoading} totalItems={currentUserOnly ? data?.user?.pasteCount : data?.pasteCount} page={page} setPage={setPage} itemsPerPage={itemsPerPage} setItemsPerPage={setItemsPerPage}>
+		<PaginableList visible={!!data} totalItems={currentUserOnly ? data?.user?.pasteCount : data?.pasteCount} page={page} setPage={setPage} itemsPerPage={itemsPerPage} setItemsPerPage={setItemsPerPage}>
 			<Table striped hover size="sm">
 				<thead>
 					<tr>
@@ -64,7 +65,7 @@ const PasteList = ({currentUserOnly}: Props) =>
 					{pastes.map((paste: PasteInfo) =>
 					{
 						return (
-							<PasteRow key={paste.id.toString()} id={paste.id} title={paste.title} author={paste.author} createdAt={paste.createdAt} updatedAt={paste.updatedAt} refetch={refetch} returnTo={currentUserOnly? "/profile" : "/pastes"} />
+							<PasteRow key={paste.id.toString()} id={paste.id} title={paste.title} author={paste.author} createdAt={paste.createdAt} updatedAt={paste.updatedAt} refetch={refetch} returnTo={currentUserOnly ? "/profile" : "/pastes"} />
 						);
 					})}
 				</tbody>

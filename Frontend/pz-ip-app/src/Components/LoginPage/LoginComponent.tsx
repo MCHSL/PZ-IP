@@ -16,42 +16,49 @@ const LoginForm = ({ setRegistering }: Props) =>
 	const navigate = useNavigate();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const { refetchUser } = useUser();
-	const [loggingIn, setLoggingIn] = useState(false);
+	const [error, setError] = useState("");
+	const { userLoading, refetchUser } = useUser();
 
-	const [doLogin] = useMutation(login, {
+	const [doLogin, { loading }] = useMutation(login, {
 		onCompleted: (data) =>
 		{
 			localStorage.setItem("token", data.tokenAuth.token)
-			refetchUser().finally(() => {setLoggingIn(false); navigate("/profile")});
+			refetchUser();
+			navigate("/profile");
 		},
 		onError: (error) =>
 		{
-			setLoggingIn(false);
-			console.log(error)
+			setError(error.message);
 		}
 	});
 
+	function submit()
+	{
+		setError("");
+		doLogin({ variables: { email, password } });
+	}
+
 	return (
-	<>
-		<h2 className="text-center p-2">Logowanie</h2>
-		<div className="form-group mt-3">
-			<label htmlFor="exampleInputEmail1">Email</label>
-			<input type="email" value={email} onChange={(e) => { setEmail(e.target.value) }} className="form-control" placeholder="Wprowadź email" />
-		</div>
-		<div className="form-group mt-3">
-			<label htmlFor="exampleInputPassword1">Hasło</label>
-			<input type="password" value={password} onChange={(e) => { setPassword(e.target.value) }} className="form-control" placeholder="Wprowadź hasło" />
-		</div>
-		{ (loggingIn) ?
-			<div className='form-group mt-5 justify-content-center text-center'><Spinner animation="border" /></div>
-			:
-			<div className='form-group mt-3'>
-				<button type="submit" className="btn btn-primary mt-3 col-12" onClick={() => {setLoggingIn(true); doLogin({ variables: { email, password } })}}>Zaloguj</button>
-				<button type="submit" className="btn btn-secondary mt-3 col-12" onClick={setRegistering}>Rejestracja</button>
+		<>
+			<h2 className="text-center p-2">Logowanie</h2>
+			<div className="form-group mt-3">
+				<label>Email</label>
+				<input type="email" value={email} onChange={(e) => { setEmail(e.target.value) }} className="form-control" placeholder="Wprowadź email" />
 			</div>
-		}
-	</>);
+			<div className="form-group mt-3">
+				<label>Hasło</label>
+				<input type="password" value={password} onChange={(e) => { setPassword(e.target.value) }} className="form-control" placeholder="Wprowadź hasło" />
+			</div>
+			{error ? <div className="alert alert-danger mt-3 text-center">{error}</div> : null}
+			{(userLoading || loading) ?
+				<div className='form-group mt-5 justify-content-center text-center'><Spinner animation="border" /></div>
+				:
+				<div className='form-group mt-3'>
+					<button type="submit" className="btn btn-primary mt-3 col-12" onClick={submit}>Zaloguj</button>
+					<button type="submit" className="btn btn-secondary mt-3 col-12" onClick={setRegistering}>Rejestracja</button>
+				</div>
+			}
+		</>);
 }
 
 export default LoginForm;

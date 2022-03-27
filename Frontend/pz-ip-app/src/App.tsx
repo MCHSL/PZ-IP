@@ -27,7 +27,7 @@ function App()
 	});
 
 	const httpLink = createHttpLink({
-		uri: "http://localhost/graphql",
+		uri: "http://localhost/graphql/",
 	});
 
 	const client = new ApolloClient({

@@ -6,6 +6,9 @@ from graphql_jwt.decorators import staff_member_required, login_required, superu
 from .models import Paste
 import graphene_django_optimizer as gql_optimizer
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class UserType(gql_optimizer.OptimizedDjangoObjectType):
@@ -23,12 +26,17 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
 	@gql_optimizer.resolver_hints(model_field='pastes')
 	def resolve_pastes(self, info, skip, take):
 		if skip is None and take is None:
+			logging.debug(f"returning all pastes for user {self}")
 			return self.pastes.all().order_by('-created_at')
 		else:
+			logging.debug(
+			    f"returning paginated pastes for user {self}: skip={skip}, take={take}"
+			)
 			return self.pastes.all().order_by('-created_at')[skip:skip + take]
 
 	@gql_optimizer.resolver_hints(model_field='pastes')
 	def resolve_paste_count(self, info):
+		logger.debug("returning paste count")
 		return self.pastes.count()
 
 
@@ -47,26 +55,34 @@ class UserQuery(graphene.ObjectType):
 	                      description="Look up user by ID or username")
 
 	def resolve_user_count(self, info):
+		logger.debug("returning user count")
 		return get_user_model().objects.count()
 
 	@staff_member_required
 	def resolve_users(self, info, skip, take):
 		if skip is None and take is None:
+			logging.debug("returning all users")
 			return get_user_model().objects.all().order_by('id')
 		else:
+			logging.debug(
+			    f"returning paginated users: skip={skip}, take={take}")
 			return get_user_model().objects.all().order_by('id')[skip:skip +
 			                                                     take]
 
 	def resolve_user(self, info, id=None, username=None):
 		if id is not None:
+			logging.debug(f"returning user by id: {id}")
 			return get_user_model().objects.get(pk=id)
 		elif username is not None:
+			logging.debug(f"returning user by username: {username}")
 			return get_user_model().objects.get(username=username)
 		else:
+			logging.warn("No user id or username provided")
 			raise Exception("Must specify id or username")
 
 	@login_required
 	def resolve_me(self, info):
+		logging.debug("returning current user")
 		return info.context.user
 
 
@@ -88,6 +104,8 @@ class CreateUser(graphene.Mutation):
 		)
 		user.set_password(password)
 		user.save()
+
+		logging.info(f"Created user '{user}' with email '{email}'")
 
 		return CreateUser(user=user)
 
@@ -114,6 +132,10 @@ class UpdateUser(graphene.Mutation):
 			user.is_staff = is_staff
 		user.save()
 
+		logging.info(
+		    f"Updated user '{user}': username='{username}', email='{email}', is_staff='{is_staff}'"
+		)
+
 		return UpdateUser(user=user)
 
 
@@ -130,6 +152,9 @@ class DeleteUser(graphene.Mutation):
 		print("deleting user with id: " + str(id))
 		user = get_user_model().objects.get(pk=id)
 		user.delete()
+
+		logging.info(f"Deleted user '{user}'")
+
 		return DeleteUser(ok=True)
 
 
@@ -147,10 +172,11 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
 
 
 class PasteQuery(graphene.ObjectType):
-	pastes = graphene.List(PasteType,
-	                       description="A list of all pastes in the database",
-						   	skip=graphene.Int(description="Skip n items when paginating"),
-	    					take=graphene.Int(description="Take n items when paginating"))
+	pastes = graphene.List(
+	    PasteType,
+	    description="A list of all pastes in the database",
+	    skip=graphene.Int(description="Skip n items when paginating"),
+	    take=graphene.Int(description="Take n items when paginating"))
 	paste = graphene.Field(PasteType,
 	                       id=graphene.Int(required=True),
 	                       description="Look up paste by ID")
@@ -160,14 +186,20 @@ class PasteQuery(graphene.ObjectType):
 	@gql_optimizer.resolver_hints(model_field='pastes')
 	def resolve_pastes(self, info, skip, take):
 		if skip is None and take is None:
+			logging.debug("returning all pastes")
 			return Paste.objects.all().order_by('-created_at')
 		else:
-			return Paste.objects.all().order_by('-created_at')[skip:skip + take]
+			logging.debug(
+			    f"returning paginated pastes: skip={skip}, take={take}")
+			return Paste.objects.all().order_by('-created_at')[skip:skip +
+			                                                   take]
 
 	def resolve_paste(self, info, id):
+		logging.debug(f"returning paste by id: {id}")
 		return Paste.objects.get(pk=id)
 
 	def resolve_paste_count(self, info):
+		logging.debug("returning paste count")
 		return Paste.objects.count()
 
 
@@ -188,6 +220,9 @@ class CreatePaste(graphene.Mutation):
 		    content=content,
 		)
 		paste.save()
+
+		logging.info(f"Created paste '{paste}' by user '{info.context.user}'")
+
 		return CreatePaste(paste=paste)
 
 
@@ -209,6 +244,13 @@ class UpdatePaste(graphene.Mutation):
 		paste.title = title
 		paste.content = content
 		paste.save()
+
+		content = content[:15] + "..." if len(content) > 15 else content
+
+		logging.info(
+		    f"Updated paste '{paste}' by user '{info.context.user}': title='{title}', content='{content}'"
+		)
+
 		return UpdatePaste(paste=paste)
 
 
@@ -225,7 +267,13 @@ class DeletePaste(graphene.Mutation):
 		paste = Paste.objects.get(pk=id)
 		if info.context.user != paste.author and not info.context.user.is_staff:
 			raise Exception("You do not have permission to delete this paste")
+
+		logging.info(
+		    f"User '{info.context.user}' deleted paste '{paste}' by user '{paste.author}'"
+		)
+
 		paste.delete()
+
 		return DeletePaste(ok=True)
 
 

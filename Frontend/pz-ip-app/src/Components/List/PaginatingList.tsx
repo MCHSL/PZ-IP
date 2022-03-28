@@ -43,7 +43,7 @@ const PaginatingList = ({ children, visible, totalItems, page, setPage, itemsPer
 
 					{editingPage ?
 						<Pagination.Item>
-							<span><input autoFocus ref={pageInputRef} onKeyUp={(e) => { return e.key === "Enter" ? selectPage() : null }} onBlur={selectPage} type="text" placeholder={(page + 1).toString()} style={{ borderRadius: 5, zIndex: 1000 }} /></span>
+							<span><input autoFocus ref={pageInputRef} onKeyUp={(e) => { return e.key === "Enter" ? selectPage() : null }} onBlur={selectPage} type="text" placeholder={(page + 1).toString()} style={{ zIndex: 1000, display: "inline", height: "1.5em", width: "5em", textAlign: "right", border: "1px solid whitesmoke" }} /></span>
 							<span>{"/" + last_page}</span>
 						</Pagination.Item> :
 						<Pagination.Item style={{ whiteSpace: "pre-wrap" }} onClick={() => setEditingPage(true)}>{(page + 1).toString().padStart((last_page.toString().length - (page + 1).toString().length), ' ') + " / " + last_page}</Pagination.Item>

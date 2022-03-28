@@ -1,12 +1,9 @@
-import { Button, Card, ListGroup, Table } from "react-bootstrap";
+import { Table } from "react-bootstrap";
 import { useUser } from "../Context/CurrentUserContext";
 import PasteRow from "./PasteRow";
 import { useState } from "react";
-import PaginableList from "../List/PaginatingList";
+import PaginatingList from "../List/PaginatingList";
 import { getPasteTitlesPaginated } from "../../Queries/PaginatingQuery";
-import Countdown from 'react-countdown';
-import { useApolloClient } from "@apollo/client";
-import { get_paste } from "../../Queries/queries";
 
 interface PasteInfo
 {
@@ -25,7 +22,6 @@ interface Props
 
 const PasteList = ({ currentUserOnly }: Props) =>
 {
-	const client = useApolloClient();
 	const [page, setPage] = useState(0);
 	const [itemsPerPage, setItemsPerPage] = useState(10);
 	const { userLoading, user } = useUser();
@@ -54,7 +50,7 @@ const PasteList = ({ currentUserOnly }: Props) =>
 	const pastes = (currentUserOnly ? data?.user?.pastes : data?.pastes) ?? [];
 
 	return (
-		<PaginableList visible={!!data} totalItems={currentUserOnly ? data?.user?.pasteCount : data?.pasteCount} page={page} setPage={setPage} itemsPerPage={itemsPerPage} setItemsPerPage={setItemsPerPage}>
+		<PaginatingList visible={!!data} totalItems={currentUserOnly ? data?.user?.pasteCount : data?.pasteCount} page={page} setPage={setPage} itemsPerPage={itemsPerPage} setItemsPerPage={setItemsPerPage}>
 			<Table striped hover size="sm">
 				<thead>
 					<tr>
@@ -74,7 +70,7 @@ const PasteList = ({ currentUserOnly }: Props) =>
 					})}
 				</tbody>
 			</Table>
-		</PaginableList >)
+		</PaginatingList >)
 }
 
 export default PasteList;

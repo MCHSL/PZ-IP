@@ -12,6 +12,7 @@ import CreatePaste from "./Components/Paste/CreatePaste";
 import ProfilePage from "./Components/Profile/ProfilePage";
 import Menu from "./Components/Menu/Menu";
 import AllPastes from "./Components/Paste/AllPastes";
+import CurrentUserProfilePage from "./Components/Profile/CurrentUserProfilePage";
 
 function App()
 {
@@ -46,7 +47,8 @@ function App()
 						<Route path="/users" element={<UserList />}></Route>
 						<Route path="/paste/:id" element={<PasteIndex />}></Route>
 						<Route path="/paste/new" element={<CreatePaste />}></Route>
-						<Route path="/profile" element={<ProfilePage />} />
+						<Route path="/profile/:id" element={<ProfilePage />} />
+						<Route path="/profile" element={<CurrentUserProfilePage />} />
 						<Route path="/pastes" element={<AllPastes />}></Route>
 					</Routes>
 				</Router>

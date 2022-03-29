@@ -23,7 +23,7 @@ class Paste(models.Model):
 	                           related_name="pastes")
 	title = models.CharField(max_length=30)
 	content = models.TextField()
-	created_at = models.DateTimeField(auto_now_add=True)
+	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	private = models.BooleanField(default=False)
 

@@ -5,32 +5,38 @@ import { useState } from "react";
 import PaginatingList from "../List/PaginatingList";
 import { getPasteTitlesPaginated } from "../../Queries/PaginatingQuery";
 
-interface PasteInfo
-{
-	id: Number,
-	title: string,
-	author: any,
-	createdAt: Date,
-	updatedAt: Date,
-	isPrivate: boolean,
+interface PasteInfo {
+  id: Number;
+  title: string;
+  author: any;
+  createdAt: Date;
+  updatedAt: Date;
+  isPrivate: boolean;
 }
 
-interface Props
-{
-	currentUserOnly: boolean
+interface Props {
+  currentUserOnly: boolean;
 }
 
-const PasteList = ({ currentUserOnly }: Props) =>
-{
-	const [page, setPage] = useState(0);
-	const [itemsPerPage, setItemsPerPage] = useState(10);
-	const { userLoading, user } = useUser();
-	const { previousData, data = previousData, refetch } = getPasteTitlesPaginated(currentUserOnly ? Number(user?.id) : null, page, itemsPerPage, userLoading);
+const PasteList = ({ currentUserOnly }: Props) => {
+  const [page, setPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const { userLoading, user } = useUser();
+  const {
+    previousData,
+    data = previousData,
+    refetch,
+  } = getPasteTitlesPaginated(
+    currentUserOnly ? Number(user?.id) : null,
+    page,
+    itemsPerPage,
+    userLoading
+  );
 
-	console.log("rendering list");
+  console.log("rendering list");
 
-	//let message = null;
-	/*if (loading && !previousData)
+  //let message = null;
+  /*if (loading && !previousData)
 	{
 		message =
 			(<div>
@@ -47,30 +53,46 @@ const PasteList = ({ currentUserOnly }: Props) =>
 			</div>)
 	}*/
 
-	const pastes = (currentUserOnly ? data?.user?.pastes : data?.pastes) ?? [];
+  const pastes = (currentUserOnly ? data?.user?.pastes : data?.pastes) ?? [];
 
-	return (
-		<PaginatingList visible={!!data} totalItems={currentUserOnly ? data?.user?.pasteCount : data?.pasteCount} page={page} setPage={setPage} itemsPerPage={itemsPerPage} setItemsPerPage={setItemsPerPage}>
-			<Table striped hover size="sm">
-				<thead>
-					<tr>
-						<th className="text-muted col-5">Tytuł</th>
-						<th className="text-muted col-4">Utworzona</th>
-						<th className="text-muted col-4">Zmieniona</th>
-						<th className="text-muted col-4">Prywatna</th>
-						<th className="text-muted col-4"></th>
-					</tr>
-				</thead>
-				<tbody>
-					{pastes.map((paste: PasteInfo) =>
-					{
-						return (
-							<PasteRow key={paste.id.toString()} id={paste.id} title={paste.title} author={paste.author} createdAt={paste.createdAt} updatedAt={paste.updatedAt} isPrivate={paste.isPrivate} refetch={refetch} />
-						);
-					})}
-				</tbody>
-			</Table>
-		</PaginatingList >)
-}
+  return (
+    <PaginatingList
+      visible={!!data}
+      totalItems={currentUserOnly ? data?.user?.pasteCount : data?.pasteCount}
+      page={page}
+      setPage={setPage}
+      itemsPerPage={itemsPerPage}
+      setItemsPerPage={setItemsPerPage}
+    >
+      <Table striped hover size="sm">
+        <thead>
+          <tr>
+            <th className="text-muted col-5">Tytuł</th>
+            <th className="text-muted col-4">Utworzona</th>
+            <th className="text-muted col-4">Zmieniona</th>
+            <th className="text-muted col-4">Prywatna</th>
+            <th className="text-muted col-4"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {pastes.map((paste: PasteInfo) => {
+            return (
+              <PasteRow
+                key={paste.id.toString()}
+                id={paste.id}
+                title={paste.title}
+                author={paste.author}
+                createdAt={paste.createdAt}
+                updatedAt={paste.updatedAt}
+                isPrivate={paste.isPrivate}
+                refetch={refetch}
+              />
+            );
+          })}
+        </tbody>
+      </Table>
+    </PaginatingList>
+  );
+};
 
 export default PasteList;

@@ -15,6 +15,7 @@ export const CreateUserModal = ({ isVisible, setVisible, refetch }: Props) =>
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 
+
 	return (
 		<RefreshingModal
 			isVisible={isVisible}
@@ -28,6 +29,7 @@ export const CreateUserModal = ({ isVisible, setVisible, refetch }: Props) =>
 			<div className="form-group mt-3">
 				<label htmlFor="exampleInputEmail1">Email</label>
 				<input type="email" className="form-control" placeholder="jan.kowalski@wp.pl" onChange={(e) => setEmail(e.target.value)} required />
+
 			</div>
 			<div className="form-group mt-3">
 				<label htmlFor="exampleInputPassword1">Nazwa użytkownika</label>

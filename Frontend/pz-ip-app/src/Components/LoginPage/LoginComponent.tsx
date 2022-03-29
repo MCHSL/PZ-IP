@@ -15,7 +15,7 @@ const LoginForm = ({ setRegistering }: Props) =>
 {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [error, setError] = useState("");
+	const [isValid, setIsValid] = useState("");
 	const { user, userLoading, refetchUser } = useUser();
 	const [loggingIn, setLoggingIn] = useState(false);
 	const location = useLocation();
@@ -30,13 +30,17 @@ const LoginForm = ({ setRegistering }: Props) =>
 		onError: (error) =>
 		{
 			setLoggingIn(false);
-			setError(error.message);
+			if(error.message.includes("Please"))
+			{
+				setIsValid("Podaj poprawne dane logowania\n")
+			}
+			console.log(error);
 		}
 	});
 
 	function submit()
 	{
-		setError("");
+		setIsValid("");
 		setLoggingIn(true);
 		doLogin({ variables: { email, password } });
 	}
@@ -52,7 +56,7 @@ const LoginForm = ({ setRegistering }: Props) =>
 				<label>Hasło</label>
 				<input type="password" value={password} onChange={(e) => { setPassword(e.target.value) }} className="form-control" placeholder="Wprowadź hasło" />
 			</div>
-			{error ? <div className="alert alert-danger mt-3 text-center">{error}</div> : null}
+			{isValid !== "" ? <div className="alert alert-danger mt-3 text-center">{isValid}</div> : null}
 			{(loggingIn) ?
 				<div className='form-group mt-5 justify-content-center text-center'>
 					<Spinner animation="border" />

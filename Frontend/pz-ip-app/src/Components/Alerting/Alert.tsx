@@ -9,18 +9,7 @@ export const Alerting: React.FC<Props> = (props) => {
   const [isOn, setIsOn] = useState(true);
   if (props.alerts[0] != "" && isOn) {
     return (
-      <>
-        <Alert
-          variant="danger"
-          onClose={() => {
-            setIsOn(false);
-          }}
-          dismissible
-        >
-          <Alert.Heading>{props.alerts[0]}</Alert.Heading>
-          <span>{props.alerts[1]}</span>
-        </Alert>
-      </>
+      <span>{props.alerts[1]}</span>
     );
   } else if (!isOn) {
     setIsOn(true);

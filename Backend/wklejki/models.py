@@ -14,7 +14,7 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ["username", "password"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.username + " (" + str(self.id) + ")"
 
 
@@ -28,5 +28,5 @@ class Paste(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     private = models.BooleanField(default=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title + " (" + str(self.id) + ")"

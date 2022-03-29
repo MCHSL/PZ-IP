@@ -22,7 +22,8 @@ from django.utils.encoding import force_str
 # 3rd-Party
 import environ
 
-django.utils.encoding.force_text = force_str  # https://stackoverflow.com/a/70833150
+# https://stackoverflow.com/a/70833150
+django.utils.encoding.force_text = force_str  # type: ignore
 
 env = environ.Env(
     # set casting, default value

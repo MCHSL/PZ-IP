@@ -33,7 +33,9 @@ repos:
         args: [--config-file=backend/pyproject.toml, backend/]
         types: [python]
         exclude: ^frontend/
-        additional_dependencies: [tokenize-rt==3.2.0]
+        additional_dependencies: [tokenize-rt==3.2.0, django-stubs==1.10.1, django-environ==0.8.1,
+                                  graphene-django==3.0.0b7, django-filter==21.1, django-cors-headers==3.11.0,
+                                  psycopg2==2.9.3]
         pass_filenames: false
 - repo: https://github.com/pycqa/isort
   rev: 5.10.1

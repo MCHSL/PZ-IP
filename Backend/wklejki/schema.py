@@ -1,14 +1,17 @@
 # Standard Library
 import logging
+from typing import Union
 
 # Django
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import BaseUserManager
 from django.db.models import Q
+from django.db.models.query import QuerySet
 
 # 3rd-Party
 import graphene
 import graphene_django_optimizer as gql_optimizer
+from graphene import ResolveInfo
 from graphql_jwt.decorators import (
     login_required,
     staff_member_required,
@@ -16,7 +19,7 @@ from graphql_jwt.decorators import (
 )
 
 # Local
-from .models import Paste
+from .models import CustomUser, Paste
 
 logger = logging.getLogger()
 
@@ -35,7 +38,9 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
     paste_count = graphene.Int(description="Total number of pastes")
 
     @gql_optimizer.resolver_hints(model_field='pastes')
-    def resolve_pastes(self, info, skip, take):
+    def resolve_pastes(
+        self, info: ResolveInfo, skip: int, take: int
+    ) -> QuerySet[Paste]:
         if info.context.user == self:
             logger.debug(f"Resolving public+private pastes for user '{self}'")
             pastes = self.pastes.all().order_by('-created_at')
@@ -53,7 +58,7 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
             return pastes[skip : skip + take]
 
     @gql_optimizer.resolver_hints(model_field='pastes')
-    def resolve_paste_count(self, info):
+    def resolve_paste_count(self, info: ResolveInfo) -> int:
         logger.debug("returning paste count")
         if info.context.user == self:
             return self.pastes.count()
@@ -78,12 +83,14 @@ class UserQuery(graphene.ObjectType):
         description="Look up user by ID or username",
     )
 
-    def resolve_user_count(self, info):
+    def resolve_user_count(self) -> int:
         logger.debug("returning user count")
         return get_user_model().objects.count()
 
     @staff_member_required
-    def resolve_users(self, info, skip, take):
+    def resolve_users(
+        self, info: ResolveInfo, skip: int, take: int
+    ) -> QuerySet[CustomUser]:
         if skip is None and take is None:
             logging.debug("returning all users")
             return get_user_model().objects.all().order_by('id')
@@ -91,7 +98,12 @@ class UserQuery(graphene.ObjectType):
             logging.debug(f"returning paginated users: skip={skip}, take={take}")
             return get_user_model().objects.all().order_by('id')[skip : skip + take]
 
-    def resolve_user(self, info, id=None, username=None):
+    def resolve_user(
+        self,
+        info: ResolveInfo,
+        id: Union[int, None] = None,
+        username: Union[str, None] = None,
+    ) -> CustomUser:
         if id is not None:
             logging.debug(f"returning user by id: {id}")
             return get_user_model().objects.get(pk=id)
@@ -103,7 +115,7 @@ class UserQuery(graphene.ObjectType):
             raise Exception("Must specify id or username")
 
     @login_required
-    def resolve_me(self, info):
+    def resolve_me(self, info: ResolveInfo) -> CustomUser:
         logging.debug("returning current user")
         return info.context.user
 
@@ -118,7 +130,9 @@ class CreateUser(graphene.Mutation):
         password = graphene.String(required=True)
         email = graphene.String(required=True)
 
-    def mutate(self, info, username, password, email):
+    def mutate(
+        self, info: ResolveInfo, username: str, password: str, email: str
+    ) -> "CreateUser":
         if not username or not password or not email:
             raise Exception("Missing required fields")
         user = get_user_model()(
@@ -145,7 +159,14 @@ class UpdateUser(graphene.Mutation):
         is_staff = graphene.Boolean(description="New staff status (optional)")
 
     @superuser_required
-    def mutate(self, info, id, username=None, email=None, is_staff=None):
+    def mutate(
+        self,
+        info: ResolveInfo,
+        id: int,
+        username: Union[str, None] = None,
+        email: Union[str, None] = None,
+        is_staff: Union[bool, None] = None,
+    ) -> "UpdateUser":
         user = get_user_model().objects.get(pk=id)
         if username is not None:
             user.username = username
@@ -172,7 +193,7 @@ class DeleteUser(graphene.Mutation):
         id = graphene.Int(required=True, description="ID of the user to delete")
 
     @staff_member_required
-    def mutate(self, info, id):
+    def mutate(self, info: ResolveInfo, id: int) -> "DeleteUser":
         print("deleting user with id: " + str(id))
         user = get_user_model().objects.get(pk=id)
         user.delete()
@@ -209,7 +230,9 @@ class PasteQuery(graphene.ObjectType):
     paste_count = graphene.Int(description="Total number of pastes")
 
     @gql_optimizer.resolver_hints(model_field='pastes')
-    def resolve_pastes(self, info, skip, take):
+    def resolve_pastes(
+        self, info: ResolveInfo, skip: int, take: int
+    ) -> QuerySet[Paste]:
         if info.context.user.is_authenticated:
             pastes = (
                 Paste.objects.all()
@@ -228,18 +251,18 @@ class PasteQuery(graphene.ObjectType):
             logger.debug(f"returning paginated pastes: skip={skip}, take={take}")
             return pastes[skip : skip + take]
 
-    def resolve_paste(self, info, id):
+    def resolve_paste(self, info: ResolveInfo, id: int) -> Paste:
         logging.debug(f"returning paste by id: {id}")
         paste = Paste.objects.get(pk=id)
         if paste.private and (
             not info.context.user.is_authenticated
             or (paste.author != info.context.user)
         ):
-            raise Paste.DoesNotExist("Paste matching query does not exist.")
+            raise Paste.DoesNotExist("Paste matching query does not exist")
 
         return paste
 
-    def resolve_paste_count(self, info):
+    def resolve_paste_count(self, info: ResolveInfo) -> int:
         logging.debug("returning paste count")
         if info.context.user.is_authenticated:
             return Paste.objects.filter(
@@ -260,7 +283,9 @@ class CreatePaste(graphene.Mutation):
         private = graphene.Boolean(required=True)
 
     @login_required
-    def mutate(self, info, title, content, private):
+    def mutate(
+        self, info: ResolveInfo, title: str, content: str, private: bool
+    ) -> "CreatePaste":
         paste = Paste(
             author=info.context.user, title=title, content=content, private=private
         )
@@ -287,7 +312,9 @@ class UpdatePaste(graphene.Mutation):
         private = graphene.Boolean(required=True)
 
     @login_required
-    def mutate(self, info, id, title, content, private):
+    def mutate(
+        self, info: ResolveInfo, id: int, title: str, content: str, private: bool
+    ) -> "UpdatePaste":
         paste = Paste.objects.get(pk=id)
         if info.context.user != paste.author:
             raise Exception("You are not the author of this paste")
@@ -315,7 +342,7 @@ class DeletePaste(graphene.Mutation):
         id = graphene.Int(required=True)
 
     @login_required
-    def mutate(self, info, id):
+    def mutate(self, info: ResolveInfo, id: int) -> "DeletePaste":
         paste = Paste.objects.get(pk=id)
         if info.context.user != paste.author and not info.context.user.is_staff:
             raise Exception("You do not have permission to delete this paste")

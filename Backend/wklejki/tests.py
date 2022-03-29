@@ -6,7 +6,7 @@ from graphene_django.utils.testing import GraphQLTestCase
 
 
 class AuthenticationTests(GraphQLTestCase):
-    def test_registration_and_login(self):
+    def test_registration_and_login(self) -> None:
         response = self.query(
             '''
             mutation {

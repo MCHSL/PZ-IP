@@ -8,40 +8,81 @@ import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PasteInfo } from "../../Types";
 
-interface Props
-{
-	paste: PasteInfo,
-	refetch: () => {}
+interface Props {
+  paste: PasteInfo;
+  refetch: () => {};
 }
 
-const PasteRow = ({ paste, refetch }: Props) =>
-{
-	const navigate = useNavigate();
-	const [isDeleteVisible, setDeleteVisible] = useState<boolean>(false);
-	const formattedCreatedAt = DateTime.fromJSDate(new Date(paste.createdAt)).toFormat("yyyy-MM-dd HH:mm");
-	const formattedUpdatedAt = DateTime.fromJSDate(new Date(paste.updatedAt)).toFormat("yyyy-MM-dd HH:mm");
-	const { user } = useUser();
-	const location = useLocation();
+const PasteRow = ({ paste, refetch }: Props) => {
+  const navigate = useNavigate();
+  const [isDeleteVisible, setDeleteVisible] = useState<boolean>(false);
+  const formattedCreatedAt = DateTime.fromJSDate(
+    new Date(paste.createdAt)
+  ).toFormat("yyyy-MM-dd HH:mm");
+  const formattedUpdatedAt = DateTime.fromJSDate(
+    new Date(paste.updatedAt)
+  ).toFormat("yyyy-MM-dd HH:mm");
+  const { user } = useUser();
+  const location = useLocation();
 
-	return (
-		<>
-			<DeletePasteModal id={paste.id} pasteTitle={paste.title} isVisible={isDeleteVisible} setVisible={setDeleteVisible} refetch={refetch} />
-			<tr>
-				<td ><Button variant="link" onClick={() => navigate(`/paste/${paste.id}`, { state: { returnTo: location.pathname } })}>{paste.title}</Button></td>
-				<td className="text-muted" style={{ verticalAlign: "middle" }}>{formattedCreatedAt}</td>
-				<td className="text-muted" style={{ verticalAlign: "middle" }}>{formattedUpdatedAt}</td>
-				<td className="text-muted" style={{ verticalAlign: "middle" }}>{paste.author.username}</td>
-				<td className="text-muted" style={{ verticalAlign: "middle", textAlign: "center" }}>
-					<Form.Check
-						type="checkbox"
-						checked={paste.isPrivate}
-						disabled
-					/>
-				</td>
-				{(user && (user?.isStaff || user.id === paste.author.id)) ? <td><button className='btn btn-danger' onClick={() => { setDeleteVisible(true) }} >Usuń<FontAwesomeIcon style={{ marginLeft: "5px" }} icon={solid('trash-can')} /></button></td> : <td></td>}
-			</tr>
-		</>
-	);
+  return (
+    <>
+      <DeletePasteModal
+        id={paste.id}
+        pasteTitle={paste.title}
+        isVisible={isDeleteVisible}
+        setVisible={setDeleteVisible}
+        refetch={refetch}
+      />
+      <tr>
+        <td>
+          <Button
+            variant="link"
+            onClick={() =>
+              navigate(`/paste/${paste.id}`, {
+                state: { returnTo: location.pathname },
+              })
+            }
+          >
+            {paste.title}
+          </Button>
+        </td>
+        <td className="text-muted" style={{ verticalAlign: "middle" }}>
+          {formattedCreatedAt}
+        </td>
+        <td className="text-muted" style={{ verticalAlign: "middle" }}>
+          {formattedUpdatedAt}
+        </td>
+        <td className="text-muted" style={{ verticalAlign: "middle" }}>
+          {paste.author.username}
+        </td>
+        <td
+          className="text-muted"
+          style={{ verticalAlign: "middle", textAlign: "center" }}
+        >
+          <Form.Check type="checkbox" checked={paste.isPrivate} disabled />
+        </td>
+        {user && (user?.isStaff || user.id === paste.author.id) ? (
+          <td>
+            <button
+              className="btn btn-danger"
+              onClick={() => {
+                setDeleteVisible(true);
+              }}
+            >
+              Usuń
+              <FontAwesomeIcon
+                style={{ marginLeft: "5px" }}
+                icon={solid("trash-can")}
+              />
+            </button>
+          </td>
+        ) : (
+          <td></td>
+        )}
+      </tr>
+    </>
+  );
 };
 
 export default PasteRow;

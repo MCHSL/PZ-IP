@@ -14,47 +14,45 @@ import Menu from "./Components/Menu/Menu";
 import AllPastes from "./Components/Paste/AllPastes";
 import CurrentUserProfilePage from "./Components/Profile/CurrentUserProfilePage";
 
-function App()
-{
-	const authLink = setContext((_, { headers }) =>
-	{
-		const token = localStorage.getItem("token");
-		return {
-			headers: {
-				...headers,
-				authorization: token ? `JWT ${token}` : "",
-			},
-		};
-	});
+function App() {
+  const authLink = setContext((_, { headers }) => {
+    const token = localStorage.getItem("token");
+    return {
+      headers: {
+        ...headers,
+        authorization: token ? `JWT ${token}` : "",
+      },
+    };
+  });
 
-	const httpLink = createHttpLink({
-		uri: "http://localhost/graphql/",
-	});
+  const httpLink = createHttpLink({
+    uri: "http://localhost/graphql/",
+  });
 
-	const client = new ApolloClient({
-		cache: new InMemoryCache(),
-		link: authLink.concat(httpLink),
-	});
+  const client = new ApolloClient({
+    cache: new InMemoryCache(),
+    link: authLink.concat(httpLink),
+  });
 
-	return (
-		<ApolloProvider client={client}>
-			<UserProvider>
-				<Router>
-					<Menu />
-					<Routes>
-						<Route path="/" element={<CreatePaste />}></Route>
-						<Route path="/login" element={<LoginPage />}></Route>
-						<Route path="/users" element={<UserList />}></Route>
-						<Route path="/paste/:id" element={<PasteIndex />}></Route>
-						<Route path="/paste/new" element={<CreatePaste />}></Route>
-						<Route path="/profile/:id" element={<ProfilePage />} />
-						<Route path="/profile" element={<CurrentUserProfilePage />} />
-						<Route path="/pastes" element={<AllPastes />}></Route>
-					</Routes>
-				</Router>
-			</UserProvider>
-		</ApolloProvider >
-	);
+  return (
+    <ApolloProvider client={client}>
+      <UserProvider>
+        <Router>
+          <Menu />
+          <Routes>
+            <Route path="/" element={<CreatePaste />}></Route>
+            <Route path="/login" element={<LoginPage />}></Route>
+            <Route path="/users" element={<UserList />}></Route>
+            <Route path="/paste/:id" element={<PasteIndex />}></Route>
+            <Route path="/paste/new" element={<CreatePaste />}></Route>
+            <Route path="/profile/:id" element={<ProfilePage />} />
+            <Route path="/profile" element={<CurrentUserProfilePage />} />
+            <Route path="/pastes" element={<AllPastes />}></Route>
+          </Routes>
+        </Router>
+      </UserProvider>
+    </ApolloProvider>
+  );
 }
 
 export default App;

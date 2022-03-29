@@ -3,22 +3,19 @@ import PasteRow from "./PasteRow";
 import PaginatingList from "../../../List/PaginatingList";
 import { PasteInfo } from "../../Types";
 
-interface Props
-{
-	pastes: PasteInfo[],
-	totalItems: number,
-	page: number,
-	itemsPerPage: number,
-	setPage: (page: number) => void,
-	setItemsPerPage: (itemsPerPage: number) => void,
-	refetch: () => {},
+interface Props {
+  pastes: PasteInfo[];
+  totalItems: number;
+  page: number;
+  itemsPerPage: number;
+  setPage: (page: number) => void;
+  setItemsPerPage: (itemsPerPage: number) => void;
+  refetch: () => {};
 }
 
-const PasteList = (props: Props) =>
-{
-
-	//let message = null;
-	/*if (loading && !previousData)
+const PasteList = (props: Props) => {
+  //let message = null;
+  /*if (loading && !previousData)
 	{
 		message =
 			(<div>
@@ -35,30 +32,33 @@ const PasteList = (props: Props) =>
 			</div>)
 	}*/
 
-
-	return (
-		<PaginatingList visible={props.pastes.length > 0} {...props}>
-			<Table striped hover size="sm">
-				<thead>
-					<tr>
-						<th className="text-muted col-2">Tytuł</th>
-						<th className="text-muted col-2">Utworzona</th>
-						<th className="text-muted col-2">Zmieniona</th>
-						<th className="text-muted col-1">Autor</th>
-						<th className="text-muted col-1 text-center">Prywatna</th>
-						<th className="text-muted col-1"></th>
-					</tr>
-				</thead>
-				<tbody>
-					{props.pastes?.map((paste) =>
-					{
-						return (
-							<PasteRow key={paste.id.toString()} paste={paste} refetch={props.refetch} />
-						);
-					})}
-				</tbody>
-			</Table>
-		</PaginatingList >)
-}
+  return (
+    <PaginatingList visible={props.pastes.length > 0} {...props}>
+      <Table striped hover size="sm">
+        <thead>
+          <tr>
+            <th className="text-muted col-2">Tytuł</th>
+            <th className="text-muted col-2">Utworzona</th>
+            <th className="text-muted col-2">Zmieniona</th>
+            <th className="text-muted col-1">Autor</th>
+            <th className="text-muted col-1 text-center">Prywatna</th>
+            <th className="text-muted col-1"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {props.pastes?.map((paste) => {
+            return (
+              <PasteRow
+                key={paste.id.toString()}
+                paste={paste}
+                refetch={props.refetch}
+              />
+            );
+          })}
+        </tbody>
+      </Table>
+    </PaginatingList>
+  );
+};
 
 export default PasteList;

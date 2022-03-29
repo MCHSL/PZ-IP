@@ -1,175 +1,185 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const login = gql`
-    mutation ($email: String!, $password: String!)  {
-        tokenAuth(email: $email, password: $password) {
-            token
-        }
+  mutation ($email: String!, $password: String!) {
+    tokenAuth(email: $email, password: $password) {
+      token
     }
-	`
+  }
+`;
 
 export const get_user = gql`
-	query ($id: Int!) {
-		user(id: $id) {
-			id
-			username
-			email
-			isStaff
-			isSuperuser
-		}
-	}
-	`
+  query ($id: Int!) {
+    user(id: $id) {
+      id
+      username
+      email
+      isStaff
+      isSuperuser
+    }
+  }
+`;
 
 export const get_users = gql`
-	query($skip: Int, $take: Int) {
-		userCount
-		users(skip: $skip, take: $take) {
-			id
-			username
-			isStaff
-			email
-			dateJoined
-			isActive
-			isSuperuser
-		}
-	}
-	`
+  query ($skip: Int, $take: Int) {
+    userCount
+    users(skip: $skip, take: $take) {
+      id
+      username
+      isStaff
+      email
+      dateJoined
+      isActive
+      isSuperuser
+    }
+  }
+`;
 
 export const delete_user = gql`
-	mutation($id: Int!)  {
-		deleteUser(id: $id) {
-			ok
-		}
-	}
-	`
+  mutation ($id: Int!) {
+    deleteUser(id: $id) {
+      ok
+    }
+  }
+`;
 
 export const create_user = gql`
-	mutation($email: String!, $password: String! $username: String!)  {
-		createUser(email: $email, password: $password, username: $username) {
-			user {
-				id
-				username
-			}
-		}
-	}
-	`
+  mutation ($email: String!, $password: String!, $username: String!) {
+    createUser(email: $email, password: $password, username: $username) {
+      user {
+        id
+        username
+      }
+    }
+  }
+`;
 
 export const update_user = gql`
-	mutation($id: Int, $email: String, $username: String, $isStaff: Boolean)  {
-		updateUser(id: $id, email: $email, username: $username, isStaff: $isStaff) {
-			user {
-				id
-				username
-				email
-				isStaff
-			}
-		}
-	}
-	`
+  mutation ($id: Int, $email: String, $username: String, $isStaff: Boolean) {
+    updateUser(id: $id, email: $email, username: $username, isStaff: $isStaff) {
+      user {
+        id
+        username
+        email
+        isStaff
+      }
+    }
+  }
+`;
 
 export const get_current_user = gql`
-    query {
-        me {
-			id
-			username
-			isStaff
-			isSuperuser
-		}
-	}
-	`
+  query {
+    me {
+      id
+      username
+      isStaff
+      isSuperuser
+    }
+  }
+`;
 
 export const get_paste = gql`
-	query($id: Int!) {
-		paste(id: $id) {
-			id
-			title
-			content
-			isPrivate: private
-			author {
-				id
-				username
-			}
-		}
-	}
-	`
+  query ($id: Int!) {
+    paste(id: $id) {
+      id
+      title
+      content
+      isPrivate: private
+      author {
+        id
+        username
+      }
+    }
+  }
+`;
 
 export const update_paste = gql`
-	mutation($id: Int!, $title: String!, $content: String!, $isPrivate: Boolean!)  {
-		updatePaste(id: $id, title: $title, content: $content, private: $isPrivate) {
-				paste {
-				id
-			}
-		}
-	}
-	`
+  mutation (
+    $id: Int!
+    $title: String!
+    $content: String!
+    $isPrivate: Boolean!
+  ) {
+    updatePaste(
+      id: $id
+      title: $title
+      content: $content
+      private: $isPrivate
+    ) {
+      paste {
+        id
+      }
+    }
+  }
+`;
 
 export const create_paste = gql`
-	mutation($title: String!, $content: String!, $isPrivate: Boolean!)  {
-		createPaste(title: $title, content: $content, private: $isPrivate) {
-				paste {
-				id
-			}
-		}
-	}
-	`
+  mutation ($title: String!, $content: String!, $isPrivate: Boolean!) {
+    createPaste(title: $title, content: $content, private: $isPrivate) {
+      paste {
+        id
+      }
+    }
+  }
+`;
 
 export const delete_paste = gql`
-	mutation($id: Int!)  {
-		deletePaste(id: $id) {
-			ok
-		}
-	}
-	`
+  mutation ($id: Int!) {
+    deletePaste(id: $id) {
+      ok
+    }
+  }
+`;
 
 export const get_pastes = gql`
-	query($skip: Int, $take: Int) {
-		pasteCount
-		pastes(skip: $skip, take: $take) {
-			id
-			title
-			content
-			isPrivate: private
-			author {
-				id
-				username
-			}
-		}
-	}
-	`
+  query ($skip: Int, $take: Int) {
+    pasteCount
+    pastes(skip: $skip, take: $take) {
+      id
+      title
+      content
+      isPrivate: private
+      author {
+        id
+        username
+      }
+    }
+  }
+`;
 
 export const get_paste_titles = gql`
-	query($skip: Int, $take: Int) {
-		pasteCount
-		pastes(skip: $skip, take: $take) {
-			id
-			title
-			createdAt
-			updatedAt
-			isPrivate: private
-			author {
-				id
-				username
-			}
-		}
-	}
-	`
+  query ($skip: Int, $take: Int) {
+    pasteCount
+    pastes(skip: $skip, take: $take) {
+      id
+      title
+      createdAt
+      updatedAt
+      isPrivate: private
+      author {
+        id
+        username
+      }
+    }
+  }
+`;
 
 export const get_paste_titles_for_user = gql`
-	query($userId: Int!, $skip: Int, $take: Int) {
-		user(id: $userId) {
-			id
-			pasteCount
-			pastes(skip: $skip, take: $take) {
-				id
-				title
-				createdAt
-				updatedAt
-				isPrivate: private
-				author {
-					id
-					username
-				}
-			}
-		}
-	}
-	`
+  query ($userId: Int!, $skip: Int, $take: Int) {
+    user(id: $userId) {
+      id
+      pasteCount
+      pastes(skip: $skip, take: $take) {
+        id
+        title
+        createdAt
+        updatedAt
+        isPrivate: private
+        author {
+          id
+          username
+        }
+      }
+    }
+  }
+`;

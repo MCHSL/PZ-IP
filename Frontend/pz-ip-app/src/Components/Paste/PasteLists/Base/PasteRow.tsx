@@ -25,11 +25,12 @@ const PasteRow = ({ paste, refetch }: Props) =>
 
 	return (
 		<>
-			<DeletePasteModal id={paste.id} title={paste.title} isVisible={isDeleteVisible} setVisible={setDeleteVisible} refetch={refetch} />
+			<DeletePasteModal id={paste.id} pasteTitle={paste.title} isVisible={isDeleteVisible} setVisible={setDeleteVisible} refetch={refetch} />
 			<tr>
 				<td ><Button variant="link" onClick={() => navigate(`/paste/${paste.id}`, { state: { returnTo: location.pathname } })}>{paste.title}</Button></td>
 				<td className="text-muted" style={{ verticalAlign: "middle" }}>{formattedCreatedAt}</td>
 				<td className="text-muted" style={{ verticalAlign: "middle" }}>{formattedUpdatedAt}</td>
+				<td className="text-muted" style={{ verticalAlign: "middle" }}>{paste.author.username}</td>
 				<td className="text-muted" style={{ verticalAlign: "middle", textAlign: "center" }}>
 					<Form.Check
 						type="checkbox"
@@ -37,7 +38,7 @@ const PasteRow = ({ paste, refetch }: Props) =>
 						disabled
 					/>
 				</td>
-				{(user && (user?.isStaff || user.id === paste.author.id)) ? <td><Button variant="link" onClick={() => { setDeleteVisible(true) }}><FontAwesomeIcon icon={solid('trash-can')} /></Button></td> : <td></td>}
+				{(user && (user?.isStaff || user.id === paste.author.id)) ? <td><button className='btn btn-danger' onClick={() => { setDeleteVisible(true) }} >Usuń<FontAwesomeIcon style={{ marginLeft: "5px" }} icon={solid('trash-can')} /></button></td> : <td></td>}
 			</tr>
 		</>
 	);

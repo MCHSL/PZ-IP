@@ -1,6 +1,7 @@
 import React, { SetStateAction, useState, Dispatch } from 'react';
 import { update_user } from "./../../Queries/queries";
 import RefreshingModal from "./RefreshingModal";
+import validateEmail from './Shared';
 
 interface Props
 {
@@ -14,23 +15,70 @@ interface Props
 	refetch: () => void
 };
 
-export const EditUserModal = ({ isVisible, setVisible, refetch, id, email, username, isStaff }: Props) =>
+export const EditUserModal = ({  id, email, username, isStaff, ...rest }: Props) =>
 {
 	const [newEmail, setNewEmail] = useState(email)
 	const [newUsername, setNewUsername] = useState(username)
 	const [newIsStaff, setNewIsStaff] = useState(isStaff)
 
-	return (
-		<RefreshingModal
-			mutation={update_user}
-			mutationArgs={{ id: Number(id), email: newEmail, username: newUsername, isStaff: newIsStaff }}
-			title="Edytuj Użytkownika"
-			confirmText="Zapisz"
+	const [error, setError] = useState("")
 
-			isVisible={isVisible}
-			setVisible={setVisible}
-			refetch={refetch}
-		>
+	function validate() {
+		if (newUsername !== "" && newEmail !== "")
+		{
+			if(validateEmail(newEmail)) {
+				return true;
+			}
+			else {
+				setError("Adres jest niepoprawny\n");
+				return false;
+			}
+		}
+		else if (newUsername === "" || newEmail === "")
+		{
+			setError("Wszystkie pola musza zostać uzupełnione");
+			return false;
+		}
+		return false;
+	}
+
+	function onError(error: any) {
+		setError(error.message);
+		// temporary
+		if(error.message.includes("Missing"))
+		{
+			setError("Wszystkie pola musza zostać uzupełnione\n")
+		}
+		if(error.message.includes("wklejki_customuser_username_key"))
+		{
+			setError("Nazwa użytkownika już zajęta\n")
+		}
+		if(error.message.includes("wklejki_customuser_email_key"))
+		{
+			setError("Adres email jest już zajęty\n")
+		}
+	}
+
+	function onClosed() {
+		setError("");
+		setNewEmail(email);
+		setNewUsername(username);
+		setNewIsStaff(isStaff);
+	}
+
+	const props = {
+		mutation: update_user,
+		mutationArgs: { id: Number(id), email: newEmail, username: newUsername, isStaff: newIsStaff },
+		title: "Edytuj Użytkownika",
+		confirmText: "Zapisz",
+		validate,
+		onError,
+		onClosed,
+		...rest
+	}
+
+	return (
+		<RefreshingModal {...props}>
 			<div className="form-group mt-3">
 				<label htmlFor="exampleInputEmail1">Email</label>
 				<input type="email" className="form-control" value={newEmail} onChange={(e) => { setNewEmail(e.target.value) }} />
@@ -45,6 +93,7 @@ export const EditUserModal = ({ isVisible, setVisible, refetch, id, email, usern
 					isStaff
 				</label>
 			</div>
+			{error && <div className="alert alert-danger mt-3 text-center">{error}</div>}
 		</RefreshingModal>
 
 	);

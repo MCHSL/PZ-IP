@@ -28,7 +28,7 @@ const ProfilePage = () =>
 	const { user } = data;
 
 	return (
-		<Stack gap={3} className="col-md-5 m-auto mt-5" >
+		<Stack gap={3} className="col-md-8 m-auto mt-5" >
 			<h1>
 				Wklejki użytkownika {user.username}
 			</h1>

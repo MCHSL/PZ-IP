@@ -41,11 +41,12 @@ const PasteList = (props: Props) =>
 			<Table striped hover size="sm">
 				<thead>
 					<tr>
-						<th className="text-muted col-5">Tytuł</th>
-						<th className="text-muted col-4">Utworzona</th>
-						<th className="text-muted col-4">Zmieniona</th>
-						<th className="text-muted col-4">Prywatna</th>
-						<th className="text-muted col-4"></th>
+						<th className="text-muted col-2">Tytuł</th>
+						<th className="text-muted col-2">Utworzona</th>
+						<th className="text-muted col-2">Zmieniona</th>
+						<th className="text-muted col-1">Autor</th>
+						<th className="text-muted col-1 text-center">Prywatna</th>
+						<th className="text-muted col-1"></th>
 					</tr>
 				</thead>
 				<tbody>

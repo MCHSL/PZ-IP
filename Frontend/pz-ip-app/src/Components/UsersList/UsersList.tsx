@@ -7,6 +7,8 @@ import CurrentUser from "./CurrentUser";
 import PaginableList from "../List/PaginatingList";
 import { getUsersPaginated } from "../../Queries/PaginatingQuery";
 import { withStaff } from "../Misc/LoginRequired";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
 const UserList = () =>
 {
@@ -33,6 +35,7 @@ const UserList = () =>
 				}}
 			>
 				Dodaj użytkownika
+				<FontAwesomeIcon style={{ marginLeft: "5px" }} icon={solid('user-plus')} />
 			</button>
 			<PaginableList visible={data} totalItems={data?.userCount} page={page} setPage={setPage} itemsPerPage={itemsPerPage} setItemsPerPage={setItemsPerPage}>
 				<h2 className="text-center p-2 mt-4">Lista użytkowników</h2>

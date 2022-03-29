@@ -25,6 +25,7 @@ const ViewEditPaste = ({ id }: Props) =>
 	const [pasteContent, setPasteContent] = useState("");
 	const [pasteAuthor, setPasteAuthor] = useState<any>();
 	const [pasteIsPrivate, setPasteIsPrivate] = useState(false);
+	const [error, setError] = useState("");
 	const { user } = useUser();
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -33,13 +34,35 @@ const ViewEditPaste = ({ id }: Props) =>
 		onCompleted: () =>
 		{
 			setIsEditing(false);
+		},
+		onError: (error) =>
+		{
+			setError(error.message)
 		}
 	});
+
+	function validate() {
+		if (pasteTitle !== "" && pasteContent !== "")
+		{
+			setError("");
+			return true;
+		}
+		else if (pasteTitle === "" || pasteContent === "")
+		{
+			setError("Wszystkie pola muszą być uzupełnione");
+			return false;
+		}
+		setError("Nieznany błąd");
+		return false;
+	}
 
 	function editOrSave()
 	{
 		if (isEditing)
 		{
+			if(!validate()) {
+				return;
+			}
 			doUpdatePaste({
 				variables: {
 					id: id,
@@ -79,17 +102,18 @@ const ViewEditPaste = ({ id }: Props) =>
 				<FontAwesomeIcon style={{ marginRight: "5px" }} icon={solid('arrow-left')} />
 				Powrót
 			</Button>
+			{error ==="" ? null : <div className="alert alert-danger mt-3 text-center">{error}</div>}
 			<RenderPaste editable={isEditing} title={pasteTitle} content={pasteContent} setTitle={setPasteTitle} setContent={setPasteContent} />
-			{
-				pasteAuthor?.id === user?.id ?
+			<Form.Check
+				type="checkbox"
+				label="Prywatna"
+				checked={pasteIsPrivate}
+				onChange={(e) => setPasteIsPrivate(e.target.checked)}
+				disabled={!isEditing}
+			/>
+			{pasteAuthor?.id === user?.id ?
 					<span className="float-end d-flex flex-row align-items-baseline" style={{ gap: "10px" }} >
-						<Form.Check
-							type="checkbox"
-							label="Prywatna"
-							checked={pasteIsPrivate}
-							onChange={(e) => setPasteIsPrivate(e.target.checked)}
-							disabled={!isEditing}
-						/>
+
 						<Button className="float-end" variant="primary" onClick={editOrSave}>
 							{isEditing ?
 								<span>

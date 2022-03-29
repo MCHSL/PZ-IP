@@ -38,18 +38,18 @@
 }
 
 .pagination {
-	margin: auto;
-	justify-content: center;
+  margin: auto;
+  justify-content: center;
 }
 
 .pagination > li {
-	text-align: center;
+  text-align: center;
 }
 
 .paste-delete-button {
-	text-decoration: none !important;
-	color: rgb(230, 0, 0) !important;
-	font-weight: bold !important;
+  text-decoration: none !important;
+  color: rgb(230, 0, 0) !important;
+  font-weight: bold !important;
 }
 
 .btn-primary {
@@ -70,7 +70,7 @@
   border-color: #a2a4a8 !important;
 }
 
-.btn-info{
+.btn-info {
   background-color: #3a3af8 !important;
   border-color: #3a3af8 !important;
   color: #fff !important;
@@ -84,4 +84,9 @@
 .dropdown-item:active {
   background-color: #40444d !important;
   border-color: #40444d !important;
+}
+
+.form-check-input:checked {
+  background-color: #282c34 !important;
+  border-color: #282c34 !important;
 }

@@ -1,6 +1,6 @@
 # Standard Library
 import logging
-from typing import Union
+from typing import Optional
 
 # Django
 from django.contrib.auth import get_user_model
@@ -71,8 +71,8 @@ class UserQuery(graphene.ObjectType):
     users = graphene.List(
         UserType,
         description="A list of all users in the database",
-        skip=graphene.Int(description="Skip n items when paginating"),
-        take=graphene.Int(description="Take n items when paginating"),
+        skip=graphene.Int(required=True, description="Skip n items when paginating"),
+        take=graphene.Int(required=True, description="Take n items when paginating"),
     )
 
     me = graphene.Field(UserType, description="The currently logged in user")
@@ -83,7 +83,7 @@ class UserQuery(graphene.ObjectType):
         description="Look up user by ID or username",
     )
 
-    def resolve_user_count(self) -> int:
+    def resolve_user_count(self, info: ResolveInfo) -> int:
         logger.debug("returning user count")
         return get_user_model().objects.count()
 
@@ -91,18 +91,17 @@ class UserQuery(graphene.ObjectType):
     def resolve_users(
         self, info: ResolveInfo, skip: int, take: int
     ) -> QuerySet[CustomUser]:
-        if skip is None and take is None:
-            logging.debug("returning all users")
-            return get_user_model().objects.all().order_by('id')
-        else:
-            logging.debug(f"returning paginated users: skip={skip}, take={take}")
-            return get_user_model().objects.all().order_by('id')[skip : skip + take]
+        if take > 100:
+            raise Exception("420 Enhance Your Calm")
+
+        logging.debug(f"returning paginated users: skip={skip}, take={take}")
+        return get_user_model().objects.all().order_by('id')[skip : skip + take]
 
     def resolve_user(
         self,
         info: ResolveInfo,
-        id: Union[int, None] = None,
-        username: Union[str, None] = None,
+        id: Optional[int] = None,
+        username: Optional[str] = None,
     ) -> CustomUser:
         if id is not None:
             logging.debug(f"returning user by id: {id}")
@@ -163,9 +162,9 @@ class UpdateUser(graphene.Mutation):
         self,
         info: ResolveInfo,
         id: int,
-        username: Union[str, None] = None,
-        email: Union[str, None] = None,
-        is_staff: Union[bool, None] = None,
+        username: Optional[str] = None,
+        email: Optional[str] = None,
+        is_staff: Optional[bool] = None,
     ) -> "UpdateUser":
         user = get_user_model().objects.get(pk=id)
         if username is not None:
@@ -233,6 +232,9 @@ class PasteQuery(graphene.ObjectType):
     def resolve_pastes(
         self, info: ResolveInfo, skip: int, take: int
     ) -> QuerySet[Paste]:
+        if take > 100:
+            raise Exception("420 Enhance Your Calm")
+
         if info.context.user.is_authenticated:
             pastes = (
                 Paste.objects.all()
@@ -244,12 +246,8 @@ class PasteQuery(graphene.ObjectType):
         else:
             pastes = Paste.objects.all().order_by('-created_at').filter(private=False)
 
-        if skip is None and take is None:
-            logger.debug("returning all pastes")
-            return pastes
-        else:
-            logger.debug(f"returning paginated pastes: skip={skip}, take={take}")
-            return pastes[skip : skip + take]
+        logger.debug(f"returning paginated pastes: skip={skip}, take={take}")
+        return pastes[skip : skip + take]
 
     def resolve_paste(self, info: ResolveInfo, id: int) -> Paste:
         logging.debug(f"returning paste by id: {id}")

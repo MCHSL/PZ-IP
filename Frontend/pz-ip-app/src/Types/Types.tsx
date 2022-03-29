@@ -1,13 +1,16 @@
 export type User = {
-  id: Number;
-  username: String;
-  email: String;
-  dateJoined: any;
-  lastLogin: any;
-  isActive: Boolean;
+  id: number;
+  username: string;
+  email: string;
+  dateJoined: Date;
+  lastLogin: Date;
+  isActive: boolean;
+  isSuperuser: boolean;
+  isStaff: boolean;
 };
+
 export type Token = {
   tokenAuth: {
-    token: String;
+    token: string;
   };
 };

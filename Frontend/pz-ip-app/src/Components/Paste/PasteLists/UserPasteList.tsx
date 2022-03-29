@@ -1,7 +1,5 @@
-import { useQuery } from "@apollo/client";
 import { useState } from "react";
 import { getPasteTitlesPaginated } from "../../../Queries/PaginatingQuery";
-import { get_paste_titles_for_user } from "../../../Queries/queries";
 import PasteList from "./Base/PasteList";
 
 interface Props {

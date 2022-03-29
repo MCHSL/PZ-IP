@@ -1,66 +1,47 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { EditUserModal } from "../Modals/EditUserModal";
 import { DeleteUserModal } from "../Modals/DeleteUserModal";
 import { DateTime } from "luxon";
-import { Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import { User } from "../../Types/Types";
 
 interface Props {
-  id: Number;
-  username: string;
-  email: string;
-  dateJoined: Date;
-  isActive: boolean;
-  isSuperuser: boolean;
-  isStaff: boolean;
+  user: User;
   refetch: () => void;
 }
 
-const UserRow: React.FC<Props> = ({
-  id,
-  username,
-  email,
-  dateJoined,
-  isActive,
-  isSuperuser,
-  isStaff,
-  refetch,
-}) => {
+const UserRow = ({ user, refetch }: Props) => {
   const [isEditVisible, setEditVisible] = useState<boolean>(false);
   const [isDeleteVisible, setDeleteVisible] = useState<boolean>(false);
 
   const formattedDateJoined = DateTime.fromJSDate(
-    new Date(dateJoined)
+    new Date(user.dateJoined)
   ).toFormat("yyyy-MM-dd HH:mm");
 
   return (
     <>
       <EditUserModal
-        id={id}
-        email={email}
-        username={username}
-        isStaff={isStaff}
+        {...user}
         isVisible={isEditVisible}
         setVisible={setEditVisible}
         refetch={refetch}
       />
       <DeleteUserModal
-        id={id}
-        username={username}
+        {...user}
         isVisible={isDeleteVisible}
         setVisible={setDeleteVisible}
         refetch={refetch}
       />
 
       <tr className="align-middle">
-        <td>{id}</td>
-        <td>{username}</td>
-        <td>{email}</td>
+        <td>{user.id}</td>
+        <td>{user.username}</td>
+        <td>{user.email}</td>
         <td>{formattedDateJoined}</td>
-        <td>{isActive ? "Tak" : "Nie"}</td>
-        <td>{isSuperuser ? "Tak" : "Nie"}</td>
-        <td>{isStaff ? "Tak" : "Nie"}</td>
+        <td>{user.isActive ? "Tak" : "Nie"}</td>
+        <td>{user.isSuperuser ? "Tak" : "Nie"}</td>
+        <td>{user.isStaff ? "Tak" : "Nie"}</td>
         <td>
           <button
             className="btn btn-info"

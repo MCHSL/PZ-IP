@@ -6,6 +6,7 @@ import { getUsersPaginated } from "../../Queries/PaginatingQuery";
 import { withStaff } from "../Misc/LoginRequired";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import { User } from "../../Types/Types";
 
 const UserList = () => {
   console.log("loading users list");
@@ -63,18 +64,8 @@ const UserList = () => {
             </tr>
           </thead>
           <tbody>
-            {data?.users.map((element: any) => (
-              <UserRow
-                key={element.id}
-                id={element.id}
-                username={element.username}
-                email={element.email}
-                dateJoined={element.dateJoined}
-                isActive={element.isActive}
-                isSuperuser={element.isSuperuser}
-                isStaff={element.isStaff}
-                refetch={refetch}
-              />
+            {data?.users.map((user: User) => (
+              <UserRow key={user.id.toString()} user={user} refetch={refetch} />
             ))}
           </tbody>
         </table>

@@ -16,12 +16,15 @@ interface Props {
 const PasteRow = ({ paste, refetch }: Props) => {
   const navigate = useNavigate();
   const [isDeleteVisible, setDeleteVisible] = useState<boolean>(false);
+
   const formattedCreatedAt = DateTime.fromJSDate(
     new Date(paste.createdAt)
   ).toFormat("yyyy-MM-dd HH:mm");
+
   const formattedUpdatedAt = DateTime.fromJSDate(
     new Date(paste.updatedAt)
   ).toFormat("yyyy-MM-dd HH:mm");
+
   const { user } = useUser();
   const location = useLocation();
 
@@ -47,21 +50,26 @@ const PasteRow = ({ paste, refetch }: Props) => {
             {paste.title}
           </Button>
         </td>
+
         <td className="text-muted" style={{ verticalAlign: "middle" }}>
           {formattedCreatedAt}
         </td>
+
         <td className="text-muted" style={{ verticalAlign: "middle" }}>
           {formattedUpdatedAt}
         </td>
+
         <td className="text-muted" style={{ verticalAlign: "middle" }}>
           {paste.author.username}
         </td>
+
         <td
           className="text-muted"
           style={{ verticalAlign: "middle", textAlign: "center" }}
         >
           <Form.Check type="checkbox" checked={paste.isPrivate} disabled />
         </td>
+
         {user && (user?.isStaff || user.id === paste.author.id) ? (
           <td>
             <button

@@ -24,8 +24,13 @@ const PaginatingList = ({ children, visible, totalItems, page, setPage, itemsPer
 	{
 		const val = pageInputRef.current?.value;
 		const new_page = val ? Number(val) - 1 : page
-		setPage(new_page);
+		if (new_page >= 0 && new_page < last_page)
+		{
+			console.log("bruhh", new_page, last_page);
+			setPage(new_page);
+		}
 		setEditingPage(false);
+
 	}
 
 	if (!visible)

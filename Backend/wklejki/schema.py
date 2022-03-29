@@ -218,7 +218,8 @@ class PasteQuery(graphene.ObjectType):
 	def resolve_paste(self, info, id):
 		logging.debug(f"returning paste by id: {id}")
 		paste = Paste.objects.get(pk=id)
-		if paste.private and not info.context.user.is_authenticated or paste.author != info.context.user:
+		if paste.private and (not info.context.user.is_authenticated or
+		                      (paste.author != info.context.user)):
 			raise Paste.DoesNotExist("Paste matching query does not exist.")
 
 		return paste
@@ -261,7 +262,7 @@ class CreatePaste(graphene.Mutation):
 
 
 class UpdatePaste(graphene.Mutation):
-	"""Updates an existing paste with new title and content"""
+	"""Updates an existing paste with new title, content, and privacy setting"""
 
 	paste = graphene.Field(PasteType)
 

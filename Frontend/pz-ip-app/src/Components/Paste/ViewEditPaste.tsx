@@ -12,6 +12,7 @@ import RenderPaste from "./RenderPaste";
 import { useLocation, useNavigate } from "react-router-dom";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Rate from "../Rating/Rate";
 
 interface Props {
   id: Number;
@@ -108,6 +109,7 @@ const ViewEditPaste = ({ id }: Props) => {
       {error === "" ? null : (
         <div className="alert alert-danger mt-3 text-center">{error}</div>
       )}
+      {!isEditing && <Rate />}
       <RenderPaste
         editable={isEditing}
         title={pasteTitle}
@@ -115,38 +117,44 @@ const ViewEditPaste = ({ id }: Props) => {
         setTitle={setPasteTitle}
         setContent={setPasteContent}
       />
-      <Form.Check
-        type="checkbox"
-        label="Prywatna"
-        checked={pasteIsPrivate}
-        onChange={(e) => setPasteIsPrivate(e.target.checked)}
-        disabled={!isEditing}
-      />
       {pasteAuthor?.id === user?.id ? (
-        <span
-          className="float-end d-flex flex-row align-items-baseline"
-          style={{ gap: "10px" }}
-        >
-          <Button className="float-end" variant="primary" onClick={editOrSave}>
-            {isEditing ? (
-              <span>
-                Zapisz
-                <FontAwesomeIcon
-                  style={{ marginLeft: "5px" }}
-                  icon={solid("floppy-disk")}
-                />
-              </span>
-            ) : (
-              <span>
-                Edytuj
-                <FontAwesomeIcon
-                  style={{ marginLeft: "5px" }}
-                  icon={solid("pen-to-square")}
-                />
-              </span>
-            )}
-          </Button>
-        </span>
+        <>
+          <Form.Check
+            type="checkbox"
+            label="Prywatna"
+            checked={pasteIsPrivate}
+            onChange={(e) => setPasteIsPrivate(e.target.checked)}
+            disabled={!isEditing}
+          />
+          <span
+            className="float-end d-flex flex-row align-items-baseline"
+            style={{ gap: "10px" }}
+          >
+            <Button
+              className="float-end"
+              variant="primary"
+              onClick={editOrSave}
+            >
+              {isEditing ? (
+                <span>
+                  Zapisz
+                  <FontAwesomeIcon
+                    style={{ marginLeft: "5px" }}
+                    icon={solid("floppy-disk")}
+                  />
+                </span>
+              ) : (
+                <span>
+                  Edytuj
+                  <FontAwesomeIcon
+                    style={{ marginLeft: "5px" }}
+                    icon={solid("pen-to-square")}
+                  />
+                </span>
+              )}
+            </Button>
+          </span>
+        </>
       ) : null}
     </>
   );

@@ -29,6 +29,8 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
         model = get_user_model()
         exclude = ['password']
 
+    id = graphene.Int()
+
     pastes = graphene.List(
         "wklejki.schema.PasteType",
         skip=graphene.Int(description="Skip n items when paginating"),
@@ -212,6 +214,7 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
     class Meta:
         model = Paste
 
+    id = graphene.Int()
     paste_count = graphene.Int(description="Total number of pastes")
 
 

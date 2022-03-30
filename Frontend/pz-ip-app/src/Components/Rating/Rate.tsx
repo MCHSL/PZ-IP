@@ -1,28 +1,50 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { useState } from "react";
-import { Stack, Button } from "react-bootstrap";
+import { useMutation } from "@apollo/client";
+import { like_paste } from "../../Queries/queries";
 
-const Rate = () => {
-  const [like, setLike] = useState(false);
-  const [likeCount, setLikeCount] = useState(1233);
-  const heartColor: string = like ? "red" : "grey";
+interface Props {
+  id: number;
+  pasteLikes: number;
+  liking: boolean;
+}
+
+const Rate = ({ id, pasteLikes, liking }: Props) => {
+  const [isLiking, setLiking] = useState(liking);
+  const [likeCount, setLikeCount] = useState(pasteLikes);
+  const heartColor: string = isLiking ? "red" : "grey";
+
+  const saved_state = { liking, likeCount };
+
+  const [doLike] = useMutation(like_paste, {
+    onError: (error) => {
+      console.log(error);
+      setLiking(saved_state.liking);
+      setLikeCount(saved_state.likeCount);
+    },
+  });
+
   function likeHandler() {
-    setLike(!like);
-    {
-      like ? setLikeCount(likeCount - 1) : setLikeCount(likeCount + 1);
+    if (isLiking) {
+      setLikeCount(likeCount - 1);
+    } else {
+      setLikeCount(likeCount + 1);
     }
+
+    setLiking(!isLiking);
+    doLike({
+      variables: {
+        id,
+        liking: !isLiking,
+      },
+    });
   }
+
   return (
     <span className="float-end mt-5 pt-1 pb-1">
       <span className="align-middle">{likeCount}</span>
-      <button
-        //variant="link"
-        className="heart-button align-middle"
-        onClick={() => {
-          likeHandler();
-        }}
-      >
+      <button className="paste-like-button align-middle" onClick={likeHandler}>
         <FontAwesomeIcon
           style={{ fontSize: "30px", color: heartColor }}
           icon={solid("heart")}

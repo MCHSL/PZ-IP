@@ -41,6 +41,7 @@ const PasteList = (props: Props) => {
             <th className="text-muted col-2">Utworzona</th>
             <th className="text-muted col-2">Zmieniona</th>
             <th className="text-muted col-1">Autor</th>
+            <th className="text-muted col-1">Lajki</th>
             <th className="text-muted col-1 text-center">Prywatna</th>
             <th className="text-muted col-1"></th>
           </tr>

@@ -1,7 +1,7 @@
 # Standard Library
 import logging
-from typing import Optional
 import re
+from typing import Optional
 
 # Django
 from django.contrib.auth import get_user_model
@@ -38,7 +38,7 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
         take=graphene.Int(description="Take n items when paginating"),
     )
 
-    paste_count = graphene.Int(description="Total number of pastes")
+    paste_count = graphene.Int(description="Total number of pastes for this user")
 
     @gql_optimizer.resolver_hints(model_field='pastes')
     def resolve_pastes(
@@ -141,7 +141,9 @@ class CreateUser(graphene.Mutation):
             raise Exception("Username contains restricted special characters")
         if not re.match("^[A-Za-z0-9._%+-]*$", password):
             raise Exception("Password contains restricted special characters")
-        if not re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
+        if not re.fullmatch(
+            r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email
+        ):
             raise Exception("Enter a valid e-mail")
         user = get_user_model()(
             username=username,
@@ -178,7 +180,9 @@ class UpdateUser(graphene.Mutation):
         user = get_user_model().objects.get(pk=id)
         if not re.match("^[A-Za-z0-9._%+-]*$", username):
             raise Exception("Username contains restricted special characters")
-        if not re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
+        if not re.fullmatch(
+            r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email
+        ):
             raise Exception("Enter a valid e-mail")
         if username is not None:
             user.username = username
@@ -226,7 +230,16 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
         model = Paste
 
     id = graphene.Int()
-    paste_count = graphene.Int(description="Total number of pastes")
+    like_count = graphene.Int(description="Number of users who like this paste")
+    is_liked = graphene.Boolean(description="Does the current user like this paste?")
+
+    def resolve_like_count(self: Paste, info: ResolveInfo) -> int:
+        return self.likers.count()
+
+    def resolve_is_liked(self: Paste, info: ResolveInfo) -> bool:
+        if info.context.user.is_authenticated:
+            return self.likers.filter(pk=info.context.user.pk).exists()
+        return False
 
 
 class PasteQuery(graphene.ObjectType):
@@ -377,10 +390,43 @@ class DeletePaste(graphene.Mutation):
         return DeletePaste(ok=True)
 
 
+class LikePaste(graphene.Mutation):
+    """Likes or unlikes a paste"""
+
+    paste = graphene.Field(PasteType)
+
+    class Arguments:
+        id = graphene.Int(required=True)
+        liking = graphene.Boolean(required=True)
+
+    @login_required
+    def mutate(self, info: ResolveInfo, id: int, liking: bool) -> Paste:
+        paste: Paste = Paste.objects.get(pk=id)
+
+        if paste.private and info.context.user != paste.author:
+            raise Paste.DoesNotExist("Paste matching query does not exist")
+
+        if liking:
+            paste.likers.add(info.context.user)
+            logging.info(
+                f"User '{info.context.user}' liked paste '{paste}'"
+                f"by user '{paste.author}' :)"
+            )
+        else:
+            paste.likers.remove(info.context.user)
+            logging.info(
+                f"User '{info.context.user}' unliked paste '{paste}'"
+                f"by user '{paste.author}' :("
+            )
+
+        return LikePaste(paste=paste)
+
+
 class PasteMutation(graphene.ObjectType):
     create_paste = CreatePaste.Field()
     update_paste = UpdatePaste.Field()
     delete_paste = DeletePaste.Field()
+    like_paste = LikePaste.Field()
 
 
 class Query(UserQuery, PasteQuery, graphene.ObjectType):

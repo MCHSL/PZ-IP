@@ -63,6 +63,10 @@ const PasteRow = ({ paste, refetch }: Props) => {
           {paste.author.username}
         </td>
 
+        <td className="text-muted" style={{ verticalAlign: "middle" }}>
+          {paste.likeCount}
+        </td>
+
         <td
           className="text-muted"
           style={{ verticalAlign: "middle", textAlign: "center" }}

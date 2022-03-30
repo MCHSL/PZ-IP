@@ -5,4 +5,6 @@ export interface PasteInfo {
   createdAt: Date;
   updatedAt: Date;
   isPrivate: boolean;
+  likeCount: number;
+  isLiked: boolean;
 }

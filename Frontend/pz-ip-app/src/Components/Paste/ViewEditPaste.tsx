@@ -77,13 +77,13 @@ const ViewEditPaste = ({ id }: Props) => {
     }
   }
 
-  useQuery(get_paste, {
+  const { data } = useQuery(get_paste, {
     variables: { id },
-    onCompleted: (data) => {
-      setPasteTitle(data.paste.title);
-      setPasteContent(data.paste.content);
-      setPasteAuthor(data.paste.author);
-      setPasteIsPrivate(data.paste.isPrivate);
+    onCompleted: (cdata) => {
+      setPasteTitle(cdata.paste.title);
+      setPasteContent(cdata.paste.content);
+      setPasteAuthor(cdata.paste.author);
+      setPasteIsPrivate(cdata.paste.isPrivate);
     },
   });
 
@@ -109,7 +109,13 @@ const ViewEditPaste = ({ id }: Props) => {
       {error === "" ? null : (
         <div className="alert alert-danger mt-3 text-center">{error}</div>
       )}
-      {!isEditing && <Rate />}
+      {!isEditing && data && (
+        <Rate
+          id={data.paste.id}
+          pasteLikes={data.paste.likeCount}
+          liking={data.paste.isLiked}
+        />
+      )}
       <RenderPaste
         editable={isEditing}
         title={pasteTitle}

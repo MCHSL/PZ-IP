@@ -22,6 +22,8 @@ class Paste(models.Model):
     author = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="pastes"
     )
+    likers = models.ManyToManyField(CustomUser, related_name="liked_pastes", blank=True)
+
     title = models.CharField(max_length=30)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

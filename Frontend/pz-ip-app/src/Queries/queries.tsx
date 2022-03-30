@@ -85,6 +85,8 @@ export const get_paste = gql`
       title
       content
       isPrivate: private
+      isLiked
+      likeCount
       author {
         id
         username
@@ -108,6 +110,9 @@ export const update_paste = gql`
     ) {
       paste {
         id
+        title
+        content
+        private
       }
     }
   }
@@ -127,6 +132,18 @@ export const delete_paste = gql`
   mutation ($id: Int!) {
     deletePaste(id: $id) {
       ok
+    }
+  }
+`;
+
+export const like_paste = gql`
+  mutation ($id: Int!, $liking: Boolean!) {
+    likePaste(id: $id, liking: $liking) {
+      paste {
+        id
+        isLiked
+        likeCount
+      }
     }
   }
 `;
@@ -155,6 +172,8 @@ export const get_paste_titles = gql`
       title
       createdAt
       updatedAt
+      likeCount
+      isLiked
       isPrivate: private
       author {
         id
@@ -175,6 +194,8 @@ export const get_paste_titles_for_user = gql`
         createdAt
         updatedAt
         isPrivate: private
+        likeCount
+        isLiked
         author {
           id
           username

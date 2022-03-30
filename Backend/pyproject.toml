@@ -40,6 +40,7 @@ sections = ["FUTURE","STDLIB","DJANGO","THIRDPARTY","FIRSTPARTY","LOCALFOLDER"]
 python_version = "3.8"
 mypy_path = "./backend"
 ignore_missing_imports = true
+ignore_missing_imports_per_module = true
 disallow_any_generics = true
 disallow_untyped_defs = true
 no_implicit_optional = true

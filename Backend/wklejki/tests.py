@@ -1,9 +1,11 @@
 # Standard Library
 import json
 
+# Django
+from django.contrib.auth import get_user_model
+
 # 3rd-Party
 from graphene_django.utils.testing import GraphQLTestCase
-from django.contrib.auth import get_user_model
 from graphql_jwt.shortcuts import get_token
 
 
@@ -32,7 +34,7 @@ class AuthenticationTests(GraphQLTestCase):
                     token
                 }
             }
-            '''
+            '''  # noqa: E501
         )
 
         json.loads(response.content)
@@ -41,7 +43,7 @@ class AuthenticationTests(GraphQLTestCase):
 
 
 class UserCrudTest(GraphQLTestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.admin = get_user_model().objects.create(
             email="admin@ad.min",
             username="admin",
@@ -61,7 +63,7 @@ class UserCrudTest(GraphQLTestCase):
                         }
                     }
                 }
-            """,
+            """,  # noqa: E501
             variables={
                 "email": "someuser@gmail.com",
                 "password": "123",
@@ -83,7 +85,7 @@ class UserCrudTest(GraphQLTestCase):
                         username
                     }
                 }
-            """,
+            """,  # noqa: E501
             variables={"id": user_id},
             headers={"HTTP_AUTHORIZATION": f"JWT {self.token}"},
         )
@@ -105,7 +107,7 @@ class UserCrudTest(GraphQLTestCase):
                         }
                     }
                 }
-            """,
+            """,  # noqa: E501
             variables={
                 "id": user_id,
                 "email": "anotheruser@gmail.com",
@@ -131,7 +133,7 @@ class UserCrudTest(GraphQLTestCase):
                         ok
                     }
                 }
-            """,
+            """,  # noqa: E501
             variables={"id": user_id},
             headers={"HTTP_AUTHORIZATION": f"JWT {self.token}"},
         )
@@ -147,7 +149,7 @@ class UserCrudTest(GraphQLTestCase):
                         id
                     }
                 }
-            """,
+            """,  # noqa: E501
             variables={"id": user_id},
             headers={"HTTP_AUTHORIZATION": f"JWT {self.token}"},
         )
@@ -155,7 +157,7 @@ class UserCrudTest(GraphQLTestCase):
 
 
 class PasteCrudTest(GraphQLTestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.user = get_user_model().objects.create(
             email="fake@email.com",
             username="test",
@@ -173,7 +175,7 @@ class PasteCrudTest(GraphQLTestCase):
                         }
                     }
                 }
-            """,
+            """,  # noqa: E501
             variables={
                 "title": "test title",
                 "content": "test content",
@@ -200,7 +202,7 @@ class PasteCrudTest(GraphQLTestCase):
                         }
                     }
                 }
-            """,
+            """,  # noqa: E501
             variables={"id": paste_id},
             headers={"HTTP_AUTHORIZATION": f"JWT {self.token}"},
         )
@@ -228,7 +230,7 @@ class PasteCrudTest(GraphQLTestCase):
                         }
                     }
                 }
-            """,
+            """,  # noqa: E501
             variables={
                 "id": paste_id,
                 "title": "updated title",
@@ -279,4 +281,5 @@ class PasteCrudTest(GraphQLTestCase):
         self.assertResponseHasErrors(verify_delete)
 
 
-# docker compose build && docker compose run --rm --entrypoint="python manage.py test" backend
+# docker compose build && docker compose run --rm
+# --entrypoint="python manage.py test" backend

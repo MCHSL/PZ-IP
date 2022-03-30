@@ -1,6 +1,7 @@
 # Standard Library
 import logging
 from typing import Optional
+import re
 
 # Django
 from django.contrib.auth import get_user_model
@@ -136,6 +137,12 @@ class CreateUser(graphene.Mutation):
     ) -> "CreateUser":
         if not username or not password or not email:
             raise Exception("Missing required fields")
+        if not re.match("^[A-Za-z0-9._%+-]*$", username):
+            raise Exception("Username contains restricted special characters")
+        if not re.match("^[A-Za-z0-9._%+-]*$", password):
+            raise Exception("Password contains restricted special characters")
+        if not re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
+            raise Exception("Enter a valid e-mail")
         user = get_user_model()(
             username=username,
             email=BaseUserManager.normalize_email(email),
@@ -169,6 +176,10 @@ class UpdateUser(graphene.Mutation):
         is_staff: Optional[bool] = None,
     ) -> "UpdateUser":
         user = get_user_model().objects.get(pk=id)
+        if not re.match("^[A-Za-z0-9._%+-]*$", username):
+            raise Exception("Username contains restricted special characters")
+        if not re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
+            raise Exception("Enter a valid e-mail")
         if username is not None:
             user.username = username
         if email is not None:
@@ -287,6 +298,10 @@ class CreatePaste(graphene.Mutation):
     def mutate(
         self, info: ResolveInfo, title: str, content: str, private: bool
     ) -> "CreatePaste":
+        if not re.match("^[A-Za-z0-9._%+-]*$", title):
+            raise Exception("Title contains restricted special characters")
+        if not re.match("^[A-Za-z0-9._%+-]*$", content):
+            raise Exception("Content contains restricted special characters")
         paste = Paste(
             author=info.context.user, title=title, content=content, private=private
         )
@@ -316,6 +331,10 @@ class UpdatePaste(graphene.Mutation):
     def mutate(
         self, info: ResolveInfo, id: int, title: str, content: str, private: bool
     ) -> "UpdatePaste":
+        if not re.match("^[A-Za-z0-9._%+-]*$", title):
+            raise Exception("Title contains restricted special characters")
+        if not re.match("^[A-Za-z0-9._%+-]*$", content):
+            raise Exception("Content contains restricted special characters")
         paste = Paste.objects.get(pk=id)
         if info.context.user != paste.author:
             raise Exception("You are not the author of this paste")

@@ -199,5 +199,5 @@ LOGGING = {
     },
 }
 
-MEDIA_ROOT = "var/www/wklejka/user_media"
-MEDIA_URL = "/media/"
+MEDIA_ROOT = "/var/www/wklejka/user_media"
+MEDIA_URL = "/user_media/"

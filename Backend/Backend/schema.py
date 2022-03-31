@@ -3,18 +3,23 @@ import graphene
 import graphql_jwt
 
 # Project
-import wklejki.schema
+from wklejki.schema import paste, user
 
 
 class Query(
-    wklejki.schema.Query,
+    user.UserQuery,
+    paste.PasteQuery,
     graphene.ObjectType,
 ):
     pass
     # debug = graphene.Field(DjangoDebug, name="_debug")
 
 
-class Mutation(wklejki.schema.Mutation, graphene.ObjectType):
+class Mutation(
+    user.UserMutation,
+    paste.PasteMutation,
+    graphene.ObjectType,
+):
     token_auth = graphql_jwt.ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()

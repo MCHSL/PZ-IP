@@ -198,3 +198,6 @@ LOGGING = {
         },
     },
 }
+
+MEDIA_ROOT = "var/www/wklejka/user_media"
+MEDIA_URL = "/media/"

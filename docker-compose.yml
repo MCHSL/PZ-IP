@@ -13,6 +13,7 @@ services:
     build: ./Backend
     volumes:
       - ./logs/backend:/var/log/django
+      - ./data/user_media:/var/www/wklejka/user_media
     expose:
       - "80"
     depends_on:
@@ -23,6 +24,7 @@ services:
     build: ./Frontend
     volumes:
       - ./logs/frontend:/var/log/nginx
+      - ./data/user_media:/var/www/wklejka/user_media
     ports:
       - "80:80"
     depends_on:

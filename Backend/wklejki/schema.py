@@ -20,7 +20,7 @@ from graphql_jwt.decorators import (
 )
 
 # Local
-from .models import CustomUser, Paste
+from .models import Attachment, CustomUser, Paste
 
 logger = logging.getLogger()
 
@@ -230,6 +230,7 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
         model = Paste
 
     id = graphene.Int()
+    attachments = graphene.List("AttachmentType")
     like_count = graphene.Int(description="Number of users who like this paste")
     is_liked = graphene.Boolean(description="Does the current user like this paste?")
 
@@ -427,6 +428,14 @@ class PasteMutation(graphene.ObjectType):
     update_paste = UpdatePaste.Field()
     delete_paste = DeletePaste.Field()
     like_paste = LikePaste.Field()
+
+
+class AttachmentType(graphene.ObjectType):
+    class Meta:
+        model = Attachment
+        exclude = ['file']
+
+    id = graphene.Int()
 
 
 class Query(UserQuery, PasteQuery, graphene.ObjectType):

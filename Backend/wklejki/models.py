@@ -32,3 +32,15 @@ class Paste(models.Model):
 
     def __str__(self) -> str:
         return self.title + " (" + str(self.id) + ")"
+
+
+def get_attachment_upload_location(instance: "Attachment", filename: str) -> str:
+    return f"{instance.paste.id}/{filename}"
+
+
+class Attachment(models.Model):
+    paste = models.ForeignKey(
+        Paste, on_delete=models.CASCADE, related_name="attachments"
+    )
+    file = models.FileField(upload_to=get_attachment_upload_location)
+    name = models.TextField(max_length=100)

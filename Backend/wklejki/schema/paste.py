@@ -54,7 +54,7 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
         model = Paste
 
     id = graphene.Int()
-    attachments = graphene.List("AttachmentType")
+    attachments = graphene.List(AttachmentType)
     like_count = graphene.Int(description="Number of users who like this paste")
     is_liked = graphene.Boolean(description="Does the current user like this paste?")
     attachments = graphene.List(

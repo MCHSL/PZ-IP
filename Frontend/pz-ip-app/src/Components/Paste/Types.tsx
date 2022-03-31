@@ -11,13 +11,13 @@ export interface PasteInfo {
 
 // This sucks
 export type Attachment = {
-  id?: number;
-  url?: string;
-  name?: string;
-  content?: string;
-  size?: number;
-  is_added?: boolean;
-  is_removed?: boolean;
+  id: number;
+  url: string;
+  name: string;
+  content: string;
+  size: number;
+  is_added: boolean;
+  is_removed: boolean;
 };
 
 export type AddedAttachment = {

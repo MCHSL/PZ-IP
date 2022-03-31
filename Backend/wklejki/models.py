@@ -44,3 +44,4 @@ class Attachment(models.Model):
     )
     file = models.FileField(upload_to=get_attachment_upload_location)
     name = models.TextField(max_length=100)
+    size = models.IntegerField(default=0)

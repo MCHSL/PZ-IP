@@ -201,3 +201,5 @@ LOGGING = {
 
 MEDIA_ROOT = "/var/www/wklejka/user_media"
 MEDIA_URL = "/user_media/"
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880

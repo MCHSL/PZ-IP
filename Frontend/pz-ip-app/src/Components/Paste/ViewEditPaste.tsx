@@ -13,6 +13,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Rate from "../Rating/Rate";
+import { Attachment } from "./Types";
+import { paste } from "@testing-library/user-event/dist/paste";
 
 interface Props {
   id: Number;
@@ -28,6 +30,7 @@ const ViewEditPaste = ({ id }: Props) => {
   const [pasteContent, setPasteContent] = useState("");
   const [pasteAuthor, setPasteAuthor] = useState<any>();
   const [pasteIsPrivate, setPasteIsPrivate] = useState(false);
+  const [pasteAttachments, setPasteAttachments] = useState<Attachment[]>([]);
   const [error, setError] = useState("");
   const { user } = useUser();
   const navigate = useNavigate();
@@ -59,12 +62,30 @@ const ViewEditPaste = ({ id }: Props) => {
       if (!validate()) {
         return;
       }
+      const fileDelta = {
+        added: pasteAttachments
+          .filter((a) => a.is_added)
+          .map((a) => {
+            return { name: a.name, content: a.content };
+          }),
+        removed: pasteAttachments
+          .filter((a) => a.is_removed)
+          .map((a) => {
+            return { id: a.id };
+          }),
+      };
+      setPasteAttachments(
+        pasteAttachments
+          .filter((a) => !a.is_removed)
+          .map((a) => ({ ...a, is_added: false }))
+      );
       doUpdatePaste({
         variables: {
-          id: id,
+          id,
           title: pasteTitle,
           content: pasteContent,
           isPrivate: pasteIsPrivate,
+          fileDelta,
         },
         refetchQueries: [
           get_paste,
@@ -84,6 +105,7 @@ const ViewEditPaste = ({ id }: Props) => {
       setPasteContent(cdata.paste.content);
       setPasteAuthor(cdata.paste.author);
       setPasteIsPrivate(cdata.paste.isPrivate);
+      setPasteAttachments(cdata.paste.attachments ?? []);
     },
   });
 
@@ -117,11 +139,14 @@ const ViewEditPaste = ({ id }: Props) => {
         />
       )}
       <RenderPaste
+        // WTF?
         editable={isEditing}
         title={pasteTitle}
         content={pasteContent}
+        attachments={pasteAttachments}
         setTitle={setPasteTitle}
         setContent={setPasteContent}
+        setAttachments={setPasteAttachments}
       />
       {pasteAuthor?.id === user?.id ? (
         <>

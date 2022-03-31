@@ -8,3 +8,29 @@ export interface PasteInfo {
   likeCount: number;
   isLiked: boolean;
 }
+
+// This sucks
+export type Attachment = {
+  id?: number;
+  url?: string;
+  name?: string;
+  content?: string;
+  size?: number;
+  is_added?: boolean;
+  is_removed?: boolean;
+};
+
+export type AddedAttachment = {
+  name: string;
+  content: string;
+};
+
+export type RemovedAttachment = {
+  id: number;
+};
+
+export type LocalFileDelta = {
+  added: AddedAttachment[];
+  unchanged: Attachment[];
+  removed: RemovedAttachment[];
+};

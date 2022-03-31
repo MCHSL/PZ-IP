@@ -91,6 +91,12 @@ export const get_paste = gql`
         id
         username
       }
+      attachments {
+        id
+        name
+        url
+        size
+      }
     }
   }
 `;
@@ -101,26 +107,44 @@ export const update_paste = gql`
     $title: String!
     $content: String!
     $isPrivate: Boolean!
+    $fileDelta: FileDelta!
   ) {
     updatePaste(
       id: $id
       title: $title
       content: $content
       private: $isPrivate
+      fileDelta: $fileDelta
     ) {
       paste {
         id
         title
         content
         private
+        attachments {
+          id
+          name
+          url
+          size
+        }
       }
     }
   }
 `;
 
 export const create_paste = gql`
-  mutation ($title: String!, $content: String!, $isPrivate: Boolean!) {
-    createPaste(title: $title, content: $content, private: $isPrivate) {
+  mutation (
+    $title: String!
+    $content: String!
+    $isPrivate: Boolean!
+    $fileDelta: FileDelta!
+  ) {
+    createPaste(
+      title: $title
+      content: $content
+      private: $isPrivate
+      fileDelta: $fileDelta
+    ) {
       paste {
         id
       }

@@ -9,13 +9,15 @@ import {
   get_paste_titles,
   get_paste_titles_for_user,
 } from "../../Queries/queries";
+import { Attachment, LocalFileDelta } from "./Types";
 import RenderPaste from "./RenderPaste";
 
 const NewPaste = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [isPrivate, setPrivate] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [error, setError] = useState("");
 
   const [doCreatePaste] = useMutation(create_paste, {
@@ -49,6 +51,18 @@ const NewPaste = () => {
           title,
           content,
           isPrivate,
+          fileDelta: {
+            added: attachments
+              .filter((a) => a.is_added)
+              .map((a) => {
+                return { name: a.name, content: a.content };
+              }),
+            removed: attachments
+              .filter((a) => a.is_removed)
+              .map((a) => {
+                return { id: a.id };
+              }),
+          },
         },
       });
     }
@@ -65,14 +79,16 @@ const NewPaste = () => {
           editable={true}
           title={title}
           content={content}
+          attachments={attachments}
           setTitle={setTitle}
           setContent={setContent}
+          setAttachments={setAttachments}
         />
         <Form.Check
           type="checkbox"
           label="Prywatna"
           checked={isPrivate}
-          onChange={(e) => setPrivate(e.target.checked)}
+          onChange={(e) => setIsPrivate(e.target.checked)}
         />
         <span
           className="float-end d-flex flex-row align-items-baseline"

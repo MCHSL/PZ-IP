@@ -1,7 +1,6 @@
 # Standard Library
 import base64
 import logging
-import re
 from typing import List
 
 # Django
@@ -24,10 +23,12 @@ logger = logging.getLogger()
 class AttachmentType(graphene.ObjectType):
     class Meta:
         model = Attachment
-        # exclude = ('file',)
+        exclude = ('file',)
 
     id = graphene.Int()
     name = graphene.String()
+    size = graphene.Int()
+
     url = graphene.String()
 
     def resolve_url(self, info: ResolveInfo) -> str:
@@ -37,6 +38,15 @@ class AttachmentType(graphene.ObjectType):
 class UploadedFile(graphene.InputObjectType):
     name = graphene.String()
     content = graphene.String()
+
+
+class RemovedFile(graphene.InputObjectType):
+    id = graphene.Int(required=True, description="The ID of the file to remove")
+
+
+class FileDelta(graphene.InputObjectType):
+    added = graphene.List(UploadedFile, required=True)
+    removed = graphene.List(RemovedFile, required=True)
 
 
 class PasteType(gql_optimizer.OptimizedDjangoObjectType):
@@ -118,6 +128,20 @@ class PasteQuery(graphene.ObjectType):
             return Paste.objects.filter(private=False).count()
 
 
+def apply_file_delta(paste: Paste, delta: FileDelta) -> None:
+    for file in delta.removed:
+        try:
+            paste.attachments.get(pk=file.id).delete()  # type: ignore
+        except Attachment.DoesNotExist:
+            pass
+
+    for file in delta.added:
+        file_content = base64.b64decode(file.content)
+        attachment = Attachment(paste=paste, name=file.name, size=len(file_content))
+        attachment.file.save(file.name, ContentFile(file_content))
+        attachment.save()
+
+
 class CreatePaste(graphene.Mutation):
     """Creates a new paste"""
 
@@ -127,7 +151,7 @@ class CreatePaste(graphene.Mutation):
         title = graphene.String(required=True)
         content = graphene.String(required=True)
         private = graphene.Boolean(required=True)
-        files = graphene.List(UploadedFile)
+        file_delta = graphene.Argument(FileDelta, required=True)
 
     @login_required
     def mutate(
@@ -136,18 +160,15 @@ class CreatePaste(graphene.Mutation):
         title: str,
         content: str,
         private: bool,
-        files: List[UploadedFile],
+        file_delta: FileDelta,
     ) -> "CreatePaste":
+
         paste = Paste(
             author=info.context.user, title=title, content=content, private=private
         )
         paste.save()
 
-        for file in files:
-            file_content = base64.b64decode(file.content)
-            attachment = Attachment(paste=paste, name=file.name)
-            attachment.file.save(file.name, ContentFile(file_content))
-            attachment.save()
+        apply_file_delta(paste, file_delta)
 
         content = content[:15] + "..." if len(content) > 15 else content
 
@@ -168,15 +189,18 @@ class UpdatePaste(graphene.Mutation):
         title = graphene.String(required=True)
         content = graphene.String(required=True)
         private = graphene.Boolean(required=True)
+        file_delta = graphene.Argument(FileDelta, required=True)
 
     @login_required
     def mutate(
-        self, info: ResolveInfo, id: int, title: str, content: str, private: bool
+        self,
+        info: ResolveInfo,
+        id: int,
+        title: str,
+        content: str,
+        private: bool,
+        file_delta: FileDelta,
     ) -> "UpdatePaste":
-        if not re.match("^[A-Za-z0-9._%+-]*$", title):
-            raise Exception("Title contains restricted special characters")
-        if not re.match("^[A-Za-z0-9._%+-]*$", content):
-            raise Exception("Content contains restricted special characters")
         paste = Paste.objects.get(pk=id)
         if info.context.user != paste.author:
             raise Exception("You are not the author of this paste")
@@ -184,6 +208,8 @@ class UpdatePaste(graphene.Mutation):
         paste.content = content
         paste.private = private
         paste.save()
+
+        apply_file_delta(paste, file_delta)
 
         content = content[:15] + "..." if len(content) > 15 else content
 

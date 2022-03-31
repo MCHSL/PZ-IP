@@ -25,7 +25,5 @@ from graphene_django.views import GraphQLView
 
 urlpatterns = [
     path("graphql/", csrf_exempt(GraphQLView.as_view())),
-    static(
-        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
-    ),  # Serves static files only in debug mode
-]
+    # Serves static files only in debug mode
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

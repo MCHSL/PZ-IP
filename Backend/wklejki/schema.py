@@ -1,7 +1,9 @@
 # Standard Library
+import base64
 import logging
 import re
-from typing import Optional
+from typing import List, Optional
+from django.core.files.base import ContentFile
 
 # Django
 from django.contrib.auth import get_user_model
@@ -225,6 +227,24 @@ class UserMutation(graphene.ObjectType):
     delete_user = DeleteUser.Field()
 
 
+class AttachmentType(graphene.ObjectType):
+    class Meta:
+        model = Attachment
+        # exclude = ('file',)
+
+    id = graphene.Int()
+    name = graphene.String()
+    url = graphene.String()
+
+    def resolve_url(self, info: ResolveInfo) -> str:
+        return self.file.url
+
+
+class UploadedFile(graphene.InputObjectType):
+    name = graphene.String()
+    content = graphene.String()
+
+
 class PasteType(gql_optimizer.OptimizedDjangoObjectType):
     class Meta:
         model = Paste
@@ -233,6 +253,9 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
     attachments = graphene.List("AttachmentType")
     like_count = graphene.Int(description="Number of users who like this paste")
     is_liked = graphene.Boolean(description="Does the current user like this paste?")
+    attachments = graphene.List(
+        AttachmentType, description="Attachments for this paste"
+    )
 
     def resolve_like_count(self: Paste, info: ResolveInfo) -> int:
         return self.likers.count()
@@ -241,6 +264,9 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
         if info.context.user.is_authenticated:
             return self.likers.filter(pk=info.context.user.pk).exists()
         return False
+
+    def resolve_attachments(self: Paste, info: ResolveInfo) -> List[Attachment]:
+        return self.attachments.all()
 
 
 class PasteQuery(graphene.ObjectType):
@@ -307,19 +333,26 @@ class CreatePaste(graphene.Mutation):
         title = graphene.String(required=True)
         content = graphene.String(required=True)
         private = graphene.Boolean(required=True)
+        files = graphene.List(UploadedFile)
 
     @login_required
     def mutate(
-        self, info: ResolveInfo, title: str, content: str, private: bool
+        self,
+        info: ResolveInfo,
+        title: str,
+        content: str,
+        private: bool,
+        files: List[UploadedFile],
     ) -> "CreatePaste":
-        if not re.match("^[A-Za-z0-9._%+-]*$", title):
-            raise Exception("Title contains restricted special characters")
-        if not re.match("^[A-Za-z0-9._%+-]*$", content):
-            raise Exception("Content contains restricted special characters")
         paste = Paste(
             author=info.context.user, title=title, content=content, private=private
         )
         paste.save()
+
+        for file in files:
+            content = base64.b64decode(file.content)
+            attachment = Attachment(paste=paste, name=file.name)
+            attachment.file.save(file.name, ContentFile(content))
 
         content = content[:15] + "..." if len(content) > 15 else content
 
@@ -428,14 +461,6 @@ class PasteMutation(graphene.ObjectType):
     update_paste = UpdatePaste.Field()
     delete_paste = DeletePaste.Field()
     like_paste = LikePaste.Field()
-
-
-class AttachmentType(graphene.ObjectType):
-    class Meta:
-        model = Attachment
-        exclude = ['file']
-
-    id = graphene.Int()
 
 
 class Query(UserQuery, PasteQuery, graphene.ObjectType):

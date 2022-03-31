@@ -1,10 +1,5 @@
-import { Form, ListGroup } from "react-bootstrap";
-import { useCallback } from "react";
-import { useDropzone } from "react-dropzone";
+import { Form } from "react-bootstrap";
 import { Attachment } from "./Types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { humanFileSize } from "../Misc/Utils";
 import Attachments from "./Attachments/Attachments";
 
 interface Props {

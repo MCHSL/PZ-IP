@@ -28,6 +28,7 @@ export const AttachmentRow = ({
           id={attachment.id as number}
           callback={removeAddedAttachment}
         />
+        <AttachmentPrintName editable={editable} {...attachment} />
       </ListGroup.Item>
     );
   }
@@ -40,13 +41,7 @@ export const AttachmentRow = ({
           id={attachment.id as number}
           callback={unmarkFromRemoval}
         />
-        <span style={{ verticalAlign: "baseline" }}>{attachment.name}</span>
-        <span
-          style={{ verticalAlign: "baseline", float: "right" }}
-          className="text-muted"
-        >
-          {humanFileSize(attachment.size ?? 0)}
-        </span>
+        <AttachmentPrintName editable={editable} {...attachment} />
       </ListGroup.Item>
     );
   }

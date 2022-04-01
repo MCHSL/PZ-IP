@@ -10,10 +10,12 @@ import { PasteInfo } from "../../Types";
 
 interface Props {
   paste?: PasteInfo;
+  page: number;
+  itemsPerPage: number;
   refetch: () => {};
 }
 
-const PasteRow = ({ paste, refetch }: Props) => {
+const PasteRow = ({ paste, page, itemsPerPage, refetch }: Props) => {
   const navigate = useNavigate();
   const [isDeleteVisible, setDeleteVisible] = useState<boolean>(false);
 
@@ -53,7 +55,7 @@ const PasteRow = ({ paste, refetch }: Props) => {
             variant="link"
             onClick={() =>
               navigate(`/paste/${paste.id}`, {
-                state: { returnTo: location.pathname },
+                state: { returnTo: location.pathname, page, itemsPerPage },
               })
             }
           >

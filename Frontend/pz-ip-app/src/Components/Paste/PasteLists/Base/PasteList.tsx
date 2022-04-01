@@ -14,24 +14,6 @@ interface Props {
 }
 
 const PasteList = (props: Props) => {
-  //let message = null;
-  /*if (loading && !previousData)
-	{
-		message =
-			(<div>
-				<h1>Ładowanie...</h1>
-			</div>)
-	}
-	else if (error)
-	{
-		console.log("errored")
-		message =
-			(<div>
-				<h1>Wystąpił błąd podczas ładowania.</h1>
-				<span className={"text-muted"}><span>Nowa próba za</span><Countdown date={Date.now() + 5000} onComplete={reloading} renderer={props => { return <>{props.seconds}</> }} />...</span>
-			</div>)
-	}*/
-
   return (
     <PaginatingList visible={props.pastes.length > 0} {...props}>
       <Table striped hover size="sm">
@@ -53,12 +35,19 @@ const PasteList = (props: Props) => {
                 key={paste.id.toString()}
                 paste={paste}
                 refetch={props.refetch}
+                page={props.page}
+                itemsPerPage={props.itemsPerPage}
               />
             );
           })}
           {[...Array(props.itemsPerPage - props.pastes.length)].map((_, i) => {
             return (
-              <PasteRow key={(i + 200).toString()} refetch={props.refetch} />
+              <PasteRow
+                key={(-i).toString()}
+                refetch={props.refetch}
+                page={props.page}
+                itemsPerPage={props.itemsPerPage}
+              />
             );
           })}
         </tbody>

@@ -34,3 +34,9 @@ export type LocalFileDelta = {
   unchanged: Attachment[];
   removed: RemovedAttachment[];
 };
+
+export interface LocationState {
+  returnTo: string;
+  page: number;
+  itemsPerPage: number;
+}

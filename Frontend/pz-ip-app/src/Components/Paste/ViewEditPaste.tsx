@@ -13,15 +13,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Rate from "../Rating/Rate";
-import { Attachment } from "./Types";
-import { paste } from "@testing-library/user-event/dist/paste";
+import { Attachment, LocationState } from "./Types";
 
 interface Props {
   id: Number;
-}
-
-interface State {
-  returnTo: string;
 }
 
 const ViewEditPaste = ({ id }: Props) => {
@@ -110,7 +105,7 @@ const ViewEditPaste = ({ id }: Props) => {
   });
 
   const returnLoc = location.state
-    ? (location.state as State).returnTo
+    ? (location.state as LocationState).returnTo
     : "/profile";
 
   return (
@@ -119,7 +114,7 @@ const ViewEditPaste = ({ id }: Props) => {
         className=" mt-5"
         variant="primary"
         onClick={() => {
-          navigate(returnLoc);
+          navigate(returnLoc, { state: location.state });
         }}
       >
         <FontAwesomeIcon

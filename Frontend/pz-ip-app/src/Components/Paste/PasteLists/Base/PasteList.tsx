@@ -40,16 +40,17 @@ const PasteList = (props: Props) => {
               />
             );
           })}
-          {[...Array(props.itemsPerPage - props.pastes.length)].map((_, i) => {
-            return (
-              <PasteRow
-                key={(-i).toString()}
-                refetch={props.refetch}
-                page={props.page}
-                itemsPerPage={props.itemsPerPage}
-              />
-            );
-          })}
+          {props.itemsPerPage > props.pastes.length &&
+            [...Array(props.itemsPerPage - props.pastes.length)].map((_, i) => {
+              return (
+                <PasteRow
+                  key={(-i).toString()}
+                  refetch={props.refetch}
+                  page={props.page}
+                  itemsPerPage={props.itemsPerPage}
+                />
+              );
+            })}
         </tbody>
       </Table>
     </PaginatingList>

@@ -36,13 +36,18 @@ export const AllPasteList = () => {
 
   const { pastes, pasteCount: totalItems } = data;
 
+  function setItemsPerPageProxy(newItemsPerPage: number) {
+    setItemsPerPage(newItemsPerPage);
+    setPage(Math.floor((page * itemsPerPage) / newItemsPerPage));
+  }
+
   const props = {
     pastes,
     totalItems,
     page,
     itemsPerPage,
     setPage,
-    setItemsPerPage,
+    setItemsPerPage: setItemsPerPageProxy,
     refetch,
   };
 

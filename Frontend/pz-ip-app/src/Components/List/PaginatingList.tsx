@@ -36,6 +36,11 @@ const PaginatingList = ({
     setEditingPage(false);
   }
 
+  function setItemsPerPageProxy(newItemsPerPage: number) {
+    setItemsPerPage(newItemsPerPage);
+    setPage(Math.floor((page * itemsPerPage) / newItemsPerPage));
+  }
+
   if (!visible) {
     return <>{children}</>;
   }
@@ -110,7 +115,7 @@ const PaginatingList = ({
             marginBottom: "10px",
           }}
           title={`${itemsPerPage} na stronę`}
-          onSelect={(e) => setItemsPerPage(Number(e))}
+          onSelect={(e) => setItemsPerPageProxy(Number(e))}
         >
           {[5, 10, 15, 25, 50, 100].map((num) => {
             return (

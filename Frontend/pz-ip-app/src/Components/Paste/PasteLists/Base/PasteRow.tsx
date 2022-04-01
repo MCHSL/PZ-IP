@@ -9,13 +9,26 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PasteInfo } from "../../Types";
 
 interface Props {
-  paste: PasteInfo;
+  paste?: PasteInfo;
   refetch: () => {};
 }
 
 const PasteRow = ({ paste, refetch }: Props) => {
   const navigate = useNavigate();
   const [isDeleteVisible, setDeleteVisible] = useState<boolean>(false);
+
+  const { user } = useUser();
+  const location = useLocation();
+
+  if (!paste) {
+    return (
+      <tr style={{ visibility: "hidden" }}>
+        <td colSpan={7} style={{ border: "1px solid transparent" }}>
+          <Button>Kto czyta ten trąba</Button>
+        </td>
+      </tr>
+    );
+  }
 
   const formattedCreatedAt = DateTime.fromJSDate(
     new Date(paste.createdAt)
@@ -24,9 +37,6 @@ const PasteRow = ({ paste, refetch }: Props) => {
   const formattedUpdatedAt = DateTime.fromJSDate(
     new Date(paste.updatedAt)
   ).toFormat("yyyy-MM-dd HH:mm");
-
-  const { user } = useUser();
-  const location = useLocation();
 
   return (
     <>

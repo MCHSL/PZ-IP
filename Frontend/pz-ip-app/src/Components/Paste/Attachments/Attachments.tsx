@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { createRef, useCallback, useEffect, useRef } from "react";
 import { ListGroup } from "react-bootstrap";
 import { useDropzone } from "react-dropzone";
 import { Attachment } from "../Types";
@@ -15,6 +15,8 @@ export const Attachments = ({
   attachments,
   setAttachments,
 }: Props) => {
+  const scrolled = useRef(true);
+
   const onDrop = useCallback(
     (acceptedFiles) => {
       acceptedFiles.forEach((file: File) => {
@@ -37,12 +39,22 @@ export const Attachments = ({
               url: "",
             },
           ]);
+          scrolled.current = false;
         };
         reader.readAsDataURL(file);
       });
     },
     [attachments, setAttachments]
   );
+
+  const AttListRef = createRef<HTMLDivElement>();
+
+  useEffect(() => {
+    if (AttListRef.current && !scrolled.current) {
+      scrolled.current = true;
+      AttListRef.current.scrollTop = AttListRef.current.scrollHeight;
+    }
+  });
 
   function removeAddedAttachment(id: number) {
     setAttachments(attachments.filter((a) => !(a.id === id && a.is_added)));
@@ -63,7 +75,7 @@ export const Attachments = ({
   }
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
-  const border = isDragActive ? "5px dashed #ced4da" : "1px dashed #ced4da";
+  const border = isDragActive ? "3px dashed #ced4da" : "1px dashed #ced4da";
 
   return (
     <div
@@ -88,6 +100,7 @@ export const Attachments = ({
             borderRadius: ".25rem",
           }}
           variant="flush"
+          ref={AttListRef}
         >
           {attachments.map((attachment) => {
             return (

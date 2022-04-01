@@ -56,6 +56,11 @@ const PasteList = (props: Props) => {
               />
             );
           })}
+          {[...Array(props.itemsPerPage - props.pastes.length)].map((_, i) => {
+            return (
+              <PasteRow key={(i + 200).toString()} refetch={props.refetch} />
+            );
+          })}
         </tbody>
       </Table>
     </PaginatingList>

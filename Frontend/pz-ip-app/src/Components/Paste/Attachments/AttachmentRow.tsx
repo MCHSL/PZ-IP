@@ -1,5 +1,4 @@
 import { ListGroup } from "react-bootstrap";
-import { humanFileSize } from "../../Misc/Utils";
 import { Attachment } from "../Types";
 import { AttachmentButton } from "./AttachmentButton";
 import { AttachmentPrintName } from "./AttachmentPrintName";

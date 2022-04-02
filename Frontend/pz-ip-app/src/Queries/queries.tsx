@@ -8,6 +8,14 @@ export const login = gql`
   }
 `;
 
+export const do_logout = gql`
+  mutation {
+    deleteTokenCookie {
+      deleted
+    }
+  }
+`;
+
 export const get_user = gql`
   query ($id: Int!) {
     user(id: $id) {

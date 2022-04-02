@@ -14,16 +14,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+
 # Django
-from django.conf import settings
-from django.conf.urls.static import static
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 
 # 3rd-Party
 from graphene_django.views import GraphQLView
+from graphql_jwt.decorators import jwt_cookie
+
+# Project
+from wklejki.views import serve_file
 
 urlpatterns = [
-    path("graphql/", csrf_exempt(GraphQLView.as_view())),
-    # Serves static files only in debug mode
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path("graphql/", csrf_exempt(jwt_cookie(GraphQLView.as_view()))),
+    path("user_media/<int:paste_id>/<str:filename>", serve_file),
+]

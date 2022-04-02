@@ -27,11 +27,12 @@ function App() {
 
   const httpLink = createHttpLink({
     uri: "http://localhost/graphql/",
+    credentials: "include",
   });
 
   const client = new ApolloClient({
     cache: new InMemoryCache(),
-    link: authLink.concat(httpLink),
+    link: httpLink,
   });
 
   return (

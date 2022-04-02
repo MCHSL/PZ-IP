@@ -151,11 +151,14 @@ GRAPHENE = {
     ],
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
-# CORS_ALLOWED_ORIGINS = [
-# 	'http://localhost:8000',
-# ]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost',
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 LOGGING = {
     'version': 1,  # the dictConfig format version
@@ -200,6 +203,6 @@ LOGGING = {
 }
 
 MEDIA_ROOT = "/var/www/wklejka/user_media"
-MEDIA_URL = "/user_media/"
+MEDIA_URL = "user_media/"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880

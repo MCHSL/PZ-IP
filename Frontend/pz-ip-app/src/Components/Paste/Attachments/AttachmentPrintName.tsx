@@ -7,11 +7,14 @@ interface Props {
   url?: string;
 }
 
+const DOWNLOAD_DOMAIN =
+  process.env.NODE_ENV === "development" ? "http://localhost:80" : "";
+
 export const AttachmentPrintName = ({ editable, name, size, url }: Props) => {
   return (
     <>
       {!editable ? (
-        <a style={{ verticalAlign: "baseline" }} href={url}>
+        <a style={{ verticalAlign: "baseline" }} href={DOWNLOAD_DOMAIN + url}>
           {name}
         </a>
       ) : (

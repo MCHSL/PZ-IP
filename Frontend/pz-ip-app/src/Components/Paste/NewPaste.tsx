@@ -18,6 +18,7 @@ const NewPaste = () => {
   const [content, setContent] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [expDate, setExpDate] = useState(0);
   const [error, setError] = useState("");
 
   const [doCreatePaste] = useMutation(create_paste, {
@@ -33,7 +34,14 @@ const NewPaste = () => {
   });
 
   function validate() {
-    if (title !== "" && content !== "") {
+    if (expDate < 0) {
+      if (expDate == -1) {
+        setError("Wybierz swoją datę lub wybierz prefiniowaną");
+      } else {
+        setError("Data wygaśnięcia nie może poprzedzać daty obecnej");
+      }
+      return false;
+    } else if (title !== "" && content !== "") {
       setError("");
       return true;
     } else if (title === "" || content === "") {
@@ -80,11 +88,14 @@ const NewPaste = () => {
           title={title}
           content={content}
           attachments={attachments}
+          expDate={expDate}
           setTitle={setTitle}
           setContent={setContent}
           setAttachments={setAttachments}
+          setExpDate={setExpDate}
         />
         <Form.Check
+          className="mt-3"
           type="checkbox"
           label="Prywatna"
           checked={isPrivate}

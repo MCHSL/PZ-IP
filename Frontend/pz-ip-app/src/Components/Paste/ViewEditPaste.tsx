@@ -26,6 +26,7 @@ const ViewEditPaste = ({ id }: Props) => {
   const [pasteAuthor, setPasteAuthor] = useState<any>();
   const [pasteIsPrivate, setPasteIsPrivate] = useState(false);
   const [pasteAttachments, setPasteAttachments] = useState<Attachment[]>([]);
+  const [expDate, setExpDate] = useState(0);
   const [error, setError] = useState("");
   const { user } = useUser();
   const navigate = useNavigate();
@@ -41,7 +42,14 @@ const ViewEditPaste = ({ id }: Props) => {
   });
 
   function validate() {
-    if (pasteTitle !== "" && pasteContent !== "") {
+    if (expDate < 0) {
+      if (expDate === -1) {
+        setError("Wybierz swoją datę lub wybierz prefiniowaną");
+        return false;
+      }
+      setError("Data wygaśnięcia nie może poprzedzać daty obecnej");
+      return false;
+    } else if (pasteTitle !== "" && pasteContent !== "") {
       setError("");
       return true;
     } else if (pasteTitle === "" || pasteContent === "") {
@@ -139,13 +147,16 @@ const ViewEditPaste = ({ id }: Props) => {
         title={pasteTitle}
         content={pasteContent}
         attachments={pasteAttachments}
+        expDate={expDate}
         setTitle={setPasteTitle}
         setContent={setPasteContent}
         setAttachments={setPasteAttachments}
+        setExpDate={setExpDate}
       />
       {pasteAuthor?.id === user?.id ? (
         <>
           <Form.Check
+            className="mt-3"
             type="checkbox"
             label="Prywatna"
             checked={pasteIsPrivate}

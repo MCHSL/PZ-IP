@@ -25,6 +25,7 @@ graphene-django-optimizer==0.9.1
 graphql-core==3.1.2
 graphql-relay==3.1.5
 gunicorn==20.1.0
+hiredis==2.0.0
 identify==2.4.11
 idna==3.3
 Jinja2==3.0.3
@@ -39,6 +40,7 @@ pre-commit==2.17.0
 promise==2.3
 psycopg2==2.9.3
 pycodestyle==2.8.0
+pyinstrument==4.1.1
 PyJWT==2.3.0
 pyparsing==3.0.7
 python-dateutil==2.8.2

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import UserRow from "./UsersRow";
 import { CreateUserModal } from "../Modals/CreateUserModal";
-import PaginableList from "../List/PaginatingList";
+import PaginatingList from "../List/PaginatingList";
 import { getUsersPaginated } from "../../Queries/PaginatingQuery";
 import { withStaff } from "../Misc/LoginRequired";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -38,7 +38,7 @@ const UserList = () => {
           icon={solid("user-plus")}
         />
       </button>
-      <PaginableList
+      <PaginatingList
         visible={data}
         totalItems={data?.userCount}
         page={page}
@@ -67,7 +67,7 @@ const UserList = () => {
             ))}
           </tbody>
         </table>
-      </PaginableList>
+      </PaginatingList>
     </div>
   );
 };

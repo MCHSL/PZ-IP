@@ -97,7 +97,7 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {'default': env.db()}
+DATABASES = {'default': {**env.db(), **{'CONN_MAX_AGE': None}}}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -171,6 +171,8 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+PYINSTRUMENT_PROFILE_DIR = '/var/log/django/profiles/'
+
 LOGGING = {
     'version': 1,  # the dictConfig format version
     'disable_existing_loggers': False,  # retain the default loggers
@@ -217,3 +219,10 @@ MEDIA_ROOT = "/var/www/wklejka/user_media"
 MEDIA_URL = "user_media/"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://cache:6379',
+    }
+}

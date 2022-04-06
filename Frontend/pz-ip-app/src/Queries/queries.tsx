@@ -3,7 +3,7 @@ import { gql } from "@apollo/client";
 export const login = gql`
   mutation Login($email: String!, $password: String!) {
     tokenAuth(email: $email, password: $password) {
-      refreshExpiresIn
+      payload
     }
   }
 `;
@@ -11,7 +11,7 @@ export const login = gql`
 export const refresh = gql`
   mutation Refresh {
     refreshToken {
-      refreshExpiresIn
+      payload
     }
   }
 `;

@@ -1,7 +1,7 @@
 # Standard Library
 import logging
 import re
-from typing import Optional
+from typing import Any, Optional
 
 # Django
 from django.contrib.auth import get_user_model
@@ -19,7 +19,7 @@ from graphql_jwt.decorators import (
 )
 
 # Project
-from wklejki.models import CustomUser, Paste
+from wklejki.models import CustomUser
 
 logger = logging.getLogger()
 
@@ -40,9 +40,7 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
     paste_count = graphene.Int(description="Total number of pastes for this user")
 
     @gql_optimizer.resolver_hints(model_field='pastes')
-    def resolve_pastes(
-        self, info: ResolveInfo, skip: int, take: int
-    ) -> QuerySet[Paste]:
+    def resolve_pastes(self, info: ResolveInfo, skip: int, take: int) -> Any:
         if info.context.user == self:
             logger.debug(f"Resolving public+private pastes for user '{self}'")
             pastes = self.pastes.all().order_by('-created_at')

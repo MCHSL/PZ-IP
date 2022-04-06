@@ -24,7 +24,7 @@ function tokenNeedsRefresh() {
   if (!expiresIn) {
     return false;
   }
-  const tokenExpiration = new Date(parseInt(expiresIn));
+  const tokenExpiration = new Date(parseInt(expiresIn) * 1000);
   let now = new Date();
   now.setMinutes(now.getMinutes() + 1);
   return tokenExpiration < now;
@@ -40,10 +40,7 @@ const refreshTokenIfNeeded = async () => {
     const data = await client.mutate({
       mutation: refresh,
     });
-    localStorage.setItem(
-      "tokenExpiresIn",
-      data.data.refreshToken.refreshExpiresIn
-    );
+    localStorage.setItem("tokenExpiresIn", data.data.refreshToken.payload.exp);
     isRefreshing = false;
   }
 };

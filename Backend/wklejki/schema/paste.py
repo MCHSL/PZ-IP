@@ -4,6 +4,7 @@ import logging
 from typing import List
 
 # Django
+from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.db.models import Q
 from django.db.models.query import QuerySet
@@ -61,14 +62,18 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
         AttachmentType, description="Attachments for this paste"
     )
 
+    @gql_optimizer.resolver_hints(model_field='likers')
     def resolve_like_count(self: Paste, info: ResolveInfo) -> int:
-        return self.likers.count()
+        logger.debug(f"Resolving like count for paste '{self}'")
+        return cache.get_or_set(f"paste:{self.id}:likes", self.likers.count)
 
+    @gql_optimizer.resolver_hints(model_field='likers')
     def resolve_is_liked(self: Paste, info: ResolveInfo) -> bool:
         if info.context.user.is_authenticated:
             return self.likers.filter(pk=info.context.user.pk).exists()
         return False
 
+    @gql_optimizer.resolver_hints(model_field='attachments')
     def resolve_attachments(self: Paste, info: ResolveInfo) -> List[Attachment]:
         return self.attachments.all()  # type: ignore
 
@@ -125,7 +130,10 @@ class PasteQuery(graphene.ObjectType):
                 Q(private=False) | Q(Q(private=True) & Q(author=info.context.user))
             ).count()
         else:
-            return Paste.objects.filter(private=False).count()
+            return cache.get_or_set(
+                "paste_count_public",
+                lambda: Paste.objects.filter(private=False).count(),
+            )
 
 
 def apply_file_delta(paste: Paste, delta: FileDelta) -> None:
@@ -175,6 +183,8 @@ class CreatePaste(graphene.Mutation):
         logging.info(
             f"Created paste '{paste}' by user '{info.context.user}': {content}"
         )
+
+        cache.incr("paste_count_public")
 
         return CreatePaste(paste=paste)
 
@@ -241,6 +251,7 @@ class DeletePaste(graphene.Mutation):
         )
 
         paste.delete()
+        cache.decr("paste_count_public")
 
         return DeletePaste(ok=True)
 
@@ -273,6 +284,8 @@ class LikePaste(graphene.Mutation):
                 f"User '{info.context.user}' unliked paste '{paste}'"
                 f"by user '{paste.author}' :("
             )
+
+        cache.delete(f"paste:{paste.id}:likes")
 
         return LikePaste(paste=paste)
 

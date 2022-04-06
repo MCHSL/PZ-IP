@@ -17,7 +17,7 @@ const LoginForm = ({ setRegistering }: Props) => {
 
   const [doLogin] = useMutation(login, {
     onCompleted: (data) => {
-      localStorage.setItem("tokenExpiresIn", data.tokenAuth.refreshExpiresIn);
+      localStorage.setItem("tokenExpiresIn", data.tokenAuth.payload.exp);
       refetchUser().then(() => setLoggingIn(false));
     },
     onError: (error) => {

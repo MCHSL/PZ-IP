@@ -34,6 +34,8 @@ export const UserProvider = ({ children }: { children: JSX.Element }) => {
   } = useQuery(get_current_user);
 
   function logout() {
+    localStorage.removeItem("refreshExpiresIn");
+    console.log("removed refreshExpiresIn");
     return client
       .mutate({
         mutation: do_logout,

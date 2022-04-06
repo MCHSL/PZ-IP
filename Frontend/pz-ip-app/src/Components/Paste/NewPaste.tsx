@@ -9,7 +9,7 @@ import {
   get_paste_titles,
   get_paste_titles_for_user,
 } from "../../Queries/queries";
-import { Attachment, LocalFileDelta } from "./Types";
+import { Attachment } from "./Types";
 import RenderPaste from "./RenderPaste";
 
 const NewPaste = () => {

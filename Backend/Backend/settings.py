@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 # Standard Library
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Django
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
     "graphene_django",
     "django_filters",
     'corsheaders',
+    "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
 ]
 
 MIDDLEWARE = [
@@ -148,7 +150,16 @@ GRAPHENE = {
     "SCHEMA_INDENT": 2,
     "MIDDLEWARE": [
         "graphql_jwt.middleware.JSONWebTokenMiddleware",
+        "graphene_django.debug.DjangoDebugMiddleware",
     ],
+}
+
+GRAPHQL_JWT = {
+    "JWT_VERIFY_EXPIRATION": True,
+    "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
+    'JWT_REUSE_REFRESH_TOKENS': True,
+    "JWT_EXPIRATION_DELTA": timedelta(minutes=5),
+    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=31),
 }
 
 # CORS_ALLOW_ALL_ORIGINS = True

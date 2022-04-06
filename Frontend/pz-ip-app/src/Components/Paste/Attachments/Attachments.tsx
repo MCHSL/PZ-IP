@@ -112,6 +112,7 @@ export const Attachments = ({
                   unmarkFromRemoval,
                   markForRemoval,
                 }}
+                key={attachment.id}
               />
             );
           })}

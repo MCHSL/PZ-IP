@@ -9,8 +9,6 @@ import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../../Types/Types";
 
 const UserList = () => {
-  console.log("loading users list");
-
   const [isCreateVisible, setCreateVisible] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);

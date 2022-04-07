@@ -21,12 +21,11 @@ from django.views.decorators.csrf import csrf_exempt
 
 # 3rd-Party
 from graphene_django.views import GraphQLView
-from graphql_jwt.decorators import jwt_cookie
 
 # Project
 from wklejki.views import serve_file
 
 urlpatterns = [
-    path("graphql/", csrf_exempt(jwt_cookie(GraphQLView.as_view()))),
+    path("graphql/", csrf_exempt(GraphQLView.as_view())),
     path("user_media/<int:paste_id>/<str:filename>", serve_file),
 ]

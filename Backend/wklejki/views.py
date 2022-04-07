@@ -4,9 +4,6 @@
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
-# 3rd-Party
-from graphql_jwt.utils import get_payload, get_user_by_payload
-
 # Local
 from .models import Paste
 
@@ -29,17 +26,7 @@ def serve_file(request: HttpRequest, paste_id: int, filename: str) -> HttpRespon
     if not paste.private:
         return make_response(paste_id, filename)
 
-    token = request.headers.get('Authorization')
-    if token:
-        token = token.split(' ')[1]
-    else:
-        token = request.COOKIES.get('JWT')
-
-    if not token:
-        return HttpResponse(state=404)
-
-    payload = get_payload(token)
-    user = get_user_by_payload(payload)
+    user = request.user
 
     if not user:
         return HttpResponse(state=404)

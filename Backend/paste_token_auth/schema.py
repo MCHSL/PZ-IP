@@ -5,7 +5,6 @@ import typing
 
 # Django
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.base_user import BaseUserManager
 from django.core.cache import cache
 
 # 3rd-Party
@@ -13,7 +12,7 @@ import graphene
 from graphene import ResolveInfo
 
 # Local
-from .models import AuthMeta
+from .shortcuts import create_user
 
 if typing.TYPE_CHECKING:
     # Project
@@ -46,15 +45,7 @@ class CreateUser(graphene.Mutation):
         ):
             raise Exception("Enter a valid e-mail")
 
-        user = User(
-            username=username,
-            email=BaseUserManager.normalize_email(email),
-        )
-
-        user.set_password(password)
-        user.save()
-        auth: AuthMeta = AuthMeta.objects.create(user=user, is_verified=True, token="")
-        auth.save()
+        user = create_user(username, email, password)
 
         logger.info(f"Created user '{user}' with email '{email}'")
 

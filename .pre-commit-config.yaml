@@ -44,6 +44,7 @@ repos:
             django-cors-headers==3.11.0,
             psycopg2==2.9.3,
             django-graphql-jwt==0.3.4,
+            graphql-core==3.1.2,
           ]
         pass_filenames: false
   - repo: https://github.com/pycqa/isort

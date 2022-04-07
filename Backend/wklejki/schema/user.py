@@ -11,13 +11,9 @@ from django.db.models.query import QuerySet
 import graphene
 import graphene_django_optimizer as gql_optimizer
 from graphene import ResolveInfo
-from graphql_jwt.decorators import (
-    login_required,
-    staff_member_required,
-    superuser_required,
-)
 
 # Project
+from wklejki.decorators import login_required, staff_member_required, superuser_required
 from wklejki.models import CustomUser
 
 logger = logging.getLogger()

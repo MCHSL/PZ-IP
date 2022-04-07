@@ -2,27 +2,16 @@ import { gql } from "@apollo/client";
 
 export const login = gql`
   mutation Login($email: String!, $password: String!) {
-    tokenAuth(email: $email, password: $password) {
-      payload
-    }
-  }
-`;
-
-export const refresh = gql`
-  mutation Refresh {
-    refreshToken {
-      payload
+    loginUser(email: $email, password: $password) {
+      token
     }
   }
 `;
 
 export const do_logout = gql`
   mutation Logout {
-    deleteTokenCookie {
-      deleted
-    }
-    deleteRefreshTokenCookie {
-      deleted
+    logoutUser {
+      ok
     }
   }
 `;
@@ -65,10 +54,7 @@ export const delete_user = gql`
 export const create_user = gql`
   mutation CreateUser($email: String!, $password: String!, $username: String!) {
     createUser(email: $email, password: $password, username: $username) {
-      user {
-        id
-        username
-      }
+      id
     }
   }
 `;

@@ -5,7 +5,6 @@ from typing import Any, Optional
 
 # Django
 from django.contrib.auth import get_user_model
-from django.contrib.auth.base_user import BaseUserManager
 from django.db.models.query import QuerySet
 
 # 3rd-Party
@@ -119,41 +118,6 @@ class UserQuery(graphene.ObjectType):
         return info.context.user
 
 
-class CreateUser(graphene.Mutation):
-    """Register a new user"""
-
-    user = graphene.Field(UserType)
-
-    class Arguments:
-        username = graphene.String(required=True)
-        password = graphene.String(required=True)
-        email = graphene.String(required=True)
-
-    def mutate(
-        self, info: ResolveInfo, username: str, password: str, email: str
-    ) -> "CreateUser":
-        if not username or not password or not email:
-            raise Exception("Missing required fields")
-        if not re.match("^[A-Za-z0-9._%+-]*$", username):
-            raise Exception("Username contains restricted special characters")
-        if not re.match("^[A-Za-z0-9._%+-]*$", password):
-            raise Exception("Password contains restricted special characters")
-        if not re.fullmatch(
-            r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email
-        ):
-            raise Exception("Enter a valid e-mail")
-        user = get_user_model()(
-            username=username,
-            email=BaseUserManager.normalize_email(email),
-        )
-        user.set_password(password)
-        user.save()
-
-        logging.info(f"Created user '{user}' with email '{email}'")
-
-        return CreateUser(user=user)
-
-
 class UpdateUser(graphene.Mutation):
     """Change username, email or staff status of a user."""
 
@@ -217,6 +181,5 @@ class DeleteUser(graphene.Mutation):
 
 
 class UserMutation(graphene.ObjectType):
-    create_user = CreateUser.Field()
     update_user = UpdateUser.Field()
     delete_user = DeleteUser.Field()

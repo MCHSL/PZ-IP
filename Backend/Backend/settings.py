@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 # Standard Library
 import os
-from datetime import timedelta
 from pathlib import Path
 
 # Django
@@ -60,7 +59,7 @@ INSTALLED_APPS = [
     "graphene_django",
     "django_filters",
     'corsheaders',
-    "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
+    'paste_token_auth',
 ]
 
 MIDDLEWARE = [
@@ -72,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'paste_token_auth.middleware.TokenAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'Backend.urls'
@@ -141,25 +141,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'wklejki.CustomUser'
 
 AUTHENTICATION_BACKENDS = [
-    'graphql_jwt.backends.JSONWebTokenBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    'paste_token_auth.backends.TokenBackend',
 ]
 
 GRAPHENE = {
     "SCHEMA": "Backend.schema.schema",
     "SCHEMA_INDENT": 2,
     "MIDDLEWARE": [
-        "graphql_jwt.middleware.JSONWebTokenMiddleware",
         "graphene_django.debug.DjangoDebugMiddleware",
     ],
-}
-
-GRAPHQL_JWT = {
-    "JWT_VERIFY_EXPIRATION": True,
-    "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
-    'JWT_REUSE_REFRESH_TOKENS': True,
-    "JWT_EXPIRATION_DELTA": timedelta(seconds=5),
-    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=31),
 }
 
 # CORS_ALLOW_ALL_ORIGINS = True

@@ -184,7 +184,10 @@ class CreatePaste(graphene.Mutation):
             f"Created paste '{paste}' by user '{info.context.user}': {content}"
         )
 
-        cache.incr("paste_count_public")
+        try:
+            cache.incr("paste_count_public")
+        except ValueError:
+            cache.set("paste_count_public", Paste.objects.filter(private=False).count())
 
         return CreatePaste(paste=paste)
 
@@ -251,7 +254,10 @@ class DeletePaste(graphene.Mutation):
         )
 
         paste.delete()
-        cache.decr("paste_count_public")
+        try:
+            cache.decr("paste_count_public")
+        except ValueError:
+            cache.set("paste_count_public", Paste.objects.filter(private=False).count())
 
         return DeletePaste(ok=True)
 

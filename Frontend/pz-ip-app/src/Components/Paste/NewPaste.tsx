@@ -35,7 +35,7 @@ const NewPaste = () => {
 
   function validate() {
     if (expDate < 0) {
-      if (expDate == -1) {
+      if (expDate === -1) {
         setError("Wybierz swoją datę lub wybierz prefiniowaną");
       } else {
         setError("Data wygaśnięcia nie może poprzedzać daty obecnej");

@@ -3,6 +3,7 @@ import json
 
 # Django
 from django.contrib.auth import get_user_model
+from django.core import mail
 
 # 3rd-Party
 from graphene_django.utils.testing import GraphQLTestCase
@@ -14,6 +15,9 @@ from paste_token_auth.utils import create_user, get_or_create_token
 from .models import Paste
 
 User = get_user_model()
+
+# docker compose -f docker-compose.test.yml up --build
+# --force-recreate --remove-orphans --abort-on-container-exit
 
 
 class UserCrudTests(GraphQLTestCase):
@@ -52,6 +56,43 @@ class UserCrudTests(GraphQLTestCase):
 
         self.assertEqual(user.username, "test_user")
         self.assertEqual(user.pk, content["data"]["createUser"]["id"])
+
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_user_create_not_staff(self) -> None:
+        response = self.query(
+            '''
+            mutation {
+                createUser(username: "test_user_create_not_staff", email: "hng@akl.d", password: "123") {
+                    id
+                }
+            }
+            ''',  # noqa
+            headers={"HTTP_COOKIE": f"token={self.normie_token}"},
+        )
+
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["errors"][0]["message"], "You are already logged in")
+
+    def test_user_create_bypass_verification(self) -> None:
+        response = self.query(
+            '''
+            mutation {
+                createUser(username: "test_user_create_bypass_verification", email: "hack@er.man", password: "123", verified: true) {
+                    id
+                }
+            }
+            ''',  # noqa
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        user = User.objects.get(pk=content["data"]["createUser"]["id"])
+        self.assertTrue(user.auth.is_verified)  # type: ignore
 
     def test_user_read(self) -> None:
         user = create_user(
@@ -607,7 +648,3 @@ class PasteCrudTests(GraphQLTestCase):
 
         with self.assertRaises(Paste.DoesNotExist):
             Paste.objects.get(pk=paste.pk)
-
-
-# docker compose build
-# docker compose run --rm --entrypoint="python manage.py test" backend

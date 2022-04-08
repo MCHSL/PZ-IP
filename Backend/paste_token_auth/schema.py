@@ -41,6 +41,10 @@ class CreateUser(graphene.Mutation):
         email: str,
         verified: bool = False,
     ) -> "CreateUser":
+        creator = info.context.user
+        if creator.is_authenticated and not (creator.is_superuser or creator.is_staff):
+            raise Exception("You are already logged in")
+
         if not username or not password or not email:
             raise Exception("Missing required fields")
 
@@ -52,8 +56,9 @@ class CreateUser(graphene.Mutation):
             raise Exception("Enter a valid e-mail")
 
         user = create_user(username, email, password)
-        if verified and info.context.user.is_staff:
+        if verified and creator.is_staff:
             user.auth.is_verified = True  # type: ignore
+            user.auth.save()  # type: ignore
             user.save()
         else:
             # TODO: move this somewhere else
@@ -89,6 +94,9 @@ class LogoutUser(graphene.Mutation):
 
     def mutate(self, info: ResolveInfo) -> "LogoutUser":
         user = info.context.user
+        if not user.is_authenticated:
+            return LogoutUser(ok=True)
+
         cache.delete(f"token:{user.auth.token}:id")
         user.auth.token = None
         user.auth.save()

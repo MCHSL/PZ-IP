@@ -124,3 +124,169 @@ class AuthenticationTests(GraphQLTestCase):
         self.assertEqual(
             self.client.cookies.get("token").value, user.auth.token  # type: ignore
         )
+
+    def test_login_without_creds(self) -> None:
+        response = self.query(
+            '''
+            mutation {
+                loginUser( email: "", password: "") {
+                    ok
+                }
+            }
+            '''  # noqa: E501
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["errors"][0]["message"], "Invalid email or password")
+
+    def test_logout(self) -> None:
+        user = create_user(
+            is_verified=True,
+            username="logout_test_user",
+            email="viva@la.vida",
+            password="123",
+        )
+        token = get_or_create_token(user)
+
+        self.client.cookies["token"] = token
+
+        response = self.query(
+            '''
+            mutation {
+                logoutUser {
+                    ok
+                }
+            }
+            '''  # noqa: E501
+        )
+        self.assertResponseNoErrors(response)
+        json.loads(response.content)
+
+        self.assertEqual(self.client.cookies.get("token").value, "")
+
+    def test_logout_without_token(self) -> None:
+        response = self.query(
+            '''
+            mutation {
+                logoutUser {
+                    ok
+                }
+            }
+            '''  # noqa: E501
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertIsNone(self.client.cookies.get("token"))
+        self.assertTrue(content["data"]["logoutUser"]["ok"])
+
+    def test_create_user_with_missing_fields(self) -> None:
+        response = self.query(
+            '''
+            mutation {
+                createUser(username: "", email: "", password: "") {
+                    id
+                }
+            }
+            '''  # noqa: E501
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["errors"][0]["message"], "Missing required fields")
+
+    def test_create_user_with_invalid_email(self) -> None:
+        response = self.query(
+            '''
+            mutation {
+                createUser(username: "awdilo", email: "invalid", password: "iojprg") {
+                    id
+                }
+            }
+            '''  # noqa: E501
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["errors"][0]["message"], "Enter a valid e-mail")
+
+    def test_create_user_with_invalid_username(self) -> None:
+        response = self.query(
+            '''
+            mutation {
+                createUser(username: "#&$%#($&^#&", email: "a@a.a", password: "123") {
+                    id
+                }
+            }
+            '''  # noqa: E501
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(
+            content["errors"][0]["message"],
+            "Username contains restricted special characters",
+        )
+
+    def test_login_to_unverified_user(self) -> None:
+        create_user(
+            is_verified=False,
+            username="login_test_user_unverified",
+            email="a@a.a",
+            password="123",
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                loginUser( email: "a@a.a", password: "123") {
+                    ok
+                }
+            }
+            '''  # noqa: E501
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["errors"][0]["message"], "Account is not verified")
+
+    def test_token_cache_hit(self) -> None:
+        user = create_user(
+            is_verified=True,
+            username="token_cache_test_user",
+            email="sosna.to@toksinski.pl",
+            password="123",
+        )
+
+        token = get_or_create_token(user)
+
+        response = self.query(
+            '''
+            query {
+                me {
+                    id
+                }
+            }
+            ''',  # noqa: E501
+            headers={"HTTP_COOKIE": f"token={token}"},
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["me"]["id"], user.id)
+
+        response = self.query(
+            '''
+            query {
+                me {
+                    id
+                }
+            }
+            ''',  # noqa: E501
+            headers={"HTTP_COOKIE": f"token={token}"},
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["me"]["id"], user.id)

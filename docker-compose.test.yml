@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:14-alpine
+    command: postgres -c 'max_connections=100'
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+      - ./logs/dev/db:/var/log/postgresql
+    environment:
+      - POSTGRES_DB=wklejka
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=haslo123
+
+  cache:
+    image: redis:6.2.6-alpine
+    volumes:
+      - ./data/cache:/data
+      - ./logs/dev/cache:/var/log/redis
+    environment:
+      - REDIS_DB=0
+
+  tests:
+    build: ./Backend
+    entrypoint: sh -c 'coverage run --omit='*/migrations*,Backend/*,manage.py' --source='.' manage.py test --noinput && coverage report -m'
+    volumes:
+      - ./logs/test/backend:/var/log/django
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+      - cache
+    init: true

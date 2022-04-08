@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { create_user } from "./../../Queries/queries";
+import { create_user } from "../../Queries/queries";
 import { Spinner } from "react-bootstrap";
 
 interface Props {

@@ -4,15 +4,17 @@ import re
 import typing
 
 # Django
+from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.core.cache import cache
 
 # 3rd-Party
 import graphene
+import jwt
 from graphene import ResolveInfo
 
 # Local
-from .utils import create_user, send_verification_email
+from .utils import create_user, send_password_reset_email, send_verification_email
 
 if typing.TYPE_CHECKING:
     # Project
@@ -106,7 +108,66 @@ class LogoutUser(graphene.Mutation):
         return LogoutUser(ok=True)
 
 
+class RequestPasswordReset(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    class Arguments:
+        email = graphene.String(required=True)
+
+    def mutate(self, info: ResolveInfo, email: str) -> "RequestPasswordReset":
+        try:
+            user = User.objects.get(email=email)
+            send_password_reset_email(user)
+        except User.DoesNotExist:
+            pass
+
+        return RequestPasswordReset(ok=True)
+
+
+class ResetPassword(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    class Arguments:
+        token = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    def mutate(self, info: ResolveInfo, token: str, password: str) -> "ResetPassword":
+        insecure_payload = jwt.decode(token, options={"verify_signature": False})
+        insecure_user_id = insecure_payload.get("id")
+        if insecure_user_id is None:
+
+            raise Exception("Invalid token")
+
+        try:
+            insecure_user = User.objects.get(pk=insecure_user_id)
+        except User.DoesNotExist:
+            raise Exception("Invalid token")
+
+        try:
+            payload = jwt.decode(
+                token,
+                settings.SECRET_KEY + insecure_user.password,
+                algorithms=["HS256"],
+            )
+        except Exception:
+            raise Exception("Invalid token")
+
+        if payload.get("act") != "reset":
+            raise Exception("Invalid token")
+
+        user = insecure_user
+
+        user.set_password(password)
+        user.auth.token = None  # type: ignore
+        user.auth.save()  # type: ignore
+        user.save()
+
+        return ResetPassword(ok=True)
+
+
 class AuthMutations(graphene.ObjectType):
     create_user = CreateUser.Field()
     login_user = LoginUser.Field()
     logout_user = LogoutUser.Field()
+    request_password_reset = RequestPasswordReset.Field()
+    reset_password = ResetPassword.Field()

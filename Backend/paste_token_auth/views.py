@@ -22,6 +22,9 @@ def verify_email(request: HttpRequest, token: str) -> HttpResponse:
     except jwt.ExpiredSignatureError:
         return HttpResponse("wygasł xdd", status=400)
 
+    if payload.get("act") != "verify":
+        return HttpResponse("nieprawidłowy token", status=400)
+
     user_id = payload.get("id")
     user = User.objects.get(pk=user_id)
 

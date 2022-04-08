@@ -248,3 +248,19 @@ export const get_paste_titles_for_user = gql`
     }
   }
 `;
+
+export const request_password_reset = gql`
+  mutation RequestPasswordReset($email: String!) {
+    requestPasswordReset(email: $email) {
+      ok
+    }
+  }
+`;
+
+export const reset_password = gql`
+  mutation ResetPassword($token: String!, $password: String!) {
+    resetPassword(token: $token, password: $password) {
+      ok
+    }
+  }
+`;

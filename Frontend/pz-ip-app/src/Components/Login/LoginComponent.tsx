@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { login } from "./../../Queries/queries";
+import { login } from "../../Queries/queries";
 import { useMutation } from "@apollo/client";
 import { useUser } from "../Context/CurrentUserContext";
 import { Spinner } from "react-bootstrap";
@@ -69,22 +69,31 @@ const LoginForm = ({ setRegistering }: Props) => {
           <Spinner animation="border" />
         </div>
       ) : (
-        <div className="form-group mt-3">
-          <button
-            type="submit"
-            className="btn btn-primary mt-3 col-12"
-            onClick={submit}
-          >
-            Zaloguj
-          </button>
-          <button
-            type="submit"
-            className="btn btn-secondary mt-3 col-12"
-            onClick={setRegistering}
-          >
-            Rejestracja
-          </button>
-        </div>
+        <>
+          <div className="form-group mt-3">
+            <button
+              type="submit"
+              className="btn btn-primary mt-3 col-12"
+              onClick={submit}
+            >
+              Zaloguj
+            </button>
+            <button
+              type="submit"
+              className="btn btn-secondary mt-3 col-12"
+              onClick={setRegistering}
+            >
+              Rejestracja
+            </button>
+          </div>
+          <div className="form-group mt-3 text-center">
+            <small>
+              <a href="/req_reset" className="text-muted">
+                Nie pamiętasz hasła?
+              </a>
+            </small>
+          </div>
+        </>
       )}
     </>
   );

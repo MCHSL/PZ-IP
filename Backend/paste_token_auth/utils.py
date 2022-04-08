@@ -76,6 +76,7 @@ def create_user(
 def send_verification_email(user: User) -> None:
     verification_jwt = jwt.encode(
         {
+            "act": "verify",
             "id": user.pk,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
         },
@@ -90,6 +91,33 @@ def send_verification_email(user: User) -> None:
 
     send_mail(
         'Zweryfikuj swój adres e-mail',
+        content,
+        'accounts@wklejka.pl',
+        [user.email],
+        fail_silently=False,
+    )
+
+
+def send_password_reset_email(user: User) -> None:
+    reset_jwt = jwt.encode(
+        {
+            "act": "reset",
+            "id": user.pk,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=10),
+        },
+        # Signing using the user's password: When the user changes their password,
+        # the signature will immediately be invalid, making the reset link unusable.
+        settings.SECRET_KEY + user.password,
+        algorithm="HS256",
+    )
+
+    content = (
+        'Kliknij w link aby zresetować hasło:'
+        'http://localhost/password_reset/{}'.format(reset_jwt)
+    )
+
+    send_mail(
+        'Reset hasła',
         content,
         'accounts@wklejka.pl',
         [user.email],

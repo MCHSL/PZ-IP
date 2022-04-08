@@ -26,11 +26,12 @@ def verify_email(request: HttpRequest, token: str) -> HttpResponse:
     user = User.objects.get(pk=user_id)
 
     if user.auth.is_verified:  # type: ignore
-        return HttpResponseRedirect("http://localhost:3000")
+        return HttpResponseRedirect("http://localhost")
 
+    logger.debug(f"User {user.email} verified")
     user.auth.is_verified = True  # type: ignore
     user.auth.save()  # type: ignore
 
     bearer_token = get_or_create_token(user)
     request.set_token_cookie = bearer_token  # type: ignore
-    return HttpResponseRedirect("http://localhost:3000")
+    return HttpResponseRedirect("http://localhost")

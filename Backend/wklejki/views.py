@@ -29,9 +29,9 @@ def serve_file(request: HttpRequest, paste_id: int, filename: str) -> HttpRespon
     user = request.user
 
     if not user:
-        return HttpResponse(state=404)
+        return HttpResponse(status=404)
 
     if paste.author != user:
-        return HttpResponse(state=404)
+        return HttpResponse(status=404)
 
     return make_response(paste_id, filename)

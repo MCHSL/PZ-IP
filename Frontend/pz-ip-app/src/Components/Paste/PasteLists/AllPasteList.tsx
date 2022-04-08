@@ -16,6 +16,15 @@ export const AllPasteList = () => {
     loc_state?.itemsPerPage || 10
   );
 
+  // Prefetch the second page
+  apolloClient.query({
+    query: get_paste_titles,
+    variables: {
+      skip: (page + 1) * itemsPerPage,
+      take: itemsPerPage,
+    },
+  });
+
   const {
     loading,
     error,

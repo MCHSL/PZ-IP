@@ -29,6 +29,13 @@ const PasteList = (props: Props) => {
           </tr>
         </thead>
         <tbody>
+          {props.pastes.length === 0 && (
+            <tr>
+              <td colSpan={7} className="text-center text-muted">
+                Nic tu nie ma!
+              </td>
+            </tr>
+          )}
           {props.pastes?.map((paste) => {
             return (
               <PasteRow

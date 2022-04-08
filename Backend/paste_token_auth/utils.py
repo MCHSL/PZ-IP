@@ -85,7 +85,7 @@ def send_verification_email(user: User) -> None:
 
     content = (
         'Kliknij w link aby zweryfikować swój adres e-mail:'
-        'http://127.0.0.1/verify/{}'.format(verification_jwt)
+        'http://localhost/verify/{}'.format(verification_jwt)
     )
 
     send_mail(

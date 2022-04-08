@@ -35,12 +35,10 @@ function getCookie(name: string) {
 }
 
 const tokenLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem("token");
   return {
     headers: {
       ...headers,
       "X-CSRFToken": getCookie("csrftoken"),
-      authorization: token ? `Bearer ${token}` : "",
     },
   };
 });

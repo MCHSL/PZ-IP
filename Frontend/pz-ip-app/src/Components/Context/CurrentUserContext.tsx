@@ -39,7 +39,7 @@ export const UserProvider = ({ children }: { children: JSX.Element }) => {
       .mutate({
         mutation: do_logout,
       })
-      .then(client.resetStore);
+      .finally(client.resetStore);
   }
 
   return (

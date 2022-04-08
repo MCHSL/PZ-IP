@@ -157,6 +157,16 @@ export const create_paste = gql`
     ) {
       paste {
         id
+        title
+        createdAt
+        updatedAt
+        likeCount
+        isLiked
+        isPrivate: private
+        author {
+          id
+          username
+        }
       }
     }
   }

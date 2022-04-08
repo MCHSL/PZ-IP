@@ -30,7 +30,6 @@ const PaginatingList = ({
     const val = pageInputRef.current?.value;
     const new_page = val ? Number(val) - 1 : page;
     if (new_page >= 0 && new_page < last_page) {
-      console.log("bruhh", new_page, last_page);
       setPage(new_page);
     }
     setEditingPage(false);

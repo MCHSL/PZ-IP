@@ -17,15 +17,16 @@ Including another URLconf
 
 # Django
 from django.urls import path
-from django.views.decorators.csrf import csrf_exempt
 
 # 3rd-Party
 from graphene_django.views import GraphQLView
 
 # Project
+from paste_token_auth.views import verify_email
 from wklejki.views import serve_file
 
 urlpatterns = [
-    path("graphql/", csrf_exempt(GraphQLView.as_view())),
+    path("graphql/", GraphQLView.as_view()),
     path("user_media/<int:paste_id>/<str:filename>", serve_file),
+    path("verify/<str:token>", verify_email),
 ]

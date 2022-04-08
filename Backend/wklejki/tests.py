@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from graphene_django.utils.testing import GraphQLTestCase
 
 # Project
-from paste_token_auth.shortcuts import create_user, get_or_create_token
+from paste_token_auth.utils import create_user, get_or_create_token
 
 # Local
 from .models import Paste
@@ -43,7 +43,7 @@ class UserCrudTests(GraphQLTestCase):
                 }
             }
             ''',  # noqa
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
         )
         self.assertResponseNoErrors(response)
         content = json.loads(response.content)
@@ -69,7 +69,7 @@ class UserCrudTests(GraphQLTestCase):
             }
             '''
             % user.pk,
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
         )
         self.assertResponseNoErrors(response)
         content = json.loads(response.content)
@@ -96,7 +96,7 @@ class UserCrudTests(GraphQLTestCase):
             }
             '''  # noqa
             % user.pk,
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
         )
         self.assertResponseNoErrors(response)
         content = json.loads(response.content)
@@ -162,7 +162,7 @@ class UserCrudTests(GraphQLTestCase):
             }
             '''  # noqa
             % user.pk,
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.normie_token}"},
+            headers={"HTTP_COOKIE": f"token={self.normie_token}"},
         )
 
         self.assertResponseHasErrors(response)
@@ -187,7 +187,7 @@ class UserCrudTests(GraphQLTestCase):
             }
             '''
             % user.pk,
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
         )
         self.assertResponseNoErrors(response)
         content = json.loads(response.content)
@@ -239,7 +239,7 @@ class UserCrudTests(GraphQLTestCase):
             }
             '''
             % user.pk,
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.normie_token}"},
+            headers={"HTTP_COOKIE": f"token={self.normie_token}"},
         )
 
         self.assertResponseHasErrors(response)
@@ -291,7 +291,7 @@ class PasteCrudTests(GraphQLTestCase):
                     }
                 }
             ''',
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
         )
         self.assertResponseNoErrors(response)
         content = json.loads(response.content)
@@ -392,7 +392,7 @@ class PasteCrudTests(GraphQLTestCase):
             }
             '''
             % paste.pk,
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
         )
         self.assertResponseNoErrors(response)
         content = json.loads(response.content)
@@ -472,7 +472,7 @@ class PasteCrudTests(GraphQLTestCase):
             }
             '''  # noqa
             % paste.pk,
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.normie_token}"},
+            headers={"HTTP_COOKIE": f"token={self.normie_token}"},
         )
         self.assertResponseHasErrors(response)
         content = json.loads(response.content)
@@ -499,7 +499,7 @@ class PasteCrudTests(GraphQLTestCase):
             }
             '''
             % paste.pk,
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
         )
         self.assertResponseNoErrors(response)
         content = json.loads(response.content)
@@ -552,7 +552,7 @@ class PasteCrudTests(GraphQLTestCase):
             }
             '''
             % paste.pk,
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.normie_token}"},
+            headers={"HTTP_COOKIE": f"token={self.normie_token}"},
         )
         self.assertResponseHasErrors(response)
         content = json.loads(response.content)
@@ -571,7 +571,7 @@ class PasteCrudTests(GraphQLTestCase):
                 }
             }
             ''',
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
         )
         self.assertResponseHasErrors(response)
         content = json.loads(response.content)
@@ -598,7 +598,7 @@ class PasteCrudTests(GraphQLTestCase):
             }
             '''
             % paste.pk,
-            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
         )
         self.assertResponseNoErrors(response)
         content = json.loads(response.content)
@@ -609,5 +609,5 @@ class PasteCrudTests(GraphQLTestCase):
             Paste.objects.get(pk=paste.pk)
 
 
-# docker compose build && docker compose run --rm
-# --entrypoint="python manage.py test" backend
+# docker compose build
+# docker compose run --rm --entrypoint="python manage.py test" backend

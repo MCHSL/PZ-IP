@@ -17,13 +17,11 @@ const LoginForm = ({ setRegistering }: Props) => {
 
   const [doLogin] = useMutation(login, {
     onCompleted: (data) => {
-      console.log(data);
-      localStorage.setItem("token", data.loginUser.token);
       refetchUser().then(() => setLoggingIn(false));
     },
     onError: (error) => {
       setLoggingIn(false);
-      if (error.message.includes("Please")) {
+      if (error.message.includes("Invalid")) {
         setIsValid("Podaj poprawne dane logowania\n");
       }
       console.log(error);

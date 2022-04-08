@@ -72,6 +72,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'paste_token_auth.middleware.TokenAuthMiddleware',
+    'paste_token_auth.middleware.TokenCookieMiddleware',
 ]
 
 ROOT_URLCONF = 'Backend.urls'
@@ -152,9 +153,16 @@ GRAPHENE = {
     ],
 }
 
-# CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost',
+    'http://127.0.0.1',
+]
 
 CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1',
     'http://localhost:3000',
     'http://localhost',
 ]
@@ -216,3 +224,5 @@ CACHES = {
         'LOCATION': 'redis://cache:6379',
     }
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

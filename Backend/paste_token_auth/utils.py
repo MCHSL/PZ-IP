@@ -1,11 +1,17 @@
 # Standard Library
+import datetime
 import logging
 import secrets
 from typing import TYPE_CHECKING, Optional
 
 # Django
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.core.mail import send_mail
+
+# 3rd-Party
+import jwt
 
 # Local
 from .models import AuthMeta
@@ -61,7 +67,31 @@ def create_user(
     user.set_password(password)
     user.save()
     auth: AuthMeta = AuthMeta.objects.create(
-        user=user, is_verified=is_verified, token=""
+        user=user, is_verified=is_verified, token=None
     )
     auth.save()
     return user
+
+
+def send_verification_email(user: User) -> None:
+    verification_jwt = jwt.encode(
+        {
+            "id": user.pk,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
+        },
+        settings.SECRET_KEY,
+        algorithm="HS256",
+    )
+
+    content = (
+        'Kliknij w link aby zweryfikować swój adres e-mail:'
+        'http://127.0.0.1/verify/{}'.format(verification_jwt)
+    )
+
+    send_mail(
+        'Zweryfikuj swój adres e-mail',
+        content,
+        'accounts@wklejka.pl',
+        [user.email],
+        fail_silently=False,
+    )

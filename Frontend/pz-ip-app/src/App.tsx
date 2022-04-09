@@ -14,6 +14,7 @@ import CurrentUserProfilePage from "./Components/Profile/CurrentUserProfilePage"
 import client from "./ApolloConfig";
 import PasswordReset from "./Components/Login/PasswordResetComponent";
 import RequestPasswordReset from "./Components/Login/RequestPasswordReset";
+import ReportedPastes from "./Components/ReportedPastes/ReportedPastes";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="/pastes" element={<AllPastes />} />
             <Route path="/password_reset/:token" element={<PasswordReset />} />
             <Route path="/req_reset" element={<RequestPasswordReset />} />
+            <Route path="/reports" element={<ReportedPastes />} />
           </Routes>
         </Router>
       </UserProvider>

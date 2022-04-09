@@ -8,9 +8,10 @@ interface Props {
   id: number;
   pasteLikes: number;
   liking: boolean;
+  disabled: boolean;
 }
 
-const Rate = ({ id, pasteLikes, liking }: Props) => {
+const Rate = ({ id, pasteLikes, liking, disabled }: Props) => {
   const [isLiking, setLiking] = useState(liking);
   const [likeCount, setLikeCount] = useState(pasteLikes);
   const heartColor: string = isLiking ? "red" : "grey";
@@ -42,9 +43,13 @@ const Rate = ({ id, pasteLikes, liking }: Props) => {
   }
 
   return (
-    <span className="float-end mt-5 pt-1 pb-1">
+    <span className="pt-1 pb-1">
       <span className="align-middle">{likeCount}</span>
-      <button className="paste-like-button align-middle" onClick={likeHandler}>
+      <button
+        className="paste-like-button align-middle"
+        disabled={disabled}
+        onClick={likeHandler}
+      >
         <FontAwesomeIcon
           style={{ fontSize: "30px", color: heartColor }}
           icon={solid("heart")}

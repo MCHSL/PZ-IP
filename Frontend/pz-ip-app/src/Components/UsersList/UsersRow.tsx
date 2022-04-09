@@ -8,7 +8,7 @@ import { User } from "../../Types/Types";
 
 interface Props {
   user: User;
-  refetch: () => void;
+  refetch: () => Promise<any>;
 }
 
 const UserRow = ({ user, refetch }: Props) => {

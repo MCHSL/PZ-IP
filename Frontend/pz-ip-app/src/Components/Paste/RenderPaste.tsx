@@ -1,13 +1,14 @@
-import { Form, Dropdown } from "react-bootstrap";
-import { Attachment } from "./Types";
+import { Form } from "react-bootstrap";
+import { Attachment, Report } from "./Types";
 import Attachments from "./Attachments/Attachments";
-import { useState } from "react";
 import ExpirationTime from "./ExpirationTime/ExpirationTime";
+import Reports from "./Reports/Reports";
 
 interface Props {
   title: string;
   content: string;
   editable: boolean;
+  reports: Report[];
   attachments: Attachment[];
   expDate: number;
 
@@ -15,6 +16,7 @@ interface Props {
   setContent: (content: string) => void;
   setAttachments: (attachments: Attachment[]) => void;
   setExpDate: (expDate: number) => void;
+  refetch: () => Promise<any>;
 }
 const RenderPaste = ({
   title,
@@ -26,12 +28,12 @@ const RenderPaste = ({
   setContent,
   setAttachments,
   setExpDate,
+
+  ...rest
 }: Props) => {
-  {
-    console.log(expDate);
-  }
   return (
     <Form className="mt-3">
+      <Reports {...rest} />
       <Form.Group className="mb-3">
         <label className="mb-1">Tytuł</label>
         <Form.Control

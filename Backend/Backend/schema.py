@@ -10,6 +10,7 @@ from wklejki.schema import paste, user
 class Query(
     user.UserQuery,
     paste.PasteQuery,
+    paste.UnreviewedPastesQuery,
     graphene.ObjectType,
 ):
     pass

@@ -45,3 +45,15 @@ class Attachment(models.Model):
     file = models.FileField(upload_to=get_attachment_upload_location)
     name = models.TextField(max_length=100)
     size = models.IntegerField(default=0)
+
+
+class Report(models.Model):
+    paste = models.ForeignKey(Paste, on_delete=models.CASCADE, related_name="reports")
+    reporter = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="reported_pastes"
+    )
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self) -> str:
+        return f"Report #{self.pk} for {self.paste} by {self.reporter}"

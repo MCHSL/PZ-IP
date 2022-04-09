@@ -10,7 +10,7 @@ interface Props {
   itemsPerPage: number;
   setPage: (page: number) => void;
   setItemsPerPage: (itemsPerPage: number) => void;
-  refetch: () => {};
+  refetch: () => Promise<any>;
 }
 
 const PasteList = (props: Props) => {

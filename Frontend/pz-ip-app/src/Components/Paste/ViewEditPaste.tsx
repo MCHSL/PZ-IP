@@ -14,9 +14,12 @@ import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Rate from "../Rating/Rate";
 import { Attachment, LocationState } from "./Types";
+import { DeletePasteModal } from "../Modals/DeletePasteModal";
+import client from "../../ApolloConfig";
+import ReportPasteModal from "../Modals/ReportPasteModal";
 
 interface Props {
-  id: Number;
+  id: number;
 }
 
 const ViewEditPaste = ({ id }: Props) => {
@@ -26,6 +29,8 @@ const ViewEditPaste = ({ id }: Props) => {
   const [pasteAuthor, setPasteAuthor] = useState<any>();
   const [pasteIsPrivate, setPasteIsPrivate] = useState(false);
   const [pasteAttachments, setPasteAttachments] = useState<Attachment[]>([]);
+  const [deleteVisible, setDeleteVisible] = useState(false);
+  const [reportVisible, setReportVisible] = useState(false);
   const [expDate, setExpDate] = useState(0);
   const [error, setError] = useState("");
   const { user } = useUser();
@@ -101,7 +106,7 @@ const ViewEditPaste = ({ id }: Props) => {
     }
   }
 
-  const { data } = useQuery(get_paste, {
+  const { data, refetch } = useQuery(get_paste, {
     variables: { id },
     onCompleted: (cdata) => {
       setPasteTitle(cdata.paste.title);
@@ -116,30 +121,79 @@ const ViewEditPaste = ({ id }: Props) => {
     ? (location.state as LocationState).returnTo
     : "/profile";
 
+  function yeet_away() {
+    const normalizedId = client.cache.identify({ id, __typename: "PasteType" });
+    client.cache.evict({ id: normalizedId });
+    client.cache.gc();
+    navigate(returnLoc, { state: location.state });
+  }
+
   return (
     <>
-      <Button
-        className=" mt-5"
-        variant="primary"
-        onClick={() => {
-          navigate(returnLoc, { state: location.state });
-        }}
-      >
-        <FontAwesomeIcon
-          style={{ marginRight: "5px" }}
-          icon={solid("arrow-left")}
-        />
-        Powrót
-      </Button>
+      <DeletePasteModal
+        id={id}
+        pasteTitle={pasteTitle}
+        isVisible={deleteVisible}
+        setVisible={setDeleteVisible}
+        refetch={refetch}
+        afterSubmit={yeet_away}
+      />
+      <ReportPasteModal
+        id={id}
+        isVisible={reportVisible}
+        setVisible={setReportVisible}
+        onSubmit={refetch}
+      />
+      <div style={{ display: "flex" }} className="mt-5">
+        <Button
+          variant="primary"
+          onClick={() => {
+            navigate(returnLoc, { state: location.state });
+          }}
+        >
+          <FontAwesomeIcon
+            style={{ marginRight: "5px" }}
+            icon={solid("arrow-left")}
+          />
+          Powrót
+        </Button>
+        <div style={{ marginLeft: "auto", gap: "10px", display: "flex" }}>
+          {user && (isEditing || user.isStaff) && (
+            <Button variant="danger" onClick={() => setDeleteVisible(true)}>
+              Usuń
+              <FontAwesomeIcon
+                style={{ marginLeft: "5px" }}
+                icon={solid("trash")}
+              />
+            </Button>
+          )}
+          {!isEditing && (
+            <>
+              {user && (
+                <Button
+                  variant="danger"
+                  onClick={() => setReportVisible(true)}
+                  disabled={data?.paste?.isReported}
+                >
+                  {data?.paste?.isReported ? "Zgłoszona" : "Zgłoś"}
+                  <FontAwesomeIcon
+                    style={{ marginLeft: "5px" }}
+                    icon={solid("exclamation-triangle")}
+                  />
+                </Button>
+              )}
+              <Rate
+                id={id}
+                disabled={!user}
+                pasteLikes={data ? data.paste.likeCount : 0}
+                liking={data ? data.paste.isLiked : false}
+              />
+            </>
+          )}
+        </div>
+      </div>
       {error === "" ? null : (
         <div className="alert alert-danger mt-3 text-center">{error}</div>
-      )}
-      {!isEditing && data && (
-        <Rate
-          id={data.paste.id}
-          pasteLikes={data.paste.likeCount}
-          liking={data.paste.isLiked}
-        />
       )}
       <RenderPaste
         // WTF?
@@ -148,6 +202,8 @@ const ViewEditPaste = ({ id }: Props) => {
         content={pasteContent}
         attachments={pasteAttachments}
         expDate={expDate}
+        reports={data?.paste?.reports || []}
+        refetch={refetch}
         setTitle={setPasteTitle}
         setContent={setPasteContent}
         setAttachments={setPasteAttachments}

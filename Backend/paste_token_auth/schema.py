@@ -135,7 +135,6 @@ class ResetPassword(graphene.Mutation):
         insecure_payload = jwt.decode(token, options={"verify_signature": False})
         insecure_user_id = insecure_payload.get("id")
         if insecure_user_id is None:
-
             raise Exception("Invalid token")
 
         try:
@@ -161,6 +160,7 @@ class ResetPassword(graphene.Mutation):
         user.auth.token = None  # type: ignore
         user.auth.save()  # type: ignore
         user.save()
+        cache.delete(f"token:{user.auth.token}:id")
 
         return ResetPassword(ok=True)
 

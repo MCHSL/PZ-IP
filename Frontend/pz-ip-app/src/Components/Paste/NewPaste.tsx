@@ -89,6 +89,8 @@ const NewPaste = () => {
           content={content}
           attachments={attachments}
           expDate={expDate}
+          reports={[]}
+          refetch={() => Promise.resolve()}
           setTitle={setTitle}
           setContent={setContent}
           setAttachments={setAttachments}

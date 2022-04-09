@@ -7,7 +7,8 @@ interface Props {
   pasteTitle: string;
   isVisible: boolean;
   setVisible: Dispatch<SetStateAction<boolean>>;
-  refetch: () => void;
+  afterSubmit?: () => void;
+  refetch: () => Promise<any>;
 }
 
 export const DeletePasteModal = ({ id, pasteTitle, ...rest }: Props) => {

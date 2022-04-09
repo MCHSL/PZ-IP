@@ -107,6 +107,16 @@ export const get_paste = gql`
         url
         size
       }
+      isReported
+      reports {
+        id
+        reporter {
+          id
+          username
+        }
+        reason
+        createdAt
+      }
     }
   }
 `;
@@ -192,8 +202,32 @@ export const like_paste = gql`
   }
 `;
 
+export const report_paste = gql`
+  mutation ReportPaste($id: Int!, $reason: String!) {
+    reportPaste(id: $id, reason: $reason) {
+      ok
+    }
+  }
+`;
+
+export const delete_report = gql`
+  mutation DeleteReport($id: Int!) {
+    deleteReport(id: $id) {
+      ok
+    }
+  }
+`;
+
+export const delete_all_reports = gql`
+  mutation DeleteAllReports($id: Int!) {
+    deleteAllReports(id: $id) {
+      ok
+    }
+  }
+`;
+
 export const get_pastes = gql`
-  query GetPAstes($skip: Int, $take: Int) {
+  query GetPastes($skip: Int, $take: Int) {
     pasteCount
     pastes(skip: $skip, take: $take) {
       id
@@ -262,5 +296,22 @@ export const reset_password = gql`
     resetPassword(token: $token, password: $password) {
       ok
     }
+  }
+`;
+
+export const get_unreviewed_reports = gql`
+  query GetUnreviewedReports($skip: Int!, $take: Int!) {
+    count
+    unreviewedPastes(skip: $skip, take: $take) {
+      id
+      title
+      reportCount
+    }
+  }
+`;
+
+export const get_unreviewed_reports_count = gql`
+  query GetUnreviewedReportsCount {
+    count
   }
 `;

@@ -12,7 +12,7 @@ interface Props {
   paste?: PasteInfo;
   page: number;
   itemsPerPage: number;
-  refetch: () => {};
+  refetch: () => Promise<any>;
 }
 
 const PasteRow = ({ paste, page, itemsPerPage, refetch }: Props) => {

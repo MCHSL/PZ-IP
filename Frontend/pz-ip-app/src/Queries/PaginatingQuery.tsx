@@ -3,6 +3,7 @@ import { useQuery } from "@apollo/client";
 import {
   get_paste_titles,
   get_paste_titles_for_user,
+  get_unreviewed_reports,
   get_users,
 } from "./queries";
 
@@ -50,4 +51,16 @@ const getPasteTitlesPaginated = (
   }
 };
 
-export { getUsersPaginated, getPasteTitlesPaginated };
+const getReportedPastesPaginated = (
+  page: number,
+  itemsPerPage: number,
+  skip: boolean = false
+) => {
+  return PaginatingQuery(get_unreviewed_reports, {}, page, itemsPerPage, skip);
+};
+
+export {
+  getUsersPaginated,
+  getPasteTitlesPaginated,
+  getReportedPastesPaginated,
+};

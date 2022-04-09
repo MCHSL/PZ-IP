@@ -1,5 +1,7 @@
+import { useQuery } from "@apollo/client";
 import { Navbar, Container, Nav } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { get_unreviewed_reports_count } from "../../Queries/queries";
 import { useUser } from "../Context/CurrentUserContext";
 import CurrentUser from "../UsersList/CurrentUser";
 
@@ -10,6 +12,7 @@ interface Props {
 export const Menu = ({ has_user }: Props) => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { data: reports } = useQuery(get_unreviewed_reports_count);
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
       <Container>
@@ -21,9 +24,19 @@ export const Menu = ({ has_user }: Props) => {
             Wklejki
           </Nav.Link>
           {user?.isStaff ? (
-            <Nav.Link eventKey="users" onClick={() => navigate("/users")}>
-              Użytkownicy
-            </Nav.Link>
+            <>
+              <Nav.Link eventKey="users" onClick={() => navigate("/users")}>
+                Użytkownicy
+              </Nav.Link>
+              <Nav.Link eventKey="reports" onClick={() => navigate("/reports")}>
+                Raporty{" "}
+                {reports?.count ? (
+                  <span className="bg-danger border border-danger rounded text-white p-1">
+                    {reports.count}
+                  </span>
+                ) : null}
+              </Nav.Link>
+            </>
           ) : null}
           {user ? (
             <Nav.Link eventKey="profile" onClick={() => navigate("/profile")}>

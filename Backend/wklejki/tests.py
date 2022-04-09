@@ -12,7 +12,7 @@ from graphene_django.utils.testing import GraphQLTestCase
 from paste_token_auth.utils import create_user, get_or_create_token
 
 # Local
-from .models import Paste
+from .models import Paste, Report
 
 User = get_user_model()
 
@@ -648,3 +648,335 @@ class PasteCrudTests(GraphQLTestCase):
 
         with self.assertRaises(Paste.DoesNotExist):
             Paste.objects.get(pk=paste.pk)
+
+
+class ReportTests(GraphQLTestCase):
+    def setUp(self) -> None:
+        self.admin = create_user(
+            email="admin@ad.min",
+            username="admin",
+            password="admin1",
+            is_superuser=True,
+            is_staff=True,
+        )
+        self.admin_token = get_or_create_token(self.admin)
+
+        self.normie = create_user(
+            email="normie@nor.mie",
+            username="normie",
+            password="normie1",
+        )
+        self.normie_token = get_or_create_token(self.normie)
+
+    def test_report_paste(self) -> None:
+        paste = Paste.objects.create(
+            title="test_report_paste",
+            content="test_report_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                reportPaste(id: %s, reason: "test_report_paste_reason") {
+                    ok
+                }
+            }
+            '''
+            % paste.pk,
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["reportPaste"]["ok"], True)
+
+        paste.refresh_from_db()
+
+        reports = paste.reports.all()
+        self.assertEqual(len(reports), 1)
+        report = reports[0]
+        self.assertEqual(report.paste, paste)
+        self.assertEqual(report.reason, "test_report_paste_reason")
+        self.assertEqual(report.reporter, self.admin)
+
+    def test_get_reports_when_there_are_none(self) -> None:
+        paste = Paste.objects.create(
+            title="test_get_reports_for_paste",
+            content="test_get_reports_for_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            query {
+                 paste(id: %s) {
+                    reports {
+                        reason
+                        reporter {
+                            username
+                        }
+                    }
+                }
+            }
+            '''
+            % paste.pk,
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(len(content["data"]["paste"]["reports"]), 0)
+
+    def test_get_reports_for_paste(self) -> None:
+        paste = Paste.objects.create(
+            title="test_get_reports_for_paste",
+            content="test_get_reports_for_paste_content",
+            private=False,
+            author=self.admin,
+        )
+        report = Report.objects.create(
+            paste=paste,
+            reason="test_get_reports_for_paste_reason",
+            reporter=self.admin,
+        )
+
+        response = self.query(
+            '''
+            query {
+                paste(id: %s) {
+                    reports {
+                        reason
+                        reporter {
+                            username
+                        }
+                    }
+                }
+            }
+            '''
+            % paste.pk,
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(len(content["data"]["paste"]["reports"]), 1)
+        returned_report = content["data"]["paste"]["reports"][0]
+        self.assertEqual(returned_report["reason"], report.reason)
+        self.assertEqual(
+            returned_report["reporter"]["username"], report.reporter.username
+        )
+
+    def test_report_paste_not_logged_in(self) -> None:
+        paste = Paste.objects.create(
+            title="test_report_paste",
+            content="test_report_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                reportPaste(id: %s, reason: "test_report_paste_reason") {
+                    ok
+                }
+            }
+            '''
+            % paste.pk,
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(
+            content["errors"][0]["message"],
+            "You do not have permission to perform this action",
+        )
+
+    def test_report_paste_not_found(self) -> None:
+        response = self.query(
+            '''
+            mutation {
+                reportPaste(id: 420, reason: "test_report_paste_reason") {
+                    ok
+                }
+            }
+            ''',
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(
+            content["errors"][0]["message"],
+            "Paste matching query does not exist.",
+        )
+
+    def test_delete_report(self) -> None:
+        paste = Paste.objects.create(
+            title="test_report_paste",
+            content="test_report_paste_content",
+            private=False,
+            author=self.admin,
+        )
+        report = Report.objects.create(
+            paste=paste,
+            reason="test_report_paste_reason",
+            reporter=self.admin,
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                deleteReport(id: %s) {
+                    ok
+                }
+            }
+            '''
+            % report.pk,
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["deleteReport"]["ok"], True)
+
+        with self.assertRaises(Report.DoesNotExist):
+            Report.objects.get(pk=report.pk)
+
+    def test_delete_report_not_logged_in(self) -> None:
+        paste = Paste.objects.create(
+            title="test_report_paste",
+            content="test_report_paste_content",
+            private=False,
+            author=self.admin,
+        )
+        report = Report.objects.create(
+            paste=paste,
+            reason="test_report_paste_reason",
+            reporter=self.admin,
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                deleteReport(id: %s) {
+                    ok
+                }
+            }
+            '''
+            % report.pk,
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(
+            content["errors"][0]["message"],
+            "You do not have permission to perform this action",
+        )
+
+    def test_delete_report_as_normie(self) -> None:
+        paste = Paste.objects.create(
+            title="test_report_paste",
+            content="test_report_paste_content",
+            private=False,
+            author=self.admin,
+        )
+        report = Report.objects.create(
+            paste=paste,
+            reason="test_report_paste_reason",
+            reporter=self.admin,
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                deleteReport(id: %s) {
+                    ok
+                }
+            }
+            '''
+            % report.pk,
+            headers={"HTTP_COOKIE": f"token={self.normie_token}"},
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(
+            content["errors"][0]["message"],
+            "You do not have permission to perform this action",
+        )
+
+    def test_delete_report_not_found(self) -> None:
+        response = self.query(
+            '''
+            mutation {
+                deleteReport(id: 420) {
+                    ok
+                }
+            }
+            ''',
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(
+            content["errors"][0]["message"],
+            "Report matching query does not exist.",
+        )
+
+    def test_mark_all_reports(self) -> None:
+        paste = Paste.objects.create(
+            title="test_report_paste",
+            content="test_report_paste_content",
+            private=False,
+            author=self.admin,
+        )
+        paste2 = Paste.objects.create(
+            title="test_report_paste2",
+            content="test_report_paste_content2",
+            private=False,
+            author=self.admin,
+        )
+
+        report = Report.objects.create(
+            paste=paste,
+            reason="test_report_paste_reason",
+            reporter=self.admin,
+        )
+        report2 = Report.objects.create(
+            paste=paste,
+            reason="test_report_paste_reason",
+            reporter=self.admin,
+        )
+        unrelated_report = Report.objects.create(
+            paste=paste2,
+            reason="test_report_paste_reason",
+            reporter=self.admin,
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                deleteAllReports(id: %s) {
+                    ok
+                }
+            }
+            '''
+            % paste.pk,
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["deleteAllReports"]["ok"], True)
+
+        with self.assertRaises(Report.DoesNotExist):
+            Report.objects.get(pk=report.pk)
+        with self.assertRaises(Report.DoesNotExist):
+            Report.objects.get(pk=report2.pk)
+
+        self.assertIsNotNone(Report.objects.get(pk=unrelated_report.pk))

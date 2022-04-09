@@ -6,7 +6,7 @@ import validateEmail from "./Shared";
 interface Props {
   isVisible: boolean;
   setVisible: Dispatch<SetStateAction<boolean>>;
-  refetch: () => void;
+  refetch: () => Promise<any>;
 }
 
 export const CreateUserModal = (props: Props) => {

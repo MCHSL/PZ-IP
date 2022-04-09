@@ -15,8 +15,8 @@ import graphene_django_optimizer as gql_optimizer
 from graphene import ResolveInfo
 
 # Project
-from wklejki.decorators import login_required
-from wklejki.models import Attachment, Paste
+from wklejki.decorators import login_required, staff_member_required
+from wklejki.models import Attachment, Paste, Report
 
 logger = logging.getLogger()
 
@@ -50,6 +50,14 @@ class FileDelta(graphene.InputObjectType):
     removed = graphene.List(RemovedFile, required=True)
 
 
+class ReportType(gql_optimizer.OptimizedDjangoObjectType):
+    class Meta:
+        model = Report
+        only_fields = ("id", "reason", "reporter", "created_at")
+
+    id = graphene.Int()
+
+
 class PasteType(gql_optimizer.OptimizedDjangoObjectType):
     class Meta:
         model = Paste
@@ -58,9 +66,14 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
     attachments = graphene.List(AttachmentType)
     like_count = graphene.Int(description="Number of users who like this paste")
     is_liked = graphene.Boolean(description="Does the current user like this paste?")
+    is_reported = graphene.Boolean(
+        description="Did the current user report this paste?"
+    )
+    report_count = graphene.Int(description="Number of reports for this paste")
     attachments = graphene.List(
         AttachmentType, description="Attachments for this paste"
     )
+    reports = graphene.List(ReportType, description="Reports for this paste")
 
     @gql_optimizer.resolver_hints(model_field='likers')
     def resolve_like_count(self: Paste, info: ResolveInfo) -> int:
@@ -76,6 +89,24 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
     @gql_optimizer.resolver_hints(model_field='attachments')
     def resolve_attachments(self: Paste, info: ResolveInfo) -> List[Attachment]:
         return self.attachments.all()  # type: ignore
+
+    @gql_optimizer.resolver_hints(model_field='reports')
+    def resolve_reports(self: Paste, info: ResolveInfo) -> List[Report]:
+        if info.context.user.is_staff:
+            return self.reports.all()  # type: ignore
+        return []
+
+    @gql_optimizer.resolver_hints(model_field='reports')
+    def resolve_is_reported(self: Paste, info: ResolveInfo) -> bool:
+        if info.context.user.is_authenticated:
+            return self.reports.filter(reporter=info.context.user).exists()
+        return False
+
+    @gql_optimizer.resolver_hints(model_field='reports')
+    def resolve_report_count(self: Paste, info: ResolveInfo) -> int:
+        if info.context.user.is_staff:
+            return self.reports.count()  # type: ignore
+        return 0
 
 
 class PasteQuery(graphene.ObjectType):
@@ -296,8 +327,107 @@ class LikePaste(graphene.Mutation):
         return LikePaste(paste=paste)
 
 
+class ReportPaste(graphene.Mutation):
+    """Reports a paste"""
+
+    ok = graphene.Boolean()
+
+    class Arguments:
+        id = graphene.Int(required=True)
+        reason = graphene.String(required=True)
+
+    @login_required
+    def mutate(self, info: ResolveInfo, id: int, reason: str) -> "ReportPaste":
+        paste: Paste = Paste.objects.get(pk=id)
+
+        if paste.reports.filter(reporter=info.context.user).exists():
+            raise Exception("You have already reported this paste")
+
+        if paste.private and info.context.user != paste.author:
+            # Why would you report your own paste?
+            raise Paste.DoesNotExist("Paste matching query does not exist")
+
+        report = Report(
+            paste=paste,
+            reporter=info.context.user,
+            reason=reason,
+        )
+        report.save()
+
+        logging.info(
+            f"User '{info.context.user}' reported paste '{paste}'"
+            f"by user '{paste.author}'"
+        )
+
+        return ReportPaste(ok=True)
+
+
+class DeleteReport(graphene.Mutation):
+    """Deletes a report"""
+
+    ok = graphene.Boolean()
+
+    class Arguments:
+        id = graphene.Int(required=True)
+
+    @staff_member_required
+    def mutate(self, info: ResolveInfo, id: int) -> "DeleteReport":
+        report: Report = Report.objects.get(pk=id)
+        report.delete()
+
+        logging.info(f"User '{info.context.user}' deleted report '{report}'")
+
+        return DeleteReport(ok=True)
+
+
+class DeleteAllReports(graphene.Mutation):
+    """Deletes all reports on a paste"""
+
+    ok = graphene.Boolean()
+
+    class Arguments:
+        id = graphene.Int(required=True)
+
+    @staff_member_required
+    def mutate(self, info: ResolveInfo, id: int) -> "DeleteAllReports":
+        paste: Paste = Paste.objects.get(pk=id)
+
+        for report in paste.reports.all():
+            report.delete()
+
+        logging.info(f"User '{info.context.user}' deleted all reports for '{paste}'")
+
+        return DeleteAllReports(ok=True)
+
+
+class UnreviewedPastesQuery(graphene.ObjectType):
+    """Returns pastes that have unreviewed reports"""
+
+    count = graphene.Int()
+    unreviewed_pastes = graphene.List(
+        PasteType, skip=graphene.Int(), take=graphene.Int()
+    )
+
+    @staff_member_required
+    @gql_optimizer.resolver_hints(model_field='reports')
+    def resolve_count(self, info: ResolveInfo) -> int:
+        return Paste.objects.filter(reports__isnull=False).distinct().count()
+
+    @staff_member_required
+    @gql_optimizer.resolver_hints(model_field='reports')
+    def resolve_unreviewed_pastes(
+        self, info: ResolveInfo, skip: int, take: int
+    ) -> List[Paste]:
+        return Paste.objects.filter(reports__isnull=False).distinct()[  # type: ignore
+            skip:take
+        ]
+
+
 class PasteMutation(graphene.ObjectType):
     create_paste = CreatePaste.Field()
     update_paste = UpdatePaste.Field()
     delete_paste = DeletePaste.Field()
     like_paste = LikePaste.Field()
+    report_paste = ReportPaste.Field()
+    delete_report = DeleteReport.Field()
+    deleteAllReports = DeleteAllReports.Field()

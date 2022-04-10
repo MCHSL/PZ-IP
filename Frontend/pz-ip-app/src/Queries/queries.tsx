@@ -227,9 +227,9 @@ export const delete_all_reports = gql`
 `;
 
 export const get_pastes = gql`
-  query GetPastes($skip: Int, $take: Int) {
+  query GetPastes($skip: Int!, $take: Int!, $filters: PasteFilterOptions) {
     pasteCount
-    pastes(skip: $skip, take: $take) {
+    pastes(skip: $skip, take: $take, filters: $filters) {
       id
       title
       content
@@ -242,41 +242,50 @@ export const get_pastes = gql`
   }
 `;
 
-export const get_paste_titles = gql`
-  query GetPasteTitles($skip: Int, $take: Int) {
-    pasteCount
-    pastes(skip: $skip, take: $take) {
-      id
-      title
-      createdAt
-      updatedAt
-      likeCount
-      isLiked
-      isPrivate: private
-      author {
+export const get_paste_metadata = gql`
+  query GetPasteTitles($skip: Int!, $take: Int!, $filters: PasteFilterOptions) {
+    pastes(skip: $skip, take: $take, filters: $filters) {
+      count
+      pastes {
         id
-        username
+        title
+        createdAt
+        updatedAt
+        likeCount
+        isLiked
+        isPrivate: private
+        author {
+          id
+          username
+        }
       }
     }
   }
 `;
 
-export const get_paste_titles_for_user = gql`
-  query GetPasteTitlesForUser($userId: Int!, $skip: Int, $take: Int) {
+export const get_paste_metadata_for_user = gql`
+  query GetPasteTitlesForUser(
+    $userId: Int!
+    $skip: Int!
+    $take: Int!
+    $filters: PasteFilterOptions
+  ) {
     user(id: $userId) {
       id
-      pasteCount
-      pastes(skip: $skip, take: $take) {
-        id
-        title
-        createdAt
-        updatedAt
-        isPrivate: private
-        likeCount
-        isLiked
-        author {
+      pastes(skip: $skip, take: $take, filters: $filters) {
+        count
+        pastes {
           id
-          username
+          title
+          createdAt
+          updatedAt
+          isPrivate: private
+          likeCount
+          isLiked
+          author {
+            id
+            username
+          }
         }
       }
     }

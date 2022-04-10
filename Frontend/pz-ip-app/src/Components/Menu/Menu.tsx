@@ -12,7 +12,9 @@ interface Props {
 export const Menu = ({ has_user }: Props) => {
   const navigate = useNavigate();
   const { user } = useUser();
-  const { data: reports } = useQuery(get_unreviewed_reports_count);
+  const { data: reports } = useQuery(get_unreviewed_reports_count, {
+    pollInterval: 30000,
+  });
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
       <Container>

@@ -31,7 +31,9 @@ const ReportedPastes = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { data } = getReportedPastesPaginated(page, itemsPerPage);
+  const { data } = getReportedPastesPaginated(page, itemsPerPage, {
+    pollInterval: 30000,
+  });
   console.log("RERENDERING");
   console.log(data);
 

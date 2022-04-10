@@ -72,7 +72,21 @@ const PasteRow = ({ paste, page, itemsPerPage, refetch }: Props) => {
         </td>
 
         <td className="text-muted" style={{ verticalAlign: "middle" }}>
-          {paste.author.username}
+          <Button
+            variant="link"
+            className="p-0"
+            onClick={() =>
+              navigate(`/profile/${paste.author.id}`, {
+                state: {
+                  returnTo: location.pathname,
+                  page,
+                  itemsPerPage,
+                },
+              })
+            }
+          >
+            {paste.author.username}
+          </Button>
         </td>
 
         <td className="text-muted" style={{ verticalAlign: "middle" }}>

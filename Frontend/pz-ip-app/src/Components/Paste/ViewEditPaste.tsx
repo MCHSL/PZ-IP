@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import {
   get_paste,
-  get_paste_titles,
-  get_paste_titles_for_user,
+  get_paste_metadata,
+  get_paste_metadata_for_user,
   update_paste,
 } from "../../Queries/queries";
 import { useUser } from "../Context/CurrentUserContext";
@@ -97,8 +97,8 @@ const ViewEditPaste = ({ id }: Props) => {
         },
         refetchQueries: [
           get_paste,
-          get_paste_titles,
-          get_paste_titles_for_user,
+          get_paste_metadata,
+          get_paste_metadata_for_user,
         ],
       });
     } else {

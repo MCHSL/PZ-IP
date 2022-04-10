@@ -16,6 +16,10 @@ from graphene import ResolveInfo
 from wklejki.decorators import login_required, staff_member_required, superuser_required
 from wklejki.models import CustomUser
 
+# Local
+from .filtering import PasteFilterOptions
+from .paste import Pastes
+
 logger = logging.getLogger()
 
 
@@ -26,31 +30,42 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
 
     id = graphene.Int()
 
-    pastes = graphene.List(
-        "wklejki.schema.paste.PasteType",
-        skip=graphene.Int(description="Skip n items when paginating"),
-        take=graphene.Int(description="Take n items when paginating"),
+    pastes = graphene.Field(
+        Pastes,
+        description=(
+            "A list of all pastes in the database,"
+            "optionally filtered by the given options"
+        ),
+        skip=graphene.Int(description="Skip n items when paginating", required=True),
+        take=graphene.Int(description="Take n items when paginating", required=True),
+        filters=graphene.Argument(PasteFilterOptions),
     )
 
     paste_count = graphene.Int(description="Total number of pastes for this user")
 
     @gql_optimizer.resolver_hints(model_field='pastes')
-    def resolve_pastes(self, info: ResolveInfo, skip: int, take: int) -> Any:
+    def resolve_pastes(
+        self,
+        info: ResolveInfo,
+        skip: int,
+        take: int,
+        filters: Optional[PasteFilterOptions],
+    ) -> Any:
+        pastes = self.pastes.all().order_by('-created_at')
+
         if info.context.user == self:
             logger.debug(f"Resolving public+private pastes for user '{self}'")
-            pastes = self.pastes.all().order_by('-created_at')
         else:
             logger.debug(f"Resolving public pastes for user '{self}'")
-            pastes = self.pastes.all().order_by('-created_at').filter(private=False)
+            pastes = pastes.filter(private=False)
 
-        if skip is None and take is None:
-            logger.debug(f"Returning all pastes for user '{self}'")
-            return pastes
-        else:
-            logger.debug(
-                f"Returning pastes for user '{self}' with skip={skip} and take={take}"
-            )
-            return pastes[skip : skip + take]
+        if filters:
+            pastes = filters.filter(pastes)
+
+        logger.debug(
+            f"Returning pastes for user '{self}' with skip={skip} and take={take}"
+        )
+        return Pastes(pastes.count(), pastes[skip : skip + take])
 
     @gql_optimizer.resolver_hints(model_field='pastes')
     def resolve_paste_count(self, info: ResolveInfo) -> int:

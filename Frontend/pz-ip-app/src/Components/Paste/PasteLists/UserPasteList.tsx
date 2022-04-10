@@ -2,9 +2,10 @@ import { useApolloClient } from "@apollo/client";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { getPasteTitlesPaginated } from "../../../Queries/PaginatingQuery";
-import { get_paste_titles_for_user } from "../../../Queries/queries";
+import { get_paste_metadata_for_user } from "../../../Queries/queries";
 import { LocationState } from "../Types";
 import PasteList from "./Base/PasteList";
+import PasteFilter from "./PasteFilter";
 
 interface Props {
   userId: number;
@@ -20,9 +21,11 @@ export const UserPasteList = ({ userId }: Props) => {
     loc_state?.itemsPerPage || 10
   );
 
+  const [searchOptions, setSearchOptions] = useState({});
+
   // Prefetch the second page
   apolloClient.query({
-    query: get_paste_titles_for_user,
+    query: get_paste_metadata_for_user,
     variables: {
       userId: userId,
       skip: (page + 1) * itemsPerPage,
@@ -36,7 +39,9 @@ export const UserPasteList = ({ userId }: Props) => {
     previousData,
     data = previousData,
     refetch,
-  } = getPasteTitlesPaginated(userId, page, itemsPerPage);
+  } = getPasteTitlesPaginated(userId, page, itemsPerPage, {
+    filters: searchOptions,
+  });
 
   if (loading && !data) {
     return <p>Loading...</p>;
@@ -51,14 +56,14 @@ export const UserPasteList = ({ userId }: Props) => {
     );
   }
 
-  const { pastes, pasteCount: totalItems } = data.user;
+  const { pastes, count: totalItems } = data.user.pastes;
 
   function prefetchPagesAround(newPage: number) {
     const pages_to_fetch = [newPage - 1, newPage, newPage + 1];
     pages_to_fetch.forEach((page) => {
       if (page >= 0 && page < totalItems) {
         apolloClient.query({
-          query: get_paste_titles_for_user,
+          query: get_paste_metadata_for_user,
           variables: {
             userId: userId,
             skip: page * itemsPerPage,
@@ -80,8 +85,14 @@ export const UserPasteList = ({ userId }: Props) => {
     refetch,
   };
 
+  function onSearch(newSearchOptions: any) {
+    setSearchOptions(newSearchOptions);
+    setPage(0);
+  }
+
   return (
     <>
+      <PasteFilter onSearch={onSearch} loading={loading} />
       <PasteList {...props} />
     </>
   );

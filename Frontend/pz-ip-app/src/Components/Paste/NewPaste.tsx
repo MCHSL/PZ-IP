@@ -6,8 +6,8 @@ import { Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import {
   create_paste,
-  get_paste_titles,
-  get_paste_titles_for_user,
+  get_paste_metadata,
+  get_paste_metadata_for_user,
 } from "../../Queries/queries";
 import { Attachment } from "./Types";
 import RenderPaste from "./RenderPaste";
@@ -30,7 +30,7 @@ const NewPaste = () => {
     onError: (error) => {
       setError(error.message);
     },
-    refetchQueries: [get_paste_titles, get_paste_titles_for_user],
+    refetchQueries: [get_paste_metadata, get_paste_metadata_for_user],
   });
 
   function validate() {

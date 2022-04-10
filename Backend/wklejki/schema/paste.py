@@ -1,13 +1,12 @@
 # Standard Library
 import base64
 import logging
-from typing import List
+from typing import List, Optional
 
 # Django
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.db.models import Q
-from django.db.models.query import QuerySet
 
 # 3rd-Party
 import graphene
@@ -17,6 +16,9 @@ from graphene import ResolveInfo
 # Project
 from wklejki.decorators import login_required, staff_member_required
 from wklejki.models import Attachment, Paste, Report
+
+# Local
+from .filtering import PasteFilterOptions
 
 logger = logging.getLogger()
 
@@ -109,39 +111,59 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
         return 0
 
 
+class Pastes(graphene.ObjectType):
+    count = graphene.Int(description="Number of pastes returned after filtering")
+    pastes = graphene.List(PasteType, description="The pastes themselves")
+
+
 class PasteQuery(graphene.ObjectType):
-    pastes = graphene.List(
-        PasteType,
-        description="A list of all pastes in the database",
-        skip=graphene.Int(description="Skip n items when paginating"),
-        take=graphene.Int(description="Take n items when paginating"),
+    pastes = graphene.Field(
+        Pastes,
+        description=(
+            "A list of all pastes in the database,"
+            "optionally filtered by the given options"
+        ),
+        skip=graphene.Int(description="Skip n items when paginating", required=True),
+        take=graphene.Int(description="Take n items when paginating", required=True),
+        filters=graphene.Argument(PasteFilterOptions),
     )
     paste = graphene.Field(
-        PasteType, id=graphene.Int(required=True), description="Look up paste by ID"
+        PasteType,
+        id=graphene.Int(required=True),
+        description="Look up paste by ID",
     )
 
     paste_count = graphene.Int(description="Total number of pastes")
 
     @gql_optimizer.resolver_hints(model_field='pastes')
     def resolve_pastes(
-        self, info: ResolveInfo, skip: int, take: int
-    ) -> QuerySet[Paste]:
+        self,
+        info: ResolveInfo,
+        skip: int,
+        take: int,
+        filters: Optional[PasteFilterOptions] = None,
+    ) -> Pastes:
         if take > 100:
             raise Exception("420 Enhance Your Calm")
 
+        result = Paste.objects.all()
+
+        print(filters)
+
+        if filters:
+            result = filters.filter(result)
+
+        result = result.order_by('-created_at')
+
         if info.context.user.is_authenticated:
-            pastes = (
-                Paste.objects.all()
-                .order_by('-created_at')
-                .filter(
-                    Q(private=False) | Q(Q(private=True) & Q(author=info.context.user))
-                )
+            result = result.filter(
+                Q(private=False) | Q(Q(private=True) & Q(author=info.context.user))
             )
         else:
-            pastes = Paste.objects.all().order_by('-created_at').filter(private=False)
+            result = result.filter(private=False)
 
         logger.debug(f"returning paginated pastes: skip={skip}, take={take}")
-        return pastes[skip : skip + take]
+        return Pastes(result.count(), result[skip : skip + take])
 
     def resolve_paste(self, info: ResolveInfo, id: int) -> Paste:
         logging.debug(f"returning paste by id: {id}")

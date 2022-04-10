@@ -21,8 +21,8 @@ services:
   tests:
     build: ./Backend
     entrypoint: sh -c 'coverage run --omit='*/migrations*,Backend/*,manage.py' --source='.' manage.py test --noinput && coverage report -m'
-    volumes:
-      - ./logs/test/backend:/var/log/django
+    environment:
+      - TESTING=True
     ports:
       - "80:80"
     depends_on:

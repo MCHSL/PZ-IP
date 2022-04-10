@@ -27,7 +27,8 @@ django.utils.encoding.force_text = force_str  # type: ignore
 
 env = environ.Env(
     # set casting, default value
-    DEBUG=(bool, False)
+    DEBUG=(bool, False),
+    TESTING=(bool, False),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -171,47 +172,65 @@ CORS_ALLOW_CREDENTIALS = True
 
 PYINSTRUMENT_PROFILE_DIR = '/var/log/django/profiles/'
 
-LOGGING = {
-    'version': 1,  # the dictConfig format version
-    'disable_existing_loggers': False,  # retain the default loggers
-    'handlers': {
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/django/backend.log',
-            'formatter': 'verbose',
+if env("TESTING") is True:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
         },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
+        'loggers': {
+            '': {
+                'level': 'DEBUG',
+                'handlers': ['console'],
+            },
         },
-    },
-    'loggers': {
-        '': {
-            'level': env('DJANGO_LOG_LEVEL'),
-            'handlers': ['file', 'console'],
+    }
+
+else:
+    LOGGING = {
+        'version': 1,  # the dictConfig format version
+        'disable_existing_loggers': False,  # retain the default loggers
+        'handlers': {
+            'file': {
+                'class': 'logging.FileHandler',
+                'filename': '/var/log/django/backend.log',
+                'formatter': 'verbose',
+            },
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+            },
         },
-        'django.request': {
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG',
-            'propagate': True,
+        'loggers': {
+            '': {
+                'level': env('DJANGO_LOG_LEVEL'),
+                'handlers': ['file', 'console'],
+            },
+            'django.request': {
+                'handlers': ['file', 'console'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+            'django.security': {
+                'handlers': ['file', 'console'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
         },
-        'django.security': {
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG',
-            'propagate': True,
+        'formatters': {
+            'verbose': {
+                'format': '{name} {levelname} {asctime} {module}: {message}',
+                'style': '{',
+            },
+            'simple': {
+                'format': '{levelname} {message}',
+                'style': '{',
+            },
         },
-    },
-    'formatters': {
-        'verbose': {
-            'format': '{name} {levelname} {asctime} {module}: {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-}
+    }
 
 MEDIA_ROOT = "/var/www/wklejka/user_media"
 MEDIA_URL = "user_media/"

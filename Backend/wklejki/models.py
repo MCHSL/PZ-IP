@@ -28,6 +28,7 @@ class Paste(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    expire_date = models.DateTimeField()
     private = models.BooleanField(default=False)
 
     def __str__(self) -> str:

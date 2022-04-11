@@ -1,6 +1,7 @@
 # Standard Library
 import logging
 from typing import List
+import datetime
 
 # Django
 from django.core.cache import cache
@@ -106,6 +107,8 @@ class PasteQuery(graphene.ObjectType):
     def resolve_paste(self, info: ResolveInfo, id: int) -> Paste:
         logging.debug(f"returning paste by id: {id}")
         paste = Paste.objects.get(pk=id)
+        if paste.expire_date < datetime.datetime.now():
+            raise Paste.DoesNotExist("Paste matching query does not exist")
         if paste.private and (
             not info.context.user.is_authenticated
             or (paste.author != info.context.user)
@@ -135,6 +138,7 @@ class CreatePaste(graphene.Mutation):
     class Arguments:
         title = graphene.String(required=True)
         content = graphene.String(required=True)
+        expire_date = graphene.DateTime(required=True)
         private = graphene.Boolean(required=True)
         file_delta = graphene.Argument(FileDelta)
 
@@ -144,12 +148,13 @@ class CreatePaste(graphene.Mutation):
         info: ResolveInfo,
         title: str,
         content: str,
+        expire_date: datetime.datetime,
         private: bool,
         file_delta: FileDelta,
     ) -> "CreatePaste":
 
         paste = Paste(
-            author=info.context.user, title=title, content=content, private=private
+            author=info.context.user, title=title, content=content, expire_date = expire_date, private=private
         )
         paste.save()
 
@@ -179,6 +184,7 @@ class UpdatePaste(graphene.Mutation):
         id = graphene.Int(required=True)
         title = graphene.String(required=True)
         content = graphene.String(required=True)
+        expire_date = graphene.DateTime(required=True)
         private = graphene.Boolean(required=True)
         file_delta = graphene.Argument(FileDelta)
 
@@ -189,6 +195,7 @@ class UpdatePaste(graphene.Mutation):
         id: int,
         title: str,
         content: str,
+        expire_date: datetime.datetime,
         private: bool,
         file_delta: FileDelta,
     ) -> "UpdatePaste":
@@ -197,6 +204,7 @@ class UpdatePaste(graphene.Mutation):
             raise Exception("You are not the author of this paste")
         paste.title = title
         paste.content = content
+        paste.expire_date = expire_date
         paste.private = private
         paste.save()
 

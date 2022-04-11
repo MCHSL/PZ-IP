@@ -1,5 +1,6 @@
 # Standard Library
 import logging
+import datetime
 from functools import partial, reduce
 from typing import Any, Callable, List, Type, TypeVar
 
@@ -152,6 +153,8 @@ class PaginatedPastes(graphene.Field):
         logger.debug("Resolving paginated pastes")
 
         pastes = paste_source(parent, info)
+
+        pastes = pastes.filter(expire_date__gt=datetime.datetime.now())
 
         if filters:
             logger.debug(f"Filtering pastes with {filters}")

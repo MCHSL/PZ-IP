@@ -121,7 +121,7 @@ const ViewEditPaste = ({ id }: Props) => {
     ? (location.state as LocationState).returnTo
     : "/profile";
 
-  function yeet_away() {
+  function yeetAway() {
     const normalizedId = client.cache.identify({ id, __typename: "PasteType" });
     client.cache.evict({ id: normalizedId });
     client.cache.gc();
@@ -136,7 +136,7 @@ const ViewEditPaste = ({ id }: Props) => {
         isVisible={deleteVisible}
         setVisible={setDeleteVisible}
         refetch={refetch}
-        afterSubmit={yeet_away}
+        afterSubmit={yeetAway}
       />
       <ReportPasteModal
         id={id}
@@ -183,6 +183,7 @@ const ViewEditPaste = ({ id }: Props) => {
                 </Button>
               )}
               <Rate
+                key={data ? data.paste.likeCount : 0}
                 id={id}
                 disabled={!user}
                 pasteLikes={data ? data.paste.likeCount : 0}

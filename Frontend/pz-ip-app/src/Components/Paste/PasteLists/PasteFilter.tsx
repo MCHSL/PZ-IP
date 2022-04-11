@@ -1,7 +1,18 @@
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
-import { Button, Collapse, Form, Row, Col, Spinner } from "react-bootstrap";
+import {
+  Button,
+  Collapse,
+  Form,
+  Row,
+  Col,
+  Spinner,
+  Dropdown,
+  ButtonGroup,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "react-bootstrap";
 
 interface PasteFilterOptions {
   titleContains?: string;
@@ -20,15 +31,35 @@ interface PasteFilterOptions {
   };
 }
 
+interface PasteOrdering {
+  field: "CREATED_AT" | "UPDATED_AT" | "LIKE_COUNT";
+  direction: "ASC" | "DESC";
+}
+
+interface PasteDisplayOptions {
+  filters?: PasteFilterOptions;
+  orderBy?: PasteOrdering;
+}
+
+const field_names: { [name: string]: string } = {
+  CREATED_AT: "Utworzono",
+  UPDATED_AT: "Zmodyfikowano",
+  LIKE_COUNT: "Lajki",
+};
+
 interface Props {
   loading: boolean;
-  onSearch: (options: PasteFilterOptions) => void;
+  onSearch: (options: PasteDisplayOptions) => void;
 }
 
 export const PasteFilter = ({ loading, onSearch }: Props) => {
   const [showSearch, setShowSearch] = useState(false);
   const [displayedSearchOptions, setDisplayedSearchOptions] =
     useState<PasteFilterOptions>({});
+  const [ordering, setOrdering] = useState<PasteOrdering>({
+    field: "CREATED_AT",
+    direction: "DESC",
+  });
 
   return (
     <>
@@ -185,10 +216,103 @@ export const PasteFilter = ({ loading, onSearch }: Props) => {
                 />
               </Form.Group>
             </Row>
+            <Row className="mb-3">
+              <Form.Group as={Col}>
+                <Form.Label>Sortowanie według </Form.Label>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                    alignItems: "baseline",
+                  }}
+                >
+                  <Dropdown>
+                    <Dropdown.Toggle
+                      variant="primary"
+                      style={{ verticalAlign: "baseline" }}
+                    >
+                      {ordering?.field
+                        ? field_names[ordering.field]
+                        : "Wybierz..."}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item
+                        onClick={() =>
+                          setOrdering({
+                            ...ordering,
+                            field: "CREATED_AT",
+                          })
+                        }
+                      >
+                        Utworzono
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() =>
+                          setOrdering({
+                            ...ordering,
+                            field: "UPDATED_AT",
+                          })
+                        }
+                      >
+                        Zmodyfikowano
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() =>
+                          setOrdering({
+                            ...ordering,
+                            field: "LIKE_COUNT",
+                          })
+                        }
+                      >
+                        Lajki
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                  <div>
+                    <Form.Check
+                      inline
+                      label="Rosnąco"
+                      name="asc-desc"
+                      type="radio"
+                      checked={ordering.direction === "ASC"}
+                      onChange={() =>
+                        setOrdering({ ...ordering, direction: "ASC" })
+                      }
+                    />
+                    <Form.Check
+                      inline
+                      label="Malejąco"
+                      name="asc-desc"
+                      type="radio"
+                      checked={ordering.direction === "DESC"}
+                      onChange={() =>
+                        setOrdering({ ...ordering, direction: "DESC" })
+                      }
+                    />
+                  </div>
+                  {/* <ToggleButtonGroup
+                    type="radio"
+                    name="AAAAAAAAAAAAAAA"
+                    value={ordering.direction}
+                    onChange={(direction: "ASC" | "DESC") =>
+                      setOrdering({ ...ordering, direction })
+                    }
+                  >
+                    <ToggleButton value="ASC">Rosnąco</ToggleButton>
+                    <ToggleButton value="DESC">Malejąco</ToggleButton>
+                  </ToggleButtonGroup> */}
+                </div>
+              </Form.Group>
+            </Row>
             <Form.Group>
               <Button
                 style={{ float: "right" }}
-                onClick={() => onSearch(displayedSearchOptions)}
+                onClick={() =>
+                  onSearch({
+                    filters: displayedSearchOptions,
+                    orderBy: ordering,
+                  })
+                }
               >
                 Szukaj{" "}
                 {loading ? (

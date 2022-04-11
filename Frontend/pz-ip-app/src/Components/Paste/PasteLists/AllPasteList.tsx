@@ -35,7 +35,7 @@ export const AllPasteList = () => {
     data = previousData,
     refetch,
   } = getPasteTitlesPaginated(null, page, itemsPerPage, {
-    filters: searchOptions,
+    ...searchOptions,
   });
 
   if (loading && !data) {

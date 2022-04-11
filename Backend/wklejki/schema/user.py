@@ -17,7 +17,7 @@ from wklejki.decorators import login_required, staff_member_required, superuser_
 from wklejki.models import CustomUser
 
 # Local
-from .filtering import PasteFilterOptions
+from .filtering import PasteFilterOptions, PasteOrdering
 from .paste import Pastes
 
 logger = logging.getLogger()
@@ -38,7 +38,10 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
         ),
         skip=graphene.Int(description="Skip n items when paginating", required=True),
         take=graphene.Int(description="Take n items when paginating", required=True),
-        filters=graphene.Argument(PasteFilterOptions),
+        filters=graphene.Argument(
+            PasteFilterOptions, description="Filter pastes according to these rules"
+        ),
+        order_by=graphene.Argument(PasteOrdering, description="Sort 'em"),
     )
 
     paste_count = graphene.Int(description="Total number of pastes for this user")
@@ -50,8 +53,9 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
         skip: int,
         take: int,
         filters: Optional[PasteFilterOptions],
+        order_by: Optional[PasteOrdering],
     ) -> Any:
-        pastes = self.pastes.all().order_by('-created_at')
+        pastes = self.pastes.all()
 
         if info.context.user == self:
             logger.debug(f"Resolving public+private pastes for user '{self}'")
@@ -61,6 +65,11 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
 
         if filters:
             pastes = filters.filter(pastes)
+
+        if order_by:
+            pastes = order_by.order(pastes)
+        else:
+            pastes = pastes.order_by('-created_at')
 
         logger.debug(
             f"Returning pastes for user '{self}' with skip={skip} and take={take}"

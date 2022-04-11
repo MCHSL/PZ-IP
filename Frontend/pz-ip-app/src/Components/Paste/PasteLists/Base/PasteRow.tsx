@@ -91,6 +91,12 @@ const PasteRow = ({ paste, page, itemsPerPage, refetch }: Props) => {
 
         <td className="text-muted" style={{ verticalAlign: "middle" }}>
           {paste.likeCount}
+          {paste.isLiked ? (
+            <FontAwesomeIcon
+              style={{ marginLeft: "5px", color: "red" }}
+              icon={solid("heart")}
+            />
+          ) : null}
         </td>
 
         <td

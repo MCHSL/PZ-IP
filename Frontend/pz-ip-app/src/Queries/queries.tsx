@@ -227,9 +227,14 @@ export const delete_all_reports = gql`
 `;
 
 export const get_pastes = gql`
-  query GetPastes($skip: Int!, $take: Int!, $filters: PasteFilterOptions) {
+  query GetPastes(
+    $skip: Int!
+    $take: Int!
+    $filters: PasteFilterOptions
+    $orderBy: PasteOrdering
+  ) {
     pasteCount
-    pastes(skip: $skip, take: $take, filters: $filters) {
+    pastes(skip: $skip, take: $take, filters: $filters, orderBy: $orderBy) {
       id
       title
       content
@@ -243,8 +248,13 @@ export const get_pastes = gql`
 `;
 
 export const get_paste_metadata = gql`
-  query GetPasteTitles($skip: Int!, $take: Int!, $filters: PasteFilterOptions) {
-    pastes(skip: $skip, take: $take, filters: $filters) {
+  query GetPasteTitles(
+    $skip: Int!
+    $take: Int!
+    $filters: PasteFilterOptions
+    $orderBy: PasteOrdering
+  ) {
+    pastes(skip: $skip, take: $take, filters: $filters, orderBy: $orderBy) {
       count
       pastes {
         id
@@ -269,10 +279,11 @@ export const get_paste_metadata_for_user = gql`
     $skip: Int!
     $take: Int!
     $filters: PasteFilterOptions
+    $orderBy: PasteOrdering
   ) {
     user(id: $userId) {
       id
-      pastes(skip: $skip, take: $take, filters: $filters) {
+      pastes(skip: $skip, take: $take, filters: $filters, orderBy: $orderBy) {
         count
         pastes {
           id

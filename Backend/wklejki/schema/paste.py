@@ -18,7 +18,7 @@ from wklejki.decorators import login_required, staff_member_required
 from wklejki.models import Attachment, Paste, Report
 
 # Local
-from .filtering import PasteFilterOptions
+from .filtering import PasteFilterOptions, PasteOrdering
 
 logger = logging.getLogger()
 
@@ -125,7 +125,10 @@ class PasteQuery(graphene.ObjectType):
         ),
         skip=graphene.Int(description="Skip n items when paginating", required=True),
         take=graphene.Int(description="Take n items when paginating", required=True),
-        filters=graphene.Argument(PasteFilterOptions),
+        filters=graphene.Argument(
+            PasteFilterOptions, description="Filter pastes according to these rules"
+        ),
+        order_by=graphene.Argument(PasteOrdering, description="Sort 'em"),
     )
     paste = graphene.Field(
         PasteType,
@@ -142,6 +145,7 @@ class PasteQuery(graphene.ObjectType):
         skip: int,
         take: int,
         filters: Optional[PasteFilterOptions] = None,
+        order_by: Optional[PasteOrdering] = None,
     ) -> Pastes:
         if take > 100:
             raise Exception("420 Enhance Your Calm")
@@ -153,7 +157,10 @@ class PasteQuery(graphene.ObjectType):
         if filters:
             result = filters.filter(result)
 
-        result = result.order_by('-created_at')
+        if order_by:
+            result = order_by.order(result)
+        else:
+            result = result.order_by('-created_at')
 
         if info.context.user.is_authenticated:
             result = result.filter(

@@ -1,4 +1,5 @@
 # Standard Library
+import logging
 from functools import reduce
 from typing import List, TypeVar
 
@@ -8,6 +9,8 @@ from django.db.models.query import QuerySet
 
 # 3rd-Party
 import graphene
+
+logger = logging.getLogger()
 
 
 class FilterBeforeAfter(graphene.InputObjectType):
@@ -41,6 +44,7 @@ class PasteFilterOptions(graphene.InputObjectType):
     TModel = TypeVar("TModel", bound=Model)
 
     def filter(self, query_set: QuerySet[TModel]) -> QuerySet[TModel]:
+        logger.debug(f"Filtering pastes with options: {self}")
         Qs: List[Q] = []
 
         if self.title_contains is not None:
@@ -71,3 +75,30 @@ class PasteFilterOptions(graphene.InputObjectType):
                 return query_set.filter(reduce(Q.__or__, Qs))
 
         return query_set
+
+
+class PasteOrderingField(graphene.Enum):
+    CREATED_AT = "created_at"
+    UPDATED_AT = "updated_at"
+    LIKE_COUNT = "like_count"
+
+
+class PasteOrderingDirections(graphene.Enum):
+    ASC = "asc"
+    DESC = "desc"
+
+
+class PasteOrdering(graphene.InputObjectType):
+    field = PasteOrderingField(default_value=PasteOrderingField.CREATED_AT)
+    direction = PasteOrderingDirections(default_value=PasteOrderingDirections.DESC)
+
+    TModel = TypeVar("TModel", bound=Model)
+
+    def order(self, query_set: QuerySet[TModel]) -> QuerySet[TModel]:
+        logger.debug(f"Ordering pastes with options: {self}")
+
+        if self.field == PasteOrderingField.LIKE_COUNT:
+            query_set = query_set.annotate(like_count=Count("likers"))
+
+        direction = "-" if self.direction == PasteOrderingDirections.DESC else ""
+        return query_set.order_by(f"{direction}{self.field.value}")

@@ -5,3 +5,7 @@ from django.apps import AppConfig
 class AuthConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'paste_token_auth'
+
+    def ready(self) -> None:
+        # Local
+        from . import signals  # noqa: F401

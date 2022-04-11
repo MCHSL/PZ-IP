@@ -18,7 +18,7 @@ const NewPaste = () => {
   const [content, setContent] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [expDate, setExpDate] = useState(0);
+  const [expDate, setExpDate] = useState<any>(null);
   const [error, setError] = useState("");
 
   const [doCreatePaste] = useMutation(create_paste, {
@@ -34,12 +34,12 @@ const NewPaste = () => {
   });
 
   function validate() {
-    if (expDate < 0) {
-      if (expDate === -1) {
-        setError("Wybierz swoją datę lub wybierz prefiniowaną");
-      } else {
-        setError("Data wygaśnięcia nie może poprzedzać daty obecnej");
-      }
+    let date = Date.now();
+    if (expDate === -1) {
+      setError("Wybierz swoją datę lub wybierz prefiniowaną");
+      return false;
+    } else if (expDate < date && expDate !== null) {
+      setError("Data wygaśnięcia nie może poprzedzać daty obecnej");
       return false;
     } else if (title !== "" && content !== "") {
       setError("");

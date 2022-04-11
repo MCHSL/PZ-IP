@@ -2,20 +2,21 @@ import React, { useState } from "react";
 import { Dropdown, Form } from "react-bootstrap";
 
 interface Props {
-  expDate: number;
-  setExpDate: (title: number) => void;
+  expDate: any;
+  setExpDate: (title: any) => void;
 }
 
 const ExpirationTime = ({ expDate, setExpDate }: Props) => {
   const [expDateText, setExpDateText] = useState("Nigdy");
+  let now = new Date();
   function setCustomData(e: string) {
     let data = new Date(e);
-    const now = new Date();
-    setExpDate((Number(data) - Number(now)) / 1000);
+    setExpDate(data);
   }
   function handleDate(e: any, text: string) {
+    let data = new Date(e);
     setExpDateText(text);
-    setExpDate(e);
+    setExpDate(data);
   }
   return (
     <div className="row">
@@ -26,42 +27,58 @@ const ExpirationTime = ({ expDate, setExpDate }: Props) => {
         <Dropdown.Menu>
           <Dropdown.Item
             onClick={() => {
-              handleDate(0, "Nigdy");
+              setExpDateText("Nigdy");
+              setExpDate(null);
             }}
           >
             Nigdy
           </Dropdown.Item>
           <Dropdown.Item
             onClick={() => {
-              handleDate(3600, "1 godzina");
+              handleDate(
+                now.setTime(now.getTime() + 1 * 60 * 60 * 1000),
+                "1 godzina"
+              );
             }}
           >
             1 godzina
           </Dropdown.Item>
           <Dropdown.Item
             onClick={() => {
-              handleDate(10800, "3 godziny");
+              handleDate(
+                now.setTime(now.getTime() + 3 * 60 * 60 * 1000),
+                "3 godziny"
+              );
             }}
           >
             3 godziny
           </Dropdown.Item>
           <Dropdown.Item
             onClick={() => {
-              handleDate(86400, "1 dzień");
+              handleDate(
+                now.setTime(now.getTime() + 24 * 60 * 60 * 1000),
+                "1 dzień"
+              );
             }}
           >
             1 dzień
           </Dropdown.Item>
           <Dropdown.Item
             onClick={() => {
-              handleDate(604800, "1 tydzień");
+              handleDate(
+                now.setTime(now.getTime() + 168 * 60 * 60 * 1000),
+                "1 tydzień"
+              );
             }}
           >
             1 tydzień
           </Dropdown.Item>
           <Dropdown.Item
             onClick={() => {
-              handleDate(31536000, "1 rok");
+              handleDate(
+                now.setTime(now.getTime() + 8760 * 60 * 60 * 1000),
+                "1 rok"
+              );
             }}
           >
             1 rok

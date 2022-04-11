@@ -23,6 +23,8 @@ services:
   backend:
     build: ./Backend
     restart: unless-stopped
+    environment:
+      - WKLEJKA_DEV=True
     volumes:
       - ./Backend:/code
       - ./logs/dev/backend:/var/log/django

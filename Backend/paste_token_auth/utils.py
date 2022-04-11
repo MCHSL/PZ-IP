@@ -66,10 +66,9 @@ def create_user(
     )
     user.set_password(password)
     user.save()
-    auth: AuthMeta = AuthMeta.objects.create(
-        user=user, is_verified=is_verified, token=None
-    )
-    auth.save()
+    user.auth.is_verified = is_verified
+    user.auth.token = None
+    user.auth.save()
     return user
 
 
@@ -86,7 +85,7 @@ def send_verification_email(user: User) -> None:
 
     content = (
         'Kliknij w link aby zweryfikować swój adres e-mail:'
-        'http://localhost/verify/{}'.format(verification_jwt)
+        f'http://{settings.DOMAIN_BACKEND}/verify/{verification_jwt}'
     )
 
     send_mail(
@@ -113,7 +112,7 @@ def send_password_reset_email(user: User) -> None:
 
     content = (
         'Kliknij w link aby zresetować hasło:'
-        'http://localhost/password_reset/{}'.format(reset_jwt)
+        f'http://{settings.DOMAIN}/password_reset/{reset_jwt}'
     )
 
     send_mail(

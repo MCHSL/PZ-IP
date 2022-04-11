@@ -17,8 +17,7 @@ from wklejki.decorators import login_required, staff_member_required, superuser_
 from wklejki.models import CustomUser
 
 # Local
-from .filtering import PasteFilterOptions, PasteOrdering
-from .paste import Pastes
+from .filtering import PaginatedPastes
 
 logger = logging.getLogger()
 
@@ -30,31 +29,9 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
 
     id = graphene.Int()
 
-    pastes = graphene.Field(
-        Pastes,
-        description=(
-            "A list of all pastes in the database,"
-            "optionally filtered by the given options"
-        ),
-        skip=graphene.Int(description="Skip n items when paginating", required=True),
-        take=graphene.Int(description="Take n items when paginating", required=True),
-        filters=graphene.Argument(
-            PasteFilterOptions, description="Filter pastes according to these rules"
-        ),
-        order_by=graphene.Argument(PasteOrdering, description="Sort 'em"),
-    )
-
     paste_count = graphene.Int(description="Total number of pastes for this user")
 
-    @gql_optimizer.resolver_hints(model_field='pastes')
-    def resolve_pastes(
-        self,
-        info: ResolveInfo,
-        skip: int,
-        take: int,
-        filters: Optional[PasteFilterOptions],
-        order_by: Optional[PasteOrdering],
-    ) -> Any:
+    def get_pastes_to_paginator(self, info: ResolveInfo) -> Any:
         pastes = self.pastes.all()
 
         if info.context.user == self:
@@ -63,18 +40,9 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
             logger.debug(f"Resolving public pastes for user '{self}'")
             pastes = pastes.filter(private=False)
 
-        if filters:
-            pastes = filters.filter(pastes)
+        return pastes
 
-        if order_by:
-            pastes = order_by.order(pastes)
-        else:
-            pastes = pastes.order_by('-created_at')
-
-        logger.debug(
-            f"Returning pastes for user '{self}' with skip={skip} and take={take}"
-        )
-        return Pastes(pastes.count(), pastes[skip : skip + take])
+    pastes = PaginatedPastes(paste_source=get_pastes_to_paginator)
 
     @gql_optimizer.resolver_hints(model_field='pastes')
     def resolve_paste_count(self, info: ResolveInfo) -> int:

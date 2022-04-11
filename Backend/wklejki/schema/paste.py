@@ -1,12 +1,10 @@
 # Standard Library
-import base64
 import logging
-from typing import List, Optional
+from typing import List
 
 # Django
 from django.core.cache import cache
-from django.core.files.base import ContentFile
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 
 # 3rd-Party
 import graphene
@@ -18,38 +16,10 @@ from wklejki.decorators import login_required, staff_member_required
 from wklejki.models import Attachment, Paste, Report
 
 # Local
-from .filtering import PasteFilterOptions, PasteOrdering
+from .files import AttachmentType, FileDelta
+from .filtering import PaginatedPastes
 
 logger = logging.getLogger()
-
-
-class AttachmentType(graphene.ObjectType):
-    class Meta:
-        model = Attachment
-        exclude = ('file',)
-
-    id = graphene.Int()
-    name = graphene.String()
-    size = graphene.Int()
-
-    url = graphene.String()
-
-    def resolve_url(self, info: ResolveInfo) -> str:
-        return self.file.url
-
-
-class UploadedFile(graphene.InputObjectType):
-    name = graphene.String()
-    content = graphene.String()
-
-
-class RemovedFile(graphene.InputObjectType):
-    id = graphene.Int(required=True, description="The ID of the file to remove")
-
-
-class FileDelta(graphene.InputObjectType):
-    added = graphene.List(UploadedFile, required=True)
-    removed = graphene.List(RemovedFile, required=True)
 
 
 class ReportType(gql_optimizer.OptimizedDjangoObjectType):
@@ -111,25 +81,7 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
         return 0
 
 
-class Pastes(graphene.ObjectType):
-    count = graphene.Int(description="Number of pastes returned after filtering")
-    pastes = graphene.List(PasteType, description="The pastes themselves")
-
-
 class PasteQuery(graphene.ObjectType):
-    pastes = graphene.Field(
-        Pastes,
-        description=(
-            "A list of all pastes in the database,"
-            "optionally filtered by the given options"
-        ),
-        skip=graphene.Int(description="Skip n items when paginating", required=True),
-        take=graphene.Int(description="Take n items when paginating", required=True),
-        filters=graphene.Argument(
-            PasteFilterOptions, description="Filter pastes according to these rules"
-        ),
-        order_by=graphene.Argument(PasteOrdering, description="Sort 'em"),
-    )
     paste = graphene.Field(
         PasteType,
         id=graphene.Int(required=True),
@@ -138,39 +90,18 @@ class PasteQuery(graphene.ObjectType):
 
     paste_count = graphene.Int(description="Total number of pastes")
 
-    @gql_optimizer.resolver_hints(model_field='pastes')
-    def resolve_pastes(
+    def get_pastes(
         self,
         info: ResolveInfo,
-        skip: int,
-        take: int,
-        filters: Optional[PasteFilterOptions] = None,
-        order_by: Optional[PasteOrdering] = None,
-    ) -> Pastes:
-        if take > 100:
-            raise Exception("420 Enhance Your Calm")
-
-        result = Paste.objects.all()
-
-        print(filters)
-
-        if filters:
-            result = filters.filter(result)
-
-        if order_by:
-            result = order_by.order(result)
-        else:
-            result = result.order_by('-created_at')
-
+    ) -> QuerySet[Paste]:
         if info.context.user.is_authenticated:
-            result = result.filter(
+            return Paste.objects.filter(
                 Q(private=False) | Q(Q(private=True) & Q(author=info.context.user))
             )
         else:
-            result = result.filter(private=False)
+            return Paste.objects.filter(private=False)
 
-        logger.debug(f"returning paginated pastes: skip={skip}, take={take}")
-        return Pastes(result.count(), result[skip : skip + take])
+    pastes = PaginatedPastes(paste_source=get_pastes)
 
     def resolve_paste(self, info: ResolveInfo, id: int) -> Paste:
         logging.debug(f"returning paste by id: {id}")
@@ -196,20 +127,6 @@ class PasteQuery(graphene.ObjectType):
             )
 
 
-def apply_file_delta(paste: Paste, delta: FileDelta) -> None:
-    for file in delta.removed:
-        try:
-            paste.attachments.get(pk=file.id).delete()  # type: ignore
-        except Attachment.DoesNotExist:
-            pass
-
-    for file in delta.added:
-        file_content = base64.b64decode(file.content)
-        attachment = Attachment(paste=paste, name=file.name, size=len(file_content))
-        attachment.file.save(file.name, ContentFile(file_content))
-        attachment.save()
-
-
 class CreatePaste(graphene.Mutation):
     """Creates a new paste"""
 
@@ -219,7 +136,7 @@ class CreatePaste(graphene.Mutation):
         title = graphene.String(required=True)
         content = graphene.String(required=True)
         private = graphene.Boolean(required=True)
-        file_delta = graphene.Argument(FileDelta, required=True)
+        file_delta = graphene.Argument(FileDelta)
 
     @login_required
     def mutate(
@@ -236,7 +153,8 @@ class CreatePaste(graphene.Mutation):
         )
         paste.save()
 
-        apply_file_delta(paste, file_delta)
+        if file_delta:
+            file_delta.apply(paste)
 
         content = content[:15] + "..." if len(content) > 15 else content
 
@@ -262,7 +180,7 @@ class UpdatePaste(graphene.Mutation):
         title = graphene.String(required=True)
         content = graphene.String(required=True)
         private = graphene.Boolean(required=True)
-        file_delta = graphene.Argument(FileDelta, required=True)
+        file_delta = graphene.Argument(FileDelta)
 
     @login_required
     def mutate(
@@ -282,7 +200,8 @@ class UpdatePaste(graphene.Mutation):
         paste.private = private
         paste.save()
 
-        apply_file_delta(paste, file_delta)
+        if file_delta:
+            file_delta.apply(paste)
 
         content = content[:15] + "..." if len(content) > 15 else content
 

@@ -28,6 +28,8 @@ export const AllPasteList = () => {
     },
   });
 
+  console.log(searchOptions);
+
   const {
     loading,
     error,

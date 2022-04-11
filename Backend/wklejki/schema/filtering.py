@@ -1,7 +1,7 @@
 # Standard Library
 import logging
-from functools import reduce
-from typing import List, TypeVar
+from functools import partial, reduce
+from typing import Any, Callable, List, Type, TypeVar
 
 # Django
 from django.db.models import Count, Model, Q
@@ -44,6 +44,7 @@ class PasteFilterOptions(graphene.InputObjectType):
     TModel = TypeVar("TModel", bound=Model)
 
     def filter(self, query_set: QuerySet[TModel]) -> QuerySet[TModel]:
+        print("beep boop")
         logger.debug(f"Filtering pastes with options: {self}")
         Qs: List[Q] = []
 
@@ -102,3 +103,69 @@ class PasteOrdering(graphene.InputObjectType):
 
         direction = "-" if self.direction == PasteOrderingDirections.DESC else ""
         return query_set.order_by(f"{direction}{self.field.value}")
+
+
+class Pastes(graphene.ObjectType):
+    count = graphene.Int(description="Number of pastes returned after filtering")
+    pastes = graphene.List(
+        "wklejki.schema.paste.PasteType", description="The pastes themselves"
+    )
+
+
+class PaginatedPastes(graphene.Field):
+    def __init__(
+        self,
+        paste_source: Callable[[], QuerySet[Model]],
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            Pastes,
+            description=(
+                "A list of all pastes in the database,"
+                "optionally filtered by the given options"
+            ),
+            skip=graphene.Int(
+                description="Skip n items when paginating", required=True
+            ),
+            take=graphene.Int(
+                description="Take n items when paginating", required=True
+            ),
+            filters=graphene.Argument(
+                PasteFilterOptions, description="Filter pastes according to these rules"
+            ),
+            order_by=graphene.Argument(PasteOrdering, description="Sort 'em"),
+            resolver=partial(PaginatedPastes.resolve, paste_source=paste_source),
+            *args,
+            **kwargs,
+        )
+
+    def resolve(
+        parent: Type[Any],
+        info: graphene.ResolveInfo,
+        paste_source: Any,
+        skip: int,
+        take: int,
+        filters: PasteFilterOptions = None,
+        order_by: PasteOrdering = None,
+    ) -> Pastes:
+        logger.debug("Resolving paginated pastes")
+
+        pastes = paste_source(parent, info)
+
+        if filters:
+            logger.debug(f"Filtering pastes with {filters}")
+            pastes = filters.filter(pastes)
+
+        if order_by:
+            logger.debug(f"Sorting pastes with {order_by}")
+            pastes = order_by.order(pastes)
+        else:
+            pastes = pastes.order_by("-created_at")
+
+        logger.debug(f"Paginating pastes: {skip}:{take}")
+
+        return Pastes(
+            count=pastes.count(),
+            pastes=pastes[skip : skip + take],
+        )

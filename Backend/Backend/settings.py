@@ -28,7 +28,9 @@ django.utils.encoding.force_text = force_str  # type: ignore
 env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False),
-    TESTING=(bool, False),
+    WKLEJKA_TESTING=(bool, False),
+    WKLEJKA_DEV=(bool, False),
+    WKLEJKA_PROD=(bool, False),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -99,7 +101,7 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {'default': {**env.db(), **{'CONN_MAX_AGE': None}}}
+DATABASES = {'default': {**env.db(), 'CONN_MAX_AGE': None}}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -172,7 +174,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 PYINSTRUMENT_PROFILE_DIR = '/var/log/django/profiles/'
 
-if env("TESTING") is True:
+if env("WKLEJKA_TESTING") is True:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -245,3 +247,11 @@ CACHES = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+if env("WKLEJKA_DEV") is True:
+    DOMAIN = "localhost:3000"
+    DOMAIN_BACKEND = "localhost"
+else:
+    DOMAIN = "localhost"
+    DOMAIN_BACKEND = "localhost"

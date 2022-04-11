@@ -40,7 +40,7 @@ export const UserPasteList = ({ userId }: Props) => {
     data = previousData,
     refetch,
   } = getPasteTitlesPaginated(userId, page, itemsPerPage, {
-    filters: searchOptions,
+    ...searchOptions,
   });
 
   if (loading && !data) {

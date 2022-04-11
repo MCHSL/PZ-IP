@@ -23,6 +23,8 @@ services:
   backend:
     build: ./Backend
     restart: unless-stopped
+    environment:
+      - WKLEJKA_PROD=True
     volumes:
       - ./logs/backend:/var/log/django
       - ./data/user_media:/var/www/wklejka/user_media

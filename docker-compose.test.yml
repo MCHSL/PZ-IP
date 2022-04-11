@@ -22,7 +22,7 @@ services:
     build: ./Backend
     entrypoint: sh -c 'coverage run --omit='*/migrations*,Backend/*,manage.py' --source='.' manage.py test --noinput && coverage report -m'
     environment:
-      - TESTING=True
+      - WKLEJKA_TESTING=True
     ports:
       - "80:80"
     depends_on:

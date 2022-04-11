@@ -31,7 +31,7 @@ const ViewEditPaste = ({ id }: Props) => {
   const [pasteAttachments, setPasteAttachments] = useState<Attachment[]>([]);
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [reportVisible, setReportVisible] = useState(false);
-  const [expDate, setExpDate] = useState(0);
+  const [expDate, setExpDate] = useState<any>(null);
   const [error, setError] = useState("");
   const { user } = useUser();
   const navigate = useNavigate();
@@ -46,12 +46,31 @@ const ViewEditPaste = ({ id }: Props) => {
     },
   });
 
+  // function validate() {
+  //   if (expDate < 0) {
+  //     if (expDate === -1) {
+  //       setError("Wybierz swoją datę lub wybierz prefiniowaną");
+  //       return false;
+  //     }
+  //     setError("Data wygaśnięcia nie może poprzedzać daty obecnej");
+  //     return false;
+  //   } else if (pasteTitle !== "" && pasteContent !== "") {
+  //     setError("");
+  //     return true;
+  //   } else if (pasteTitle === "" || pasteContent === "") {
+  //     setError("Wszystkie pola muszą być uzupełnione");
+  //     return false;
+  //   }
+  //   setError("Nieznany błąd");
+  //   return false;
+  // }
+
   function validate() {
-    if (expDate < 0) {
-      if (expDate === -1) {
-        setError("Wybierz swoją datę lub wybierz prefiniowaną");
-        return false;
-      }
+    let date = Date.now();
+    if (expDate === -1) {
+      setError("Wybierz swoją datę lub wybierz prefiniowaną");
+      return false;
+    } else if (expDate < date && expDate !== null) {
       setError("Data wygaśnięcia nie może poprzedzać daty obecnej");
       return false;
     } else if (pasteTitle !== "" && pasteContent !== "") {
@@ -64,7 +83,6 @@ const ViewEditPaste = ({ id }: Props) => {
     setError("Nieznany błąd");
     return false;
   }
-
   function editOrSave() {
     if (isEditing) {
       if (!validate()) {

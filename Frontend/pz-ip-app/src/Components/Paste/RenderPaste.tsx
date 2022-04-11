@@ -10,12 +10,12 @@ interface Props {
   editable: boolean;
   reports: Report[];
   attachments: Attachment[];
-  expDate: number;
+  expDate: {};
 
   setTitle: (title: string) => void;
   setContent: (content: string) => void;
   setAttachments: (attachments: Attachment[]) => void;
-  setExpDate: (expDate: number) => void;
+  setExpDate: (expDate: {}) => void;
   refetch: () => Promise<any>;
 }
 const RenderPaste = ({
@@ -64,6 +64,13 @@ const RenderPaste = ({
         <Form.Group className="mb-3">
           <label className="mb-1">Czas wygaśnięcia</label>
           <ExpirationTime expDate={expDate} setExpDate={setExpDate} />
+        </Form.Group>
+      )}
+      {!editable && (
+        <Form.Group className="mb-3">
+          <label className="mb-1">
+            Czas wygaśnięcia: {expDate == null ? "Nigdy" : "expDate"}
+          </label>
         </Form.Group>
       )}
     </Form>

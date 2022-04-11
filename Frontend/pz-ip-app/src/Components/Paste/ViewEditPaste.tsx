@@ -31,7 +31,7 @@ const ViewEditPaste = ({ id }: Props) => {
   const [pasteAttachments, setPasteAttachments] = useState<Attachment[]>([]);
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [reportVisible, setReportVisible] = useState(false);
-  const [expDate, setExpDate] = useState<any>(null);
+  const [expireDate, setexpireDate] = useState<any>(null);
   const [error, setError] = useState("");
   const { user } = useUser();
   const navigate = useNavigate();
@@ -47,8 +47,8 @@ const ViewEditPaste = ({ id }: Props) => {
   });
 
   // function validate() {
-  //   if (expDate < 0) {
-  //     if (expDate === -1) {
+  //   if (expireDate < 0) {
+  //     if (expireDate === -1) {
   //       setError("Wybierz swoją datę lub wybierz prefiniowaną");
   //       return false;
   //     }
@@ -67,10 +67,10 @@ const ViewEditPaste = ({ id }: Props) => {
 
   function validate() {
     let date = Date.now();
-    if (expDate === -1) {
+    if (expireDate === -1) {
       setError("Wybierz swoją datę lub wybierz prefiniowaną");
       return false;
-    } else if (expDate < date && expDate !== null) {
+    } else if (expireDate < date && expireDate !== null) {
       setError("Data wygaśnięcia nie może poprzedzać daty obecnej");
       return false;
     } else if (pasteTitle !== "" && pasteContent !== "") {
@@ -111,6 +111,7 @@ const ViewEditPaste = ({ id }: Props) => {
           title: pasteTitle,
           content: pasteContent,
           isPrivate: pasteIsPrivate,
+          expireDate: expireDate,
           fileDelta,
         },
         refetchQueries: [
@@ -132,6 +133,7 @@ const ViewEditPaste = ({ id }: Props) => {
       setPasteAuthor(cdata.paste.author);
       setPasteIsPrivate(cdata.paste.isPrivate);
       setPasteAttachments(cdata.paste.attachments ?? []);
+      setexpireDate(cdata.paste.expireDate);
     },
   });
 
@@ -220,13 +222,13 @@ const ViewEditPaste = ({ id }: Props) => {
         title={pasteTitle}
         content={pasteContent}
         attachments={pasteAttachments}
-        expDate={expDate}
+        expireDate={expireDate}
         reports={data?.paste?.reports || []}
         refetch={refetch}
         setTitle={setPasteTitle}
         setContent={setPasteContent}
         setAttachments={setPasteAttachments}
-        setExpDate={setExpDate}
+        setexpireDate={setexpireDate}
       />
       {pasteAuthor?.id === user?.id ? (
         <>

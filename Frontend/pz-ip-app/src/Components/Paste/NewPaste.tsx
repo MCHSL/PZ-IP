@@ -18,7 +18,7 @@ const NewPaste = () => {
   const [content, setContent] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [expDate, setExpDate] = useState<any>(null);
+  const [expireDate, setexpireDate] = useState<any>(null);
   const [error, setError] = useState("");
 
   const [doCreatePaste] = useMutation(create_paste, {
@@ -35,10 +35,10 @@ const NewPaste = () => {
 
   function validate() {
     let date = Date.now();
-    if (expDate === -1) {
+    if (expireDate === -1) {
       setError("Wybierz swoją datę lub wybierz prefiniowaną");
       return false;
-    } else if (expDate < date && expDate !== null) {
+    } else if (expireDate < date && expireDate !== null) {
       setError("Data wygaśnięcia nie może poprzedzać daty obecnej");
       return false;
     } else if (title !== "" && content !== "") {
@@ -59,6 +59,7 @@ const NewPaste = () => {
           title,
           content,
           isPrivate,
+          expireDate: expireDate,
           fileDelta: {
             added: attachments
               .filter((a) => a.is_added)
@@ -88,13 +89,13 @@ const NewPaste = () => {
           title={title}
           content={content}
           attachments={attachments}
-          expDate={expDate}
+          expireDate={expireDate}
           reports={[]}
           refetch={() => Promise.resolve()}
           setTitle={setTitle}
           setContent={setContent}
           setAttachments={setAttachments}
-          setExpDate={setExpDate}
+          setexpireDate={setexpireDate}
         />
         <Form.Check
           className="mt-3"

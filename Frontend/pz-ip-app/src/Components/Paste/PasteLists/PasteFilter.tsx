@@ -9,9 +9,6 @@ import {
   Col,
   Spinner,
   Dropdown,
-  ButtonGroup,
-  ToggleButton,
-  ToggleButtonGroup,
 } from "react-bootstrap";
 
 interface PasteFilterOptions {

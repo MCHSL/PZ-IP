@@ -1,11 +1,12 @@
 # Standard Library
+import datetime
 import logging
 from typing import List
-import datetime
 
 # Django
 from django.core.cache import cache
 from django.db.models import Q, QuerySet
+from django.utils import timezone
 
 # 3rd-Party
 import graphene
@@ -47,10 +48,10 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
         AttachmentType, description="Attachments for this paste"
     )
     reports = graphene.List(ReportType, description="Reports for this paste")
+    expire_date = graphene.DateTime(description="Time when this paste will expire")
 
     @gql_optimizer.resolver_hints(model_field='likers')
     def resolve_like_count(self: Paste, info: ResolveInfo) -> int:
-        logger.debug(f"Resolving like count for paste '{self}'")
         return cache.get_or_set(f"paste:{self.id}:likes", self.likers.count)
 
     @gql_optimizer.resolver_hints(model_field='likers')
@@ -81,6 +82,9 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
             return self.reports.count()  # type: ignore
         return 0
 
+    def resolve_expire_date(self: Paste, info: ResolveInfo) -> datetime.datetime:
+        return self.expire_date
+
 
 class PasteQuery(graphene.ObjectType):
     paste = graphene.Field(
@@ -107,7 +111,7 @@ class PasteQuery(graphene.ObjectType):
     def resolve_paste(self, info: ResolveInfo, id: int) -> Paste:
         logging.debug(f"returning paste by id: {id}")
         paste = Paste.objects.get(pk=id)
-        if paste.expire_date < datetime.datetime.now():
+        if paste.expire_date and paste.expire_date < timezone.now():
             raise Paste.DoesNotExist("Paste matching query does not exist")
         if paste.private and (
             not info.context.user.is_authenticated
@@ -154,7 +158,11 @@ class CreatePaste(graphene.Mutation):
     ) -> "CreatePaste":
 
         paste = Paste(
-            author=info.context.user, title=title, content=content, expire_date = expire_date, private=private
+            author=info.context.user,
+            title=title,
+            content=content,
+            expire_date=expire_date,
+            private=private,
         )
         paste.save()
 

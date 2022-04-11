@@ -3,6 +3,7 @@ import { Attachment, Report } from "./Types";
 import Attachments from "./Attachments/Attachments";
 import ExpirationTime from "./ExpirationTime/ExpirationTime";
 import Reports from "./Reports/Reports";
+import { DateTime } from "luxon";
 
 interface Props {
   title: string;
@@ -10,12 +11,12 @@ interface Props {
   editable: boolean;
   reports: Report[];
   attachments: Attachment[];
-  expDate: {};
+  expireDate: Date;
 
   setTitle: (title: string) => void;
   setContent: (content: string) => void;
   setAttachments: (attachments: Attachment[]) => void;
-  setExpDate: (expDate: {}) => void;
+  setexpireDate: (expireDate: {}) => void;
   refetch: () => Promise<any>;
 }
 const RenderPaste = ({
@@ -23,14 +24,18 @@ const RenderPaste = ({
   content,
   attachments,
   editable,
-  expDate,
+  expireDate,
   setTitle,
   setContent,
   setAttachments,
-  setExpDate,
+  setexpireDate,
 
   ...rest
 }: Props) => {
+  const formattedExpiration = DateTime.fromJSDate(
+    new Date(expireDate)
+  ).toFormat("yyyy-MM-dd HH:mm");
+
   return (
     <Form className="mt-3">
       <Reports {...rest} />
@@ -63,13 +68,17 @@ const RenderPaste = ({
       {editable && (
         <Form.Group className="mb-3">
           <label className="mb-1">Czas wygaśnięcia</label>
-          <ExpirationTime expDate={expDate} setExpDate={setExpDate} />
+          <ExpirationTime
+            expireDate={expireDate}
+            setexpireDate={setexpireDate}
+          />
         </Form.Group>
       )}
       {!editable && (
         <Form.Group className="mb-3">
           <label className="mb-1">
-            Czas wygaśnięcia: {expDate == null ? "Nigdy" : "expDate"}
+            Czas wygaśnięcia:{" "}
+            {expireDate == null ? "Nigdy" : formattedExpiration}
           </label>
         </Form.Group>
       )}

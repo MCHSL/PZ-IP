@@ -2,33 +2,33 @@ import React, { useState } from "react";
 import { Dropdown, Form } from "react-bootstrap";
 
 interface Props {
-  expDate: any;
-  setExpDate: (title: any) => void;
+  expireDate: any;
+  setexpireDate: (title: any) => void;
 }
 
-const ExpirationTime = ({ expDate, setExpDate }: Props) => {
-  const [expDateText, setExpDateText] = useState("Nigdy");
+const ExpirationTime = ({ expireDate, setexpireDate }: Props) => {
+  const [expireDateText, setexpireDateText] = useState("Nigdy");
   let now = new Date();
   function setCustomData(e: string) {
     let data = new Date(e);
-    setExpDate(data);
+    setexpireDate(data);
   }
   function handleDate(e: any, text: string) {
     let data = new Date(e);
-    setExpDateText(text);
-    setExpDate(data);
+    setexpireDateText(text);
+    setexpireDate(data);
   }
   return (
     <div className="row">
       <Dropdown className="col-6">
         <Dropdown.Toggle variant="primary" id="dropdown-basic">
-          {expDateText}
+          {expireDateText}
         </Dropdown.Toggle>
         <Dropdown.Menu>
           <Dropdown.Item
             onClick={() => {
-              setExpDateText("Nigdy");
-              setExpDate(null);
+              setexpireDateText("Nigdy");
+              setexpireDate(null);
             }}
           >
             Nigdy
@@ -86,15 +86,15 @@ const ExpirationTime = ({ expDate, setExpDate }: Props) => {
           <Dropdown.Divider />
           <Dropdown.Item
             onClick={() => {
-              setExpDateText("Wybierz własna datę");
-              setExpDate(-1);
+              setexpireDateText("Wybierz własna datę");
+              setexpireDate(-1);
             }}
           >
             Wybierz własna datę
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
-      {expDateText === "Wybierz własna datę" ? (
+      {expireDateText === "Wybierz własna datę" ? (
         <Form.Group className="col-6">
           <Form.Control
             type="datetime-local"

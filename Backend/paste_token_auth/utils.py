@@ -27,7 +27,6 @@ logger = logging.getLogger()
 def get_user_from_token(token: str) -> "Optional[User]":  # type: ignore
     cached_id = cache.get(f"token:{token}:id")
     if cached_id:
-        logger.debug("Token cache hit!")
         try:
             return User.objects.get(pk=cached_id)
         except User.DoesNotExist:

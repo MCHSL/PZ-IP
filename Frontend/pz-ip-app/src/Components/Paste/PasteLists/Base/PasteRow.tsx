@@ -6,10 +6,10 @@ import { DeletePasteModal } from "../../../Modals/DeletePasteModal";
 import { useUser } from "../../../Context/CurrentUserContext";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { PasteInfo } from "../../Types";
+import { PasteMeta } from "../../Types";
 
 interface Props {
-  paste?: PasteInfo;
+  paste?: PasteMeta;
   page: number;
   itemsPerPage: number;
   refetch: () => Promise<any>;
@@ -32,13 +32,17 @@ const PasteRow = ({ paste, page, itemsPerPage, refetch }: Props) => {
     );
   }
 
-  const formattedCreatedAt = DateTime.fromJSDate(
-    new Date(paste.createdAt)
-  ).toFormat("yyyy-MM-dd HH:mm");
+  const formattedCreatedAt = paste.createdAt
+    ? DateTime.fromJSDate(new Date(paste.createdAt)).toFormat(
+        "yyyy-MM-dd HH:mm"
+      )
+    : "";
 
-  const formattedUpdatedAt = DateTime.fromJSDate(
-    new Date(paste.updatedAt)
-  ).toFormat("yyyy-MM-dd HH:mm");
+  const formattedUpdatedAt = paste.updatedAt
+    ? DateTime.fromJSDate(new Date(paste.updatedAt)).toFormat(
+        "yyyy-MM-dd HH:mm"
+      )
+    : "";
 
   return (
     <>

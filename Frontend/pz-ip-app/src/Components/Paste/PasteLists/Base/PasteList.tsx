@@ -1,10 +1,10 @@
 import { Table } from "react-bootstrap";
 import PasteRow from "./PasteRow";
 import PaginatingList from "../../../List/PaginatingList";
-import { PasteInfo } from "../../Types";
+import { PasteMeta } from "../../Types";
 
 interface Props {
-  pastes: PasteInfo[];
+  pastes: PasteMeta[];
   totalItems: number;
   page: number;
   itemsPerPage: number;

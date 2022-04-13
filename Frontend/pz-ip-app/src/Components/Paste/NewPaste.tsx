@@ -84,19 +84,7 @@ const NewPaste = () => {
         {error === "" ? null : (
           <div className="alert alert-danger mt-3 text-center">{error}</div>
         )}
-        <RenderPaste
-          editable={true}
-          title={title}
-          content={content}
-          attachments={attachments}
-          expireDate={expireDate}
-          reports={[]}
-          refetch={() => Promise.resolve()}
-          setTitle={setTitle}
-          setContent={setContent}
-          setAttachments={setAttachments}
-          setexpireDate={setexpireDate}
-        />
+        <RenderPaste editable={true} />
         <Form.Check
           className="mt-3"
           type="checkbox"

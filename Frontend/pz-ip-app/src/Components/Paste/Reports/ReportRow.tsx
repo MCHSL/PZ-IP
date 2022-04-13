@@ -5,18 +5,19 @@ import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { Button } from "react-bootstrap";
 import {
   get_paste,
-  get_unreviewed_reports,
   get_unreviewed_reports_count,
   delete_report,
 } from "../../../Queries/queries";
 import { useMutation } from "@apollo/client";
+import { usePaste } from "../../Context/CurrentPasteContext";
 
 interface Props {
   report: Report;
-  refetch: () => Promise<any>;
 }
 
-const ReportRow = ({ report, refetch }: Props) => {
+const ReportRow = ({ report }: Props) => {
+  //const { refetchPaste } = usePaste();
+
   const [doDeleteReport] = useMutation(delete_report, {
     refetchQueries: [
       get_paste,

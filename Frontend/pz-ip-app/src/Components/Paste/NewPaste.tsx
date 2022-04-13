@@ -1,14 +1,8 @@
-import { selectHttpOptionsAndBodyInternal, useMutation } from "@apollo/client";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import {
-  create_paste,
-  get_paste_metadata,
-  get_paste_metadata_for_user,
-} from "../../Queries/queries";
 import RenderPaste from "./RenderPaste";
 import { usePaste } from "../Context/CurrentPasteContext";
 import { useEffect } from "react";

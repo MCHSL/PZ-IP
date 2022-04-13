@@ -5,7 +5,13 @@ import {
   useQuery,
 } from "@apollo/client";
 import React, { useCallback, useMemo } from "react";
-import { create_paste, get_paste, update_paste } from "../../Queries/queries";
+import {
+  create_paste,
+  get_paste,
+  get_paste_metadata,
+  get_paste_metadata_for_user,
+  update_paste,
+} from "../../Queries/queries";
 import { Paste } from "../Paste/Types";
 
 interface IPasteContext {
@@ -66,7 +72,10 @@ export const PasteProvider = ({ children }: { children: JSX.Element }) => {
           return { id: a.id };
         }),
     };
-    const expireDate = pasteItself?.expireDate?.toISOString();
+    const expireDate =
+      pasteItself?.expireDate && new Date(pasteItself.expireDate).toISOString();
+    const refetchQueries = [get_paste_metadata, get_paste_metadata_for_user];
+
     if (id && id > 0) {
       return doUpdate({
         variables: {
@@ -75,6 +84,7 @@ export const PasteProvider = ({ children }: { children: JSX.Element }) => {
           fileDelta,
           id,
         },
+        refetchQueries,
       });
     } else if (id === -1) {
       return doCreate({
@@ -83,6 +93,7 @@ export const PasteProvider = ({ children }: { children: JSX.Element }) => {
           expireDate,
           fileDelta,
         },
+        refetchQueries,
       });
     } else {
       return Promise.reject("you fucked up");

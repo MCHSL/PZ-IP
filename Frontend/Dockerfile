@@ -4,7 +4,7 @@ ENV NODE_ENV production
 WORKDIR /app
 # Cache and Install dependencies
 COPY pz-ip-app/package.json .
-RUN npm install
+RUN npm install --dev
 # Copy app files
 COPY pz-ip-app/. .
 # Build the app

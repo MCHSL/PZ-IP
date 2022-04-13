@@ -1,4 +1,4 @@
-import { useMutation } from "@apollo/client";
+import { selectHttpOptionsAndBodyInternal, useMutation } from "@apollo/client";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
@@ -9,70 +9,36 @@ import {
   get_paste_metadata,
   get_paste_metadata_for_user,
 } from "../../Queries/queries";
-import { Attachment } from "./Types";
 import RenderPaste from "./RenderPaste";
+import { usePaste } from "../Context/CurrentPasteContext";
+import { useEffect } from "react";
 
 const NewPaste = () => {
+  const { paste, updatePaste, savePaste, setPaste } = usePaste();
   const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [expireDate, setexpireDate] = useState<any>(null);
   const [error, setError] = useState("");
 
-  const [doCreatePaste] = useMutation(create_paste, {
-    onCompleted: (data) => {
-      navigate(`/paste/${data.createPaste.paste.id}`, {
-        state: { returnTo: "/profile" },
-      });
-    },
-    onError: (error) => {
-      setError(error.message);
-    },
-    refetchQueries: [get_paste_metadata, get_paste_metadata_for_user],
-  });
+  useEffect(() => {
+    setPaste(-1);
+  }, [setPaste]);
 
   function validate() {
-    let date = Date.now();
-    if (expireDate === -1) {
-      setError("Wybierz swoją datę lub wybierz prefiniowaną");
-      return false;
-    } else if (expireDate < date && expireDate !== null) {
+    if (paste.expireDate !== null && paste.expireDate < new Date()) {
       setError("Data wygaśnięcia nie może poprzedzać daty obecnej");
       return false;
-    } else if (title !== "" && content !== "") {
-      setError("");
-      return true;
-    } else if (title === "" || content === "") {
+    } else if (paste.title === "" || paste.content === "") {
       setError("Wszystkie pola muszą być uzupełnione");
       return false;
     }
-    setError("Nieznany błąd");
-    return false;
+    setError("");
+    return true;
   }
 
   function submitPaste() {
     if (validate()) {
-      doCreatePaste({
-        variables: {
-          title,
-          content,
-          isPrivate,
-          expireDate: expireDate,
-          fileDelta: {
-            added: attachments
-              .filter((a) => a.is_added)
-              .map((a) => {
-                return { name: a.name, content: a.content };
-              }),
-            removed: attachments
-              .filter((a) => a.is_removed)
-              .map((a) => {
-                return { id: a.id };
-              }),
-          },
-        },
+      savePaste().then(({ data }) => {
+        console.log(data);
+        navigate("/paste/" + data.createPaste.paste.id.toString());
       });
     }
   }
@@ -89,8 +55,8 @@ const NewPaste = () => {
           className="mt-3"
           type="checkbox"
           label="Prywatna"
-          checked={isPrivate}
-          onChange={(e) => setIsPrivate(e.target.checked)}
+          checked={paste.isPrivate}
+          onChange={(e) => updatePaste({ isPrivate: e.target.checked })}
         />
         <span
           className="float-end d-flex flex-row align-items-baseline"

@@ -4,7 +4,7 @@ import { usePaste } from "../../Context/CurrentPasteContext";
 
 const ExpirationTime = () => {
   const { paste } = usePaste();
-  const [expireDateText, setexpireDateText] = useState("Nigdy");
+  const [expireDateText, setExpireDateText] = useState("Nigdy");
   let now = new Date();
   function setCustomData(e: string) {
     let data = new Date(e);
@@ -12,7 +12,7 @@ const ExpirationTime = () => {
   }
   function handleDate(e: any, text: string) {
     let data = new Date(e);
-    setexpireDateText(text);
+    setExpireDateText(text);
     paste.expireDate = data;
   }
   return (
@@ -24,7 +24,7 @@ const ExpirationTime = () => {
         <Dropdown.Menu>
           <Dropdown.Item
             onClick={() => {
-              setexpireDateText("Nigdy");
+              setExpireDateText("Nigdy");
               paste.expireDate = null;
             }}
           >
@@ -83,7 +83,7 @@ const ExpirationTime = () => {
           <Dropdown.Divider />
           <Dropdown.Item
             onClick={() => {
-              setexpireDateText("Wybierz własna datę");
+              setExpireDateText("Wybierz własna datę");
               paste.expireDate = new Date();
             }}
           >

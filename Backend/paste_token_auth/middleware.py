@@ -26,7 +26,6 @@ class TokenAuthMiddleware:
             return request
 
         user = get_user_from_token(token)
-        print(user)
         if user:
             request.user = user
 

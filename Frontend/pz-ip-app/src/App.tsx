@@ -15,27 +15,33 @@ import client from "./ApolloConfig";
 import PasswordReset from "./Components/Login/PasswordResetComponent";
 import RequestPasswordReset from "./Components/Login/RequestPasswordReset";
 import ReportedPastes from "./Components/ReportedPastes/ReportedPastes";
+import { PasteProvider } from "./Components/Context/CurrentPasteContext";
 
 function App() {
   return (
     <ApolloProvider client={client}>
       <UserProvider>
-        <Router>
-          <Menu />
-          <Routes>
-            <Route path="/" element={<CreatePaste />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/users" element={<UserList />} />
-            <Route path="/paste/:id" element={<PasteIndex />} />
-            <Route path="/paste/new" element={<CreatePaste />} />
-            <Route path="/profile/:id" element={<ProfilePage />} />
-            <Route path="/profile" element={<CurrentUserProfilePage />} />
-            <Route path="/pastes" element={<AllPastes />} />
-            <Route path="/password_reset/:token" element={<PasswordReset />} />
-            <Route path="/req_reset" element={<RequestPasswordReset />} />
-            <Route path="/reports" element={<ReportedPastes />} />
-          </Routes>
-        </Router>
+        <PasteProvider>
+          <Router>
+            <Menu />
+            <Routes>
+              <Route path="/" element={<CreatePaste />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/users" element={<UserList />} />
+              <Route path="/paste/:id" element={<PasteIndex />} />
+              <Route path="/paste/new" element={<CreatePaste />} />
+              <Route path="/profile/:id" element={<ProfilePage />} />
+              <Route path="/profile" element={<CurrentUserProfilePage />} />
+              <Route path="/pastes" element={<AllPastes />} />
+              <Route
+                path="/password_reset/:token"
+                element={<PasswordReset />}
+              />
+              <Route path="/req_reset" element={<RequestPasswordReset />} />
+              <Route path="/reports" element={<ReportedPastes />} />
+            </Routes>
+          </Router>
+        </PasteProvider>
       </UserProvider>
     </ApolloProvider>
   );

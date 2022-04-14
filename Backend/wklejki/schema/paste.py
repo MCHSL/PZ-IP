@@ -1,7 +1,7 @@
 # Standard Library
 import datetime
 import logging
-from typing import List
+from typing import List, Optional
 
 # Django
 from django.core.cache import cache
@@ -142,7 +142,7 @@ class CreatePaste(graphene.Mutation):
     class Arguments:
         title = graphene.String(required=True)
         content = graphene.String(required=True)
-        expire_date = graphene.DateTime(required=True)
+        expire_date = graphene.DateTime()
         private = graphene.Boolean(required=True)
         file_delta = graphene.Argument(FileDelta)
 
@@ -152,7 +152,7 @@ class CreatePaste(graphene.Mutation):
         info: ResolveInfo,
         title: str,
         content: str,
-        expire_date: datetime.datetime,
+        expire_date: Optional[datetime.datetime],
         private: bool,
         file_delta: FileDelta,
     ) -> "CreatePaste":
@@ -192,7 +192,7 @@ class UpdatePaste(graphene.Mutation):
         id = graphene.Int(required=True)
         title = graphene.String(required=True)
         content = graphene.String(required=True)
-        expire_date = graphene.DateTime(required=True)
+        expire_date = graphene.DateTime()
         private = graphene.Boolean(required=True)
         file_delta = graphene.Argument(FileDelta)
 
@@ -203,7 +203,7 @@ class UpdatePaste(graphene.Mutation):
         id: int,
         title: str,
         content: str,
-        expire_date: datetime.datetime,
+        expire_date: Optional[datetime.datetime],
         private: bool,
         file_delta: FileDelta,
     ) -> "UpdatePaste":

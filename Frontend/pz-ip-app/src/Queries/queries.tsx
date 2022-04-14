@@ -128,7 +128,7 @@ export const update_paste = gql`
     $title: String!
     $content: String!
     $isPrivate: Boolean!
-    $fileDelta: FileDelta!
+    $fileDelta: FileDelta
     $expireDate: DateTime
   ) {
     updatePaste(
@@ -161,7 +161,7 @@ export const create_paste = gql`
     $title: String!
     $content: String!
     $isPrivate: Boolean!
-    $fileDelta: FileDelta!
+    $fileDelta: FileDelta
     $expireDate: DateTime
   ) {
     createPaste(

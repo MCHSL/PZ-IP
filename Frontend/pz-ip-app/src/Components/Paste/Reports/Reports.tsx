@@ -1,14 +1,12 @@
 import { Form } from "react-bootstrap";
+import { usePaste } from "../../Context/CurrentPasteContext";
 import { Report } from "../Types";
 import ReportRow from "./ReportRow";
 
-interface Props {
-  reports: Report[];
-  refetch: () => Promise<any>;
-}
+const Reports = () => {
+  const { paste } = usePaste();
 
-const Reports = ({ reports, refetch }: Props) => {
-  if (reports.length === 0) {
+  if (!paste || paste.reports.length === 0) {
     return null;
   }
   return (
@@ -23,8 +21,8 @@ const Reports = ({ reports, refetch }: Props) => {
           </tr>
         </thead>
         <tbody>
-          {reports.map((report) => (
-            <ReportRow key={report.id} report={report} refetch={refetch} />
+          {paste.reports.map((report) => (
+            <ReportRow key={report.id} report={report} />
           ))}
         </tbody>
       </table>

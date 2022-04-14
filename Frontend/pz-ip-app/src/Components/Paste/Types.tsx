@@ -1,14 +1,23 @@
 import { User } from "../../Types/Types";
 
-export interface PasteInfo {
+export interface PasteMeta {
   id: number;
   title: string;
   author: any;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  expireDate: Date | null;
   isPrivate: boolean;
   likeCount: number;
   isLiked: boolean;
+  isReported: boolean;
+  reports: Report[];
+  attachments: Attachment[];
+}
+
+export interface Paste extends PasteMeta {
+  content: string;
+  fileDelta: FileDelta;
 }
 
 // This sucks
@@ -31,9 +40,8 @@ export type RemovedAttachment = {
   id: number;
 };
 
-export type LocalFileDelta = {
+export type FileDelta = {
   added: AddedAttachment[];
-  unchanged: Attachment[];
   removed: RemovedAttachment[];
 };
 

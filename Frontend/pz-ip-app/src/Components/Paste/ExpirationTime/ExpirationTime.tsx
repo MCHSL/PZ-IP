@@ -1,22 +1,19 @@
 import React, { useState } from "react";
 import { Dropdown, Form } from "react-bootstrap";
+import { usePaste } from "../../Context/CurrentPasteContext";
 
-interface Props {
-  expireDate: any;
-  setexpireDate: (title: any) => void;
-}
-
-const ExpirationTime = ({ expireDate, setexpireDate }: Props) => {
-  const [expireDateText, setexpireDateText] = useState("Nigdy");
+const ExpirationTime = () => {
+  const { paste } = usePaste();
+  const [expireDateText, setExpireDateText] = useState("Nigdy");
   let now = new Date();
   function setCustomData(e: string) {
     let data = new Date(e);
-    setexpireDate(data);
+    paste.expireDate = data;
   }
   function handleDate(e: any, text: string) {
     let data = new Date(e);
-    setexpireDateText(text);
-    setexpireDate(data);
+    setExpireDateText(text);
+    paste.expireDate = data;
   }
   return (
     <div className="row">
@@ -27,8 +24,8 @@ const ExpirationTime = ({ expireDate, setexpireDate }: Props) => {
         <Dropdown.Menu>
           <Dropdown.Item
             onClick={() => {
-              setexpireDateText("Nigdy");
-              setexpireDate(null);
+              setExpireDateText("Nigdy");
+              paste.expireDate = null;
             }}
           >
             Nigdy
@@ -86,8 +83,8 @@ const ExpirationTime = ({ expireDate, setexpireDate }: Props) => {
           <Dropdown.Divider />
           <Dropdown.Item
             onClick={() => {
-              setexpireDateText("Wybierz własna datę");
-              setexpireDate(-1);
+              setExpireDateText("Wybierz własna datę");
+              paste.expireDate = new Date();
             }}
           >
             Wybierz własna datę

@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import ViewEditPaste from "./ViewEditPaste";
+import ViewEditPaste from "./ViewEditPaste/ViewEditPaste";
 
 const PasteIndex = () => {
   const params = useParams();

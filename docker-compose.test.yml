@@ -20,7 +20,9 @@ services:
 
   tests:
     build: ./Backend
-    entrypoint: sh -c 'coverage run --omit='*/migrations*,Backend/*,manage.py' --source='.' manage.py test --noinput && coverage report -m'
+    entrypoint: sh -c 'coverage run --omit='*/migrations*,Backend/*,manage.py' --source='.' manage.py test --noinput && coverage report -m && coverage xml -o /var/log/test/coverage/coverage.xml'
+    volumes:
+      - ./logs/test/:/var/log/test/
     environment:
       - WKLEJKA_TESTING=True
     ports:

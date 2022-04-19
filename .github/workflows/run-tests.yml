@@ -1,0 +1,23 @@
+name: Run tests
+on: [push]
+jobs:
+  run:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@master
+      - name: Create default config file
+        run: |
+          mv ./Backend/.env.dist ./Backend/.env
+      - name: Run tests and generate coverage
+        run: |
+          docker-compose -f docker-compose.test.yml up --build --force-recreate --remove-orphans --abort-on-container-exit
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          directory: ./logs/test/coverage/
+          flags: unittests
+          name: codecov-umbrella

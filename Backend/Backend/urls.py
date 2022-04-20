@@ -28,5 +28,5 @@ from wklejki.views import serve_file
 urlpatterns = [
     path("graphql/", GraphQLView.as_view()),
     path("user_media/<int:paste_id>/<str:filename>", serve_file),
-    path("verify/<str:token>", verify_email),
+    path("verify/<str:token>", verify_email, name="verify_email"),
 ]

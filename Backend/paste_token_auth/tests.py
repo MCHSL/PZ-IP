@@ -6,6 +6,8 @@ import json
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.test import TestCase
+from django.urls import reverse
 
 # 3rd-Party
 import jwt
@@ -514,3 +516,22 @@ class AuthenticationTests(GraphQLTestCase):
 
     def test_get_user_from_invalid_token(self) -> None:
         self.assertIsNone(get_user_from_token("wrong_token"))
+
+
+class TestEmailVerification(TestCase):
+    def test_verify_email(self) -> None:
+        user = create_user(
+            is_verified=False,
+            username="verify_email_test_user",
+            email="verified@schmerified.com",
+            password="123",
+        )
+
+        token = user.auth.create_verification_token()
+
+        response = self.client.get(reverse('verify_email', args=[token]))
+
+        self.assertEqual(response.status_code, 302)
+
+        user.refresh_from_db()
+        self.assertTrue(user.auth.is_verified)

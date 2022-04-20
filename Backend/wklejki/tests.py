@@ -1443,3 +1443,114 @@ class ReportTests(GraphQLTestCase):
         self.assertEqual(content["data"]["pastes"]["pastes"][0]["title"], paste.title)
         self.assertEqual(content["data"]["pastes"]["pastes"][1]["id"], paste2.pk)
         self.assertEqual(content["data"]["pastes"]["pastes"][1]["title"], paste2.title)
+
+    def test_paste_liking(self) -> None:
+        paste = Paste.objects.create(
+            title="test_paste_liking",
+            content="test_paste_liking_content",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            mutation Bleh($id: Int!) {
+                likePaste(id: $id, liking: true) {
+                    paste {
+                        id
+                        isLiked
+                        likeCount
+                    }
+                }
+            }
+            ''',
+            variables={"id": paste.pk},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["likePaste"]["paste"]["id"], paste.pk)
+        self.assertTrue(content["data"]["likePaste"]["paste"]["isLiked"])
+        self.assertEqual(content["data"]["likePaste"]["paste"]["likeCount"], 1)
+
+        paste.refresh_from_db()
+
+        self.assertEqual(paste.likers.count(), 1)
+
+    def test_paste_unliking(self) -> None:
+        paste = Paste.objects.create(
+            title="test_paste_unliking",
+            content="test_paste_unliking_content",
+            private=False,
+            author=self.admin,
+        )
+
+        paste.likers.add(self.admin)
+        paste.save()
+
+        response = self.query(
+            '''
+            mutation Bleh($id: Int!) {
+                likePaste(id: $id, liking: false) {
+                    paste {
+                        id
+                        isLiked
+                        likeCount
+                    }
+                }
+            }
+            ''',
+            variables={"id": paste.pk},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["likePaste"]["paste"]["id"], paste.pk)
+        self.assertFalse(content["data"]["likePaste"]["paste"]["isLiked"])
+        self.assertEqual(content["data"]["likePaste"]["paste"]["likeCount"], 0)
+
+        paste.refresh_from_db()
+
+        self.assertEqual(paste.likers.count(), 0)
+
+    def test_paste_liking_is_idempotent(self) -> None:
+        paste = Paste.objects.create(
+            title="test_paste_liking_idempotent",
+            content="test_paste_liking_is_idempotent_content",
+            private=False,
+            author=self.admin,
+        )
+
+        paste.likers.add(self.admin)
+        paste.save()
+
+        response = self.query(
+            '''
+            mutation Bleh($id: Int!) {
+                likePaste(id: $id, liking: true) {
+                    paste {
+                        id
+                        isLiked
+                        likeCount
+                    }
+                }
+            }
+            ''',
+            variables={"id": paste.pk},
+            headers={"HTTP_COOKIE": f"token={self.admin_token}"},
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["likePaste"]["paste"]["id"], paste.pk)
+        self.assertTrue(content["data"]["likePaste"]["paste"]["isLiked"])
+        self.assertEqual(content["data"]["likePaste"]["paste"]["likeCount"], 1)
+
+        paste.refresh_from_db()
+
+        self.assertEqual(paste.likers.count(), 1)

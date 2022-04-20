@@ -1,7 +1,6 @@
 # Standard Library
 import logging
 import re
-import typing
 
 # Django
 from django.conf import settings
@@ -16,11 +15,7 @@ from graphene import ResolveInfo
 # Local
 from .utils import create_user, send_password_reset_email, send_verification_email
 
-if typing.TYPE_CHECKING:
-    # Project
-    from wklejki.models import CustomUser as User
-else:
-    User = get_user_model()
+User = get_user_model()
 logger = logging.getLogger()
 
 

@@ -1,14 +1,18 @@
 # Standard Library
+import datetime
 import json
 
 # Django
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core import mail
 
 # 3rd-Party
+import jwt
 from graphene_django.utils.testing import GraphQLTestCase
 
 # Local
-from .utils import create_user, get_or_create_token
+from .utils import create_user, get_or_create_token, get_user_from_token
 
 User = get_user_model()
 
@@ -290,3 +294,223 @@ class AuthenticationTests(GraphQLTestCase):
         content = json.loads(response.content)
 
         self.assertEqual(content["data"]["me"]["id"], user.id)
+
+    def test_request_password_reset(self) -> None:
+        create_user(
+            is_verified=True,
+            username="request_password_reset_test_user",
+            email="reset@me.pls",
+            password="123",
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                requestPasswordReset(email: "reset@me.pls") {
+                    ok
+                }
+            }
+            '''  # noqa: E501
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertTrue(content["data"]["requestPasswordReset"]["ok"])
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_request_password_reset_with_invalid_email(self) -> None:
+        create_user(
+            is_verified=True,
+            username="request_password_reset_test_user_invalid_email",
+            email="dont@reset.me",
+            password="123",
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                requestPasswordReset(email: "does@not.exist") {
+                    ok
+                }
+            }
+            '''  # noqa: E501
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertTrue(content["data"]["requestPasswordReset"]["ok"])
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_reset_password(self) -> None:
+        user = create_user(
+            is_verified=True,
+            username="reset_password_test_user",
+            email="reset@me.forreal",
+            password="123",
+        )
+
+        reset_token = user.auth.create_reset_token()
+
+        response = self.query(
+            '''
+            mutation {
+                resetPassword(token: "%s", password: "456") {
+                    ok
+                }
+            }
+            '''
+            % reset_token,  # noqa: E501
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertTrue(content["data"]["resetPassword"]["ok"])
+
+        user.refresh_from_db()
+        self.assertTrue(user.check_password("456"))
+
+    def test_reset_password_with_invalid_token_missing_id(self) -> None:
+        fake_token = jwt.encode(
+            {
+                "act": "reset",
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=10),
+            },
+            settings.SECRET_KEY,
+            algorithm="HS256",
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                resetPassword(token: "%s", password: "456") {
+                    ok
+                }
+            }
+            '''
+            % fake_token,  # noqa: E501
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["errors"][0]["message"], "Invalid token")
+
+    def test_reset_password_with_invalid_token_wrong_act(self) -> None:
+        user = create_user(
+            is_verified=True,
+            username="reset_password_test_user_invalid_token_wrong_signature",
+            email="ffwjewhefkj@ksjbdbksbjksdf.jfejkfwejksf",
+            password="123",
+        )
+
+        fake_token = jwt.encode(
+            {
+                "act": "wrong",
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=10),
+                "id": user.id,
+            },
+            settings.SECRET_KEY + user.password,
+            algorithm="HS256",
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                resetPassword(token: "%s", password: "456") {
+                    ok
+                }
+            }
+            '''
+            % fake_token,  # noqa: E501
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["errors"][0]["message"], "Invalid token")
+
+    def test_reset_password_with_invalid_token_expired(self) -> None:
+        fake_token = jwt.encode(
+            {
+                "act": "reset",
+                "exp": datetime.datetime.utcnow() - datetime.timedelta(minutes=10),
+                "id": 1,
+            },
+            settings.SECRET_KEY,
+            algorithm="HS256",
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                resetPassword(token: "%s", password: "456") {
+                    ok
+                }
+            }
+            '''
+            % fake_token,  # noqa: E501
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["errors"][0]["message"], "Invalid token")
+
+    def test_reset_password_with_invalid_token_wrong_id(self) -> None:
+        fake_token = jwt.encode(
+            {
+                "act": "reset",
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=10),
+                "id": 999999999999999,
+            },
+            settings.SECRET_KEY,
+            algorithm="HS256",
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                resetPassword(token: "%s", password: "456") {
+                    ok
+                }
+            }
+            '''
+            % fake_token,  # noqa: E501
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["errors"][0]["message"], "Invalid token")
+
+    def test_reset_password_with_invalid_token_wrong_signature(self) -> None:
+        user = create_user(
+            is_verified=True,
+            username="reset_password_test_user_invalid_token_wrong_signature",
+            email="cant@touch.this",
+            password="123",
+        )
+
+        fake_token = jwt.encode(
+            {
+                "act": "reset",
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=10),
+                "id": user.id,
+            },
+            "wrong_secret",
+            algorithm="HS256",
+        )
+
+        response = self.query(
+            '''
+            mutation {
+                resetPassword(token: "%s", password: "456") {
+                    ok
+                }
+            }
+            '''
+            % fake_token,  # noqa: E501
+        )
+        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["errors"][0]["message"], "Invalid token")
+
+    def test_get_user_from_invalid_token(self) -> None:
+        self.assertIsNone(get_user_from_token("wrong_token"))

@@ -20,7 +20,7 @@ services:
 
   tests:
     build: ./Backend
-    entrypoint: sh -c 'coverage run --omit='*/migrations*,Backend/*,manage.py' --source='.' manage.py test --noinput && coverage report -m && coverage xml -o /var/log/test/coverage/coverage.xml'
+    entrypoint: sh -c 'coverage run --omit='*/migrations*,Backend/*,manage.py' --source='.' manage.py test --noinput && coverage report --skip-covered --skip-empty -m && coverage xml -o /var/log/test/coverage/coverage.xml'
     volumes:
       - ./logs/test/:/var/log/test/
     environment:

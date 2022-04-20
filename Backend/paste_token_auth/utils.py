@@ -1,5 +1,4 @@
 # Standard Library
-import datetime
 import logging
 import secrets
 from typing import TYPE_CHECKING, Optional
@@ -9,9 +8,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.mail import send_mail
-
-# 3rd-Party
-import jwt
 
 # Local
 from .models import AuthMeta
@@ -72,15 +68,7 @@ def create_user(
 
 
 def send_verification_email(user: User) -> None:
-    verification_jwt = jwt.encode(
-        {
-            "act": "verify",
-            "id": user.pk,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
-        },
-        settings.SECRET_KEY,
-        algorithm="HS256",
-    )
+    verification_jwt = user.auth.create_verification_token()
 
     content = (
         'Kliknij w link aby zweryfikować swój adres e-mail:'
@@ -97,17 +85,7 @@ def send_verification_email(user: User) -> None:
 
 
 def send_password_reset_email(user: User) -> None:
-    reset_jwt = jwt.encode(
-        {
-            "act": "reset",
-            "id": user.pk,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=10),
-        },
-        # Signing using the user's password: When the user changes their password,
-        # the signature will immediately be invalid, making the reset link unusable.
-        settings.SECRET_KEY + user.password,
-        algorithm="HS256",
-    )
+    reset_jwt = user.auth.create_reset_token()
 
     content = (
         'Kliknij w link aby zresetować hasło:'

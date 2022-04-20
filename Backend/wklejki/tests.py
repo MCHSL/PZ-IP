@@ -1,4 +1,5 @@
 # Standard Library
+import datetime
 import json
 
 # Django
@@ -18,6 +19,7 @@ User = get_user_model()
 
 # docker compose -f docker-compose.test.yml up --build
 # --force-recreate --remove-orphans --abort-on-container-exit
+# && coverage html --skip-covered --skip-empty -d /var/log/test/coverage/html/
 
 
 class UserCrudTests(GraphQLTestCase):
@@ -980,3 +982,464 @@ class ReportTests(GraphQLTestCase):
             Report.objects.get(pk=report2.pk)
 
         self.assertIsNotNone(Report.objects.get(pk=unrelated_report.pk))
+
+    def test_filtering_title_contains(self) -> None:
+        paste = Paste.objects.create(
+            title="test_filter_paste",
+            content="test_filter_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        paste2 = Paste.objects.create(
+            title="test_filter_paste_2",
+            content="test_filter_paste_content_2",
+            private=False,
+            author=self.admin,
+        )
+
+        Paste.objects.create(
+            title="dont_find_this",
+            content="test_filter_paste_content_3",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            query Bleh($filters: PasteFilterOptions) {
+                pastes(skip: 0, take: 10, filters: $filters) {
+                    count
+                    pastes {
+                        id
+                        title
+                    }
+                }
+            }
+            ''',
+            variables={
+                "filters": {
+                    "titleContains": "test_filter_paste",
+                }
+            },
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["pastes"]["count"], 2)
+        self.assertIn(
+            content["data"]["pastes"]["pastes"][0]["id"], [paste.pk, paste2.pk]
+        )
+        self.assertIn(
+            content["data"]["pastes"]["pastes"][0]["title"], [paste.title, paste2.title]
+        )
+
+        self.assertIn(
+            content["data"]["pastes"]["pastes"][1]["id"], [paste.pk, paste2.pk]
+        )
+        self.assertIn(
+            content["data"]["pastes"]["pastes"][1]["title"], [paste.title, paste2.title]
+        )
+
+    def test_filtering_created_before_after(self) -> None:
+        Paste.objects.create(
+            title="test_filter_paste",
+            content="test_filter_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        paste2 = Paste.objects.create(
+            title="test_filter_paste_2",
+            content="test_filter_paste_content_2",
+            private=False,
+            author=self.admin,
+        )
+
+        paste3 = Paste.objects.create(
+            title="dont_find_this",
+            content="test_filter_paste_content_3",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            query Bleh($filters: PasteFilterOptions) {
+                pastes(skip: 0, take: 10, filters: $filters) {
+                    count
+                    pastes {
+                        id
+                        title
+                    }
+                }
+            }
+            ''',
+            variables={
+                "filters": {
+                    "created": {
+                        "before": (
+                            paste3.created_at + datetime.timedelta(seconds=5)
+                        ).isoformat(),
+                        "after": paste2.created_at.isoformat(),
+                    }
+                }
+            },
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["pastes"]["count"], 1)
+        self.assertEqual(content["data"]["pastes"]["pastes"][0]["id"], paste3.pk)
+        self.assertEqual(content["data"]["pastes"]["pastes"][0]["title"], paste3.title)
+
+    def test_filtering_updated_before_after(self) -> None:
+        Paste.objects.create(
+            title="test_filter_paste",
+            content="test_filter_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        paste2 = Paste.objects.create(
+            title="test_filter_paste_2",
+            content="test_filter_paste_content_2",
+            private=False,
+            author=self.admin,
+        )
+
+        paste3 = Paste.objects.create(
+            title="dont_find_this",
+            content="test_filter_paste_content_3",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            query Bleh($filters: PasteFilterOptions) {
+                pastes(skip: 0, take: 10, filters: $filters) {
+                    count
+                    pastes {
+                        id
+                        title
+                    }
+                }
+            }
+            ''',
+            variables={
+                "filters": {
+                    "updated": {
+                        "before": (
+                            paste3.updated_at + datetime.timedelta(seconds=5)
+                        ).isoformat(),
+                        "after": paste2.updated_at.isoformat(),
+                    }
+                }
+            },
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["pastes"]["count"], 1)
+        self.assertEqual(content["data"]["pastes"]["pastes"][0]["id"], paste3.pk)
+        self.assertEqual(content["data"]["pastes"]["pastes"][0]["title"], paste3.title)
+
+    def test_filtering_like_count(self) -> None:
+        paste = Paste.objects.create(
+            title="test_filter_paste",
+            content="test_filter_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        paste2 = Paste.objects.create(
+            title="test_filter_paste_2",
+            content="test_filter_paste_content_2",
+            private=False,
+            author=self.admin,
+        )
+
+        Paste.objects.create(
+            title="dont_find_this",
+            content="test_filter_paste_content_3",
+            private=False,
+            author=self.admin,
+        )
+
+        paste.likers.add(self.admin)
+        paste.likers.add(self.normie)
+        paste2.likers.add(self.admin)
+
+        response = self.query(
+            '''
+            query Bleh($filters: PasteFilterOptions) {
+                pastes(skip: 0, take: 10, filters: $filters) {
+                    count
+                    pastes {
+                        id
+                        title
+                    }
+                }
+            }
+            ''',
+            variables={
+                "filters": {
+                    "likeCount": {
+                        "lessThan": 2,
+                        "moreThan": 0,
+                    }
+                }
+            },
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["pastes"]["count"], 1)
+        self.assertEqual(content["data"]["pastes"]["pastes"][0]["id"], paste2.pk)
+        self.assertEqual(content["data"]["pastes"]["pastes"][0]["title"], paste2.title)
+
+    def test_filtering_match_any(self) -> None:
+        Paste.objects.create(
+            title="test_filter_paste",
+            content="the lazy dog jumps over the quick brown fox",
+            private=False,
+            author=self.admin,
+        )
+
+        Paste.objects.create(
+            title="test_filter_paste_2",
+            content="the quick brown fox jumps over the lazy dog",
+            private=False,
+            author=self.admin,
+        )
+
+        paste3 = Paste.objects.create(
+            title="dont_find_this",
+            content="test_filter_paste_content_3",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            query Bleh($filters: PasteFilterOptions) {
+                pastes(skip: 0, take: 10, filters: $filters) {
+                    count
+                    pastes {
+                        id
+                        content
+                    }
+                }
+            }
+            ''',
+            variables={
+                "filters": {
+                    "contentContains": "brown fox",
+                    "matchType": "ANY",
+                }
+            },
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["pastes"]["count"], 2)
+        self.assertNotEqual(content["data"]["pastes"]["pastes"][0]["id"], paste3.pk)
+        self.assertNotEqual(content["data"]["pastes"]["pastes"][1]["id"], paste3.pk)
+
+    def test_filtering_but_no_params(self) -> None:
+        paste = Paste.objects.create(
+            title="test_filter_paste",
+            content="test_filter_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        paste2 = Paste.objects.create(
+            title="test_filter_paste_2",
+            content="test_filter_paste_content_2",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            query Bleh($filters: PasteFilterOptions) {
+                pastes(skip: 0, take: 10, filters: $filters) {
+                    count
+                    pastes {
+                        id
+                        title
+                    }
+                }
+            }
+            ''',
+            variables={"filters": {}},
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["pastes"]["count"], 2)
+        self.assertIn(
+            content["data"]["pastes"]["pastes"][0]["id"], [paste.pk, paste2.pk]
+        )
+        self.assertIn(
+            content["data"]["pastes"]["pastes"][1]["id"], [paste.pk, paste2.pk]
+        )
+
+    def test_filtering_content_contains(self) -> None:
+        paste = Paste.objects.create(
+            title="test_filter_paste",
+            content="test_filter_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        paste2 = Paste.objects.create(
+            title="test_filter_paste_2",
+            content="test_filter_paste_content_2",
+            private=False,
+            author=self.admin,
+        )
+
+        Paste.objects.create(
+            title="dont_find_this",
+            content="not_this_either",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            query Bleh($filters: PasteFilterOptions) {
+                pastes(skip: 0, take: 10, filters: $filters) {
+                    count
+                    pastes {
+                        id
+                        content
+                    }
+                }
+            }
+            ''',
+            variables={
+                "filters": {
+                    "contentContains": "test_filter_paste_content",
+                }
+            },
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["pastes"]["count"], 2)
+        self.assertIn(
+            content["data"]["pastes"]["pastes"][0]["id"], [paste.pk, paste2.pk]
+        )
+        self.assertIn(
+            content["data"]["pastes"]["pastes"][0]["content"],
+            [paste.content, paste2.content],
+        )
+
+        self.assertIn(
+            content["data"]["pastes"]["pastes"][1]["id"], [paste.pk, paste2.pk]
+        )
+        self.assertIn(
+            content["data"]["pastes"]["pastes"][1]["content"],
+            [paste.content, paste2.content],
+        )
+
+    def test_ordering_by_created_at(self) -> None:
+        paste = Paste.objects.create(
+            title="test_order_paste",
+            content="test_order_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        paste2 = Paste.objects.create(
+            title="test_order_paste_2",
+            content="test_order_paste_content_2",
+            private=False,
+            author=self.admin,
+        )
+
+        response = self.query(
+            '''
+            query Bleh($orderBy: PasteOrdering) {
+                pastes(skip: 0, take: 10, orderBy: $orderBy) {
+                    count
+                    pastes {
+                        id
+                        title
+                    }
+                }
+            }
+            ''',
+            variables={
+                "orderBy": {
+                    "field": "CREATED_AT",
+                    "direction": "DESC",
+                }
+            },
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["pastes"]["count"], 2)
+        self.assertEqual(content["data"]["pastes"]["pastes"][0]["id"], paste2.pk)
+        self.assertEqual(content["data"]["pastes"]["pastes"][0]["title"], paste2.title)
+        self.assertEqual(content["data"]["pastes"]["pastes"][1]["id"], paste.pk)
+        self.assertEqual(content["data"]["pastes"]["pastes"][1]["title"], paste.title)
+
+    def test_ordering_by_like_count(self) -> None:
+        paste = Paste.objects.create(
+            title="test_order_paste",
+            content="test_order_paste_content",
+            private=False,
+            author=self.admin,
+        )
+
+        paste2 = Paste.objects.create(
+            title="test_order_paste_2",
+            content="test_order_paste_content_2",
+            private=False,
+            author=self.admin,
+        )
+
+        paste.likers.add(self.admin)
+
+        response = self.query(
+            '''
+            query Bleh($orderBy: PasteOrdering) {
+                pastes(skip: 0, take: 10, orderBy: $orderBy) {
+                    count
+                    pastes {
+                        id
+                        title
+                    }
+                }
+            }
+            ''',
+            variables={
+                "orderBy": {
+                    "field": "LIKE_COUNT",
+                    "direction": "DESC",
+                }
+            },
+        )
+
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+
+        self.assertEqual(content["data"]["pastes"]["count"], 2)
+        self.assertEqual(content["data"]["pastes"]["pastes"][0]["id"], paste.pk)
+        self.assertEqual(content["data"]["pastes"]["pastes"][0]["title"], paste.title)
+        self.assertEqual(content["data"]["pastes"]["pastes"][1]["id"], paste2.pk)
+        self.assertEqual(content["data"]["pastes"]["pastes"][1]["title"], paste2.title)

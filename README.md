@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/MCHSL/PZ-IP/branch/main/graph/badge.svg?token=QZY2BL3E7W)](https://codecov.io/gh/MCHSL/PZ-IP)
+
 # how 2 run
 
 1. Have Docker installed

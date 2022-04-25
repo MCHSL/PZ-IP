@@ -60,7 +60,10 @@ export const PasteFilter = ({ loading, onSearch }: Props) => {
 
   return (
     <>
-      <Button onClick={() => setShowSearch(!showSearch)}>
+      <Button
+        style={{ width: "100%" }}
+        onClick={() => setShowSearch(!showSearch)}
+      >
         Wyszukiwanie{" "}
         <FontAwesomeIcon
           style={{ marginLeft: "5px" }}

@@ -45,7 +45,14 @@ class TokenCookieMiddleware:
         response = self.get_response(request)
 
         if token := getattr(request, "set_token_cookie", None):
-            response.set_cookie("token", token, httponly=True)
+            response.set_cookie(
+                "token",
+                token,
+                httponly=True,
+                secure=True,
+                max_age=10 * 365 * 24 * 60 * 60,
+                samesite="Lax",
+            )
 
         elif getattr(request, "delete_token_cookie", None):
             response.delete_cookie("token")

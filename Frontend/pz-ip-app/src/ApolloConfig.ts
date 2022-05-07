@@ -43,8 +43,10 @@ const tokenLink = setContext((_, { headers }) => {
   };
 });
 
+console.log("backend url: ", process.env.REACT_APP_BACKEND_URL);
+
 const httpLink = createHttpLink({
-  uri: `${process.env.BACKEND_URL}/graphql/`,
+  uri: `${process.env.REACT_APP_BACKEND_URL}/graphql/`,
   credentials: "include",
 });
 

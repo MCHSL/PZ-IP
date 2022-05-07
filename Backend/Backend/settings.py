@@ -53,6 +53,11 @@ DOMAIN_BACKEND = env('DOMAIN_BACKEND') or DOMAIN
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', DOMAIN]
 
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -74,7 +79,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -160,14 +164,14 @@ GRAPHENE = {
     ],
 }
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost',
-    'http://127.0.0.1',
-    f'http://{DOMAIN}',
-    f'https://{DOMAIN}',
-]
+# CSRF_TRUSTED_ORIGINS = [
+#     'http://localhost:3000',
+#     'http://127.0.0.1:3000',
+#     'http://localhost',
+#     'http://127.0.0.1',
+#     f'http://{DOMAIN}',
+#     f'https://{DOMAIN}',
+# ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',

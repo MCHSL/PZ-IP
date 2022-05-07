@@ -31,6 +31,7 @@ env = environ.Env(
     WKLEJKA_TESTING=(bool, False),
     WKLEJKA_DEV=(bool, False),
     WKLEJKA_PROD=(bool, False),
+    DOMAIN_BACKEND=(str, ""),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -47,7 +48,10 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+DOMAIN = env('DOMAIN')
+DOMAIN_BACKEND = env('DOMAIN_BACKEND') or DOMAIN
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', DOMAIN]
 
 # Application definition
 
@@ -161,6 +165,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://localhost',
     'http://127.0.0.1',
+    f'http://{DOMAIN}',
+    f'https://{DOMAIN}',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -168,6 +174,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1',
     'http://localhost:3000',
     'http://localhost',
+    f'http://{DOMAIN}',
+    f'https://{DOMAIN}',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -251,7 +259,4 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 if env("WKLEJKA_DEV") is True:
     DOMAIN = "localhost:3000"
-    DOMAIN_BACKEND = "localhost"
-else:
-    DOMAIN = "localhost"
     DOMAIN_BACKEND = "localhost"

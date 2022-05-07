@@ -96,7 +96,7 @@ export const PasteProvider = ({ children }: { children: JSX.Element }) => {
         refetchQueries,
       });
     } else {
-      return Promise.reject("you fucked up");
+      return Promise.reject("Error");
     }
   }
 

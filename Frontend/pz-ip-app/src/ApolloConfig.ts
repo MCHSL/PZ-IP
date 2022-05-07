@@ -44,7 +44,7 @@ const tokenLink = setContext((_, { headers }) => {
 });
 
 const httpLink = createHttpLink({
-  uri: "http://localhost/graphql/",
+  uri: `${process.env.BACKEND_URL}/graphql/`,
   credentials: "include",
 });
 

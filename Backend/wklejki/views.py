@@ -8,6 +8,34 @@ from django.http import HttpRequest, HttpResponse
 from .models import Paste
 
 
+def paste_opengraph(request: HttpRequest, paste_id: int) -> HttpResponse:
+    paste = Paste.objects.get(pk=paste_id)
+    if paste.private:
+        return HttpResponse(status=404)
+
+    content_trimmed = (
+        (paste.content[:20] + "...").replace("\n", " ").replace("\r", " ").strip()
+    )
+
+    # TODO: move into template
+    return HttpResponse(
+        f"""
+        <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <meta property="og:title" content="{paste.title}">
+                <meta property="og:description" content="{content_trimmed}">
+                <meta property="og:url" content="{settings.DOMAIN}/paste/{paste.id}">
+                <meta property="og:site_name" content="ewklejka.pl">
+                <meta property="og:type" content="website">
+                <meta property="og:locale" content="pl_PL">
+            </head>
+        </html>
+        """,
+        content_type="text/html",
+    )
+
+
 def make_response(paste: int, filename: str) -> HttpResponse:
     if settings.DEBUG:
         response = HttpResponse()

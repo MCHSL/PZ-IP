@@ -23,10 +23,11 @@ from graphene_django.views import GraphQLView
 
 # Project
 from paste_token_auth.views import verify_email
-from wklejki.views import serve_file
+from wklejki.views import paste_opengraph, serve_file
 
 urlpatterns = [
     path("graphql/", GraphQLView.as_view()),
     path("user_media/<int:paste_id>/<str:filename>", serve_file),
     path("verify/<str:token>", verify_email, name="verify_email"),
+    path("og/paste/<int:paste_id>", paste_opengraph, name="paste_opengraph"),
 ]

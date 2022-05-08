@@ -51,6 +51,10 @@ services:
     restart: unless-stopped
     environment:
       - WKLEJKA_PROD=True
+      - EMAIL_HOST=localhost
+      - EMAIL_PORT=25
+      - EMAIL_USERNAME=user
+      - EMAIL_PASSWORD=password
     volumes:
       - ./logs/backend:/var/log/django
       - ./data/user_media:/var/www/wklejka/user_media

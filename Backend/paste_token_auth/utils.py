@@ -78,7 +78,7 @@ def send_verification_email(user: User) -> None:
     send_mail(
         'Zweryfikuj swój adres e-mail',
         content,
-        'accounts@wklejka.pl',
+        f'accounts@{settings.DOMAIN}',
         [user.email],
         fail_silently=False,
     )
@@ -95,7 +95,7 @@ def send_password_reset_email(user: User) -> None:
     send_mail(
         'Reset hasła',
         content,
-        'accounts@wklejka.pl',
+        f'accounts@{settings.DOMAIN}',
         [user.email],
         fail_silently=False,
     )

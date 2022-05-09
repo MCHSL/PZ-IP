@@ -47,6 +47,18 @@ class Attachment(models.Model):
     name = models.TextField(max_length=100)
     size = models.IntegerField(default=0)
 
+def get_image_upload_location(instance: "Image", imagename: str) -> str:
+    return f"{instance.user.id}/{imagename}"
+
+
+class Image(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="images"
+    )
+    image = models.FileField(upload_to=get_image_upload_location)
+    name = models.TextField(max_length=100)
+    size = models.IntegerField(default=0)
+
 
 class Report(models.Model):
     paste = models.ForeignKey(Paste, on_delete=models.CASCADE, related_name="reports")

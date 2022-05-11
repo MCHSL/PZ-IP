@@ -5,6 +5,10 @@ from django.db import models
 # Create your models here.
 
 
+def get_pfp_upload_location(instance: "CustomUser", imagename: str) -> str:
+    return f"avatars/{instance.id}/{imagename}"
+
+
 class CustomUser(AbstractUser):
     first_name = None
     last_name = None
@@ -13,6 +17,9 @@ class CustomUser(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ["username", "password"]
+
+    avatar = models.FileField(upload_to=get_pfp_upload_location, null=True)
+    description = models.TextField(max_length=80, blank=True)
 
     def __str__(self) -> str:
         return self.username + " (" + str(self.id) + ")"
@@ -24,7 +31,7 @@ class Paste(models.Model):
     )
     likers = models.ManyToManyField(CustomUser, related_name="liked_pastes", blank=True)
 
-    title = models.CharField(max_length=30)
+    title = models.CharField(max_length=50)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -44,18 +51,6 @@ class Attachment(models.Model):
         Paste, on_delete=models.CASCADE, related_name="attachments"
     )
     file = models.FileField(upload_to=get_attachment_upload_location)
-    name = models.TextField(max_length=100)
-    size = models.IntegerField(default=0)
-
-def get_image_upload_location(instance: "Image", imagename: str) -> str:
-    return f"{instance.user.id}/{imagename}"
-
-
-class Image(models.Model):
-    user = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="images"
-    )
-    image = models.FileField(upload_to=get_image_upload_location)
     name = models.TextField(max_length=100)
     size = models.IntegerField(default=0)
 

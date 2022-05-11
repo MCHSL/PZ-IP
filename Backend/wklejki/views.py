@@ -36,6 +36,25 @@ def paste_opengraph(request: HttpRequest, paste_id: int) -> HttpResponse:
     )
 
 
+def general_opengraph(request: HttpRequest) -> HttpResponse:
+    return HttpResponse(
+        f"""
+        <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <meta property="og:title" content="ewklejka.pl">
+                <meta property="og:description" content="Fajna stronka do wrzucania wklejek">
+                <meta property="og:url" content="{settings.DOMAIN}">
+                <meta property="og:site_name" content="ewklejka.pl">
+                <meta property="og:type" content="website">
+                <meta property="og:locale" content="pl_PL">
+            </head>
+        </html>
+        """,  # noqa: E501
+        content_type="text/html",
+    )
+
+
 def make_response(paste: int, filename: str) -> HttpResponse:
     if settings.DEBUG:
         response = HttpResponse()
@@ -63,3 +82,15 @@ def serve_file(request: HttpRequest, paste_id: int, filename: str) -> HttpRespon
         return HttpResponse(status=404)
 
     return make_response(paste_id, filename)
+
+
+def serve_avatar(request: HttpRequest, user_id: int, filename: str) -> HttpResponse:
+    if settings.DEBUG:
+        response = HttpResponse()
+        response.content = open(
+            f"{settings.MEDIA_ROOT}/avatars/{user_id}/{filename}", 'rb'
+        ).read()
+        response["Content-Type"] = "image/png"
+        return response
+
+    return HttpResponse("If you can see this, yell at the devops person.", status=500)

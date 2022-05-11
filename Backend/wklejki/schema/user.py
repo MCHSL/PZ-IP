@@ -1,10 +1,12 @@
 # Standard Library
+import base64
 import logging
 import re
-from typing import Any, Optional, List
+from typing import Any, Optional
 
 # Django
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
 from django.db.models.query import QuerySet
 
 # 3rd-Party
@@ -14,11 +16,11 @@ from graphene import ResolveInfo
 
 # Project
 from wklejki.decorators import login_required, staff_member_required, superuser_required
-from wklejki.models import CustomUser, Image
+from wklejki.models import CustomUser
 
 # Local
+from .files import UploadedAvatar
 from .filtering import PaginatedPastes
-from .files import AttachmentType, ImageType, FileDelta, image_decode
 
 logger = logging.getLogger()
 
@@ -31,7 +33,7 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
     id = graphene.Int()
 
     paste_count = graphene.Int(description="Total number of pastes for this user")
-    images = graphene.List(ImageType, description="user's profile image")
+    avatar = graphene.String(description="URL of user's profile image")
 
     def get_pastes_to_paginator(self, info: ResolveInfo) -> Any:
         pastes = self.pastes.all()
@@ -54,9 +56,9 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
         else:
             return self.pastes.filter(private=False).count()
 
-    @gql_optimizer.resolver_hints(model_field='images')
-    def resolve_images(self, info: ResolveInfo) -> List[Image]:
-        return self.images.all()  # type: ignore
+    @gql_optimizer.resolver_hints(model_field='avatar')
+    def resolve_avatar(self, info: ResolveInfo) -> str:
+        return self.avatar.url
 
 
 class UserQuery(graphene.ObjectType):
@@ -156,38 +158,55 @@ class UpdateUser(graphene.Mutation):
 
 
 class PersonalizeUser(graphene.Mutation):
-    """Change username, description or upload image."""
+    """Change username, description or upload avatar."""
 
     user = graphene.Field(UserType)
 
     class Arguments:
-        id = graphene.Int(required=True, description="ID of the user for personalization")
+        id = graphene.Int(
+            required=True, description="ID of the user for personalization"
+        )
         username = graphene.String(description="New username (optional)")
         description = graphene.String(description="New description (optional)")
-        image = graphene.Base64(description="New user image (optional)")
+        avatar = graphene.Argument(
+            UploadedAvatar,
+            description=(
+                "New user avatar (optional). "
+                "If either name and content are empty, avatar is deleted."
+            ),
+        )
 
     @login_required
     def mutate(
-            self,
-            info: ResolveInfo,
-            id: int,
-            username: Optional[str] = None,
-            description: Optional[str] = None,
-            image: Optional[str] = None,
+        self,
+        info: ResolveInfo,
+        id: int,
+        username: Optional[str] = None,
+        description: Optional[str] = None,
+        avatar: Optional[UploadedAvatar] = None,
     ) -> "PersonalizeUser":
+        print("Floopin")
         user = get_user_model().objects.get(pk=id)
         if info.context.user != user:
             raise Exception("You can only personalize your own account")
-        if not re.match("^[A-Za-z0-9._%+-]*$", username):
+        if username and not re.match("^[A-Za-z0-9._%+-]*$", username):
             raise Exception("Username contains restricted special characters")
-        if not re.match("^[A-Za-z0-9._%+-]*$", description):
+        if description and not re.match("^[A-Za-z0-9._%+-]*$", description):
             raise Exception("Description contains restricted special characters")
         if username is not None:
             user.username = username
         if description is not None:
             user.description = description
-        if image is not None:
-            image_decode(image, user)
+        if avatar is not None:
+            if avatar.name is None or avatar.content is None:
+                user.avatar.delete()
+                user.save()
+            else:
+                print("Saving")
+                user.avatar.save(
+                    avatar.name, ContentFile(base64.b64decode(avatar.content))
+                )
+                user.save()
 
         logging.info(
             f"Updated user '{user}': username='{username}', description='{description}'"
@@ -218,3 +237,4 @@ class DeleteUser(graphene.Mutation):
 class UserMutation(graphene.ObjectType):
     update_user = UpdateUser.Field()
     delete_user = DeleteUser.Field()
+    personalize_user = PersonalizeUser.Field()

@@ -16,15 +16,8 @@ services:
   mailserver:
     image: docker.io/mailserver/docker-mailserver:latest
     domainname: example.com
-    # More information about the mail-server ports:
-    # https://docker-mailserver.github.io/docker-mailserver/edge/config/security/understanding-the-ports/
-    # To avoid conflicts with yaml base-60 float, DO NOT remove the quotation marks.
     ports:
       - "25:25" # SMTP  (explicit TLS => STARTTLS)
-      - "143:143" # IMAP4 (explicit TLS => STARTTLS)
-      - "465:465" # ESMTP (implicit TLS)
-      - "587:587" # ESMTP (explicit TLS => STARTTLS)
-      - "993:993" # IMAP4 (implicit TLS)
     volumes:
       - ./data/mail/mail-data/:/var/mail/
       - ./data/mail/mail-state/:/var/mail-state/

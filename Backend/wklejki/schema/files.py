@@ -1,4 +1,7 @@
 # Standard Library
+
+
+# Standard Library
 import base64
 
 # Django
@@ -8,7 +11,7 @@ from django.core.files.base import ContentFile
 import graphene
 
 # Project
-from wklejki.models import Attachment, Image, Paste
+from wklejki.models import Attachment, Paste
 
 
 class AttachmentType(graphene.ObjectType):
@@ -25,24 +28,15 @@ class AttachmentType(graphene.ObjectType):
     def resolve_url(self, info: graphene.ResolveInfo) -> str:
         return self.file.url
 
-class ImageType(graphene.ObjectType):
-    class Meta:
-        model = Image
-        exclude = ('image',)
 
-    id = graphene.Int()
+class UploadedAvatar(graphene.InputObjectType):
     name = graphene.String()
-    size = graphene.Int()
-
-    url = graphene.String()
-
-    def resolve_url(self, info: graphene.ResolveInfo) -> str:
-        return self.image.url
+    content = graphene.String()
 
 
 class UploadedFile(graphene.InputObjectType):
-    name = graphene.String()
-    content = graphene.String()
+    name = graphene.String(required=True)
+    content = graphene.String(required=True)
 
 
 class RemovedFile(graphene.InputObjectType):
@@ -65,10 +59,3 @@ class FileDelta(graphene.InputObjectType):
             attachment = Attachment(paste=paste, name=file.name, size=len(file_content))
             attachment.file.save(file.name, ContentFile(file_content))
             attachment.save()
-
-
-def image_decode(image, user) -> None:
-    image_content = base64.b64decode(image.content)
-    new_image = Image(user=user, name=image.name, size=len(image_content))
-    new_image.image.save(image.name, ContentFile(image_content))
-    new_image.save()

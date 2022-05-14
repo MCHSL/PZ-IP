@@ -49,6 +49,10 @@ const Tags = ({ editable }: Props) => {
     [tags, updatePaste]
   );
 
+  if (!editable && paste.tags.length === 0) {
+    return null;
+  }
+
   let bruh = editable ? (
     <ReactTags
       inputAttributes={{ disabled: !editable }}

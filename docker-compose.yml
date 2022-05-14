@@ -16,8 +16,6 @@ services:
   mailserver:
     image: docker.io/mailserver/docker-mailserver:latest
     domainname: example.com
-    ports:
-      - "25:25" # SMTP  (explicit TLS => STARTTLS)
     volumes:
       - ./data/mail/mail-data/:/var/mail/
       - ./data/mail/mail-state/:/var/mail-state/
@@ -51,8 +49,6 @@ services:
     volumes:
       - ./logs/backend:/var/log/django
       - ./data/user_media:/var/www/wklejka/user_media
-    expose:
-      - "80"
     depends_on:
       - db
       - cache
@@ -64,7 +60,5 @@ services:
     volumes:
       - ./logs/frontend:/var/log/nginx
       - ./data/user_media:/var/www/wklejka/user_media
-    ports:
-      - "80:80"
     depends_on:
       - backend

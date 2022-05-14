@@ -49,6 +49,7 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
     )
     reports = graphene.List(ReportType, description="Reports for this paste")
     expire_date = graphene.DateTime(description="Time when this paste will expire")
+    tags = graphene.List(graphene.String, description="List of tags for this paste")
 
     @gql_optimizer.resolver_hints(model_field='likers')
     def resolve_like_count(self: Paste, info: ResolveInfo) -> int:
@@ -81,6 +82,10 @@ class PasteType(gql_optimizer.OptimizedDjangoObjectType):
         if info.context.user.is_staff:
             return self.reports.count()  # type: ignore
         return 0
+
+    @gql_optimizer.resolver_hints(model_field='tags')
+    def resolve_tags(self: Paste, info: ResolveInfo) -> List[str]:
+        return self.get_tags()
 
     def resolve_expire_date(self: Paste, info: ResolveInfo) -> datetime.datetime:
         return self.expire_date
@@ -145,6 +150,7 @@ class CreatePaste(graphene.Mutation):
         expire_date = graphene.DateTime()
         private = graphene.Boolean(required=True)
         file_delta = graphene.Argument(FileDelta)
+        tags = graphene.List(graphene.String)
 
     @login_required
     def mutate(
@@ -154,7 +160,8 @@ class CreatePaste(graphene.Mutation):
         content: str,
         expire_date: Optional[datetime.datetime],
         private: bool,
-        file_delta: FileDelta,
+        file_delta: Optional[FileDelta],
+        tags: Optional[List[str]] = None,
     ) -> "CreatePaste":
 
         paste = Paste(
@@ -168,6 +175,9 @@ class CreatePaste(graphene.Mutation):
 
         if file_delta:
             file_delta.apply(paste)
+
+        if tags is not None:
+            paste.set_tags(tags)
 
         content = content[:15] + "..." if len(content) > 15 else content
 
@@ -190,41 +200,45 @@ class UpdatePaste(graphene.Mutation):
 
     class Arguments:
         id = graphene.Int(required=True)
-        title = graphene.String(required=True)
-        content = graphene.String(required=True)
+        title = graphene.String()
+        content = graphene.String()
         expire_date = graphene.DateTime()
-        private = graphene.Boolean(required=True)
+        private = graphene.Boolean()
         file_delta = graphene.Argument(FileDelta)
+        tags = graphene.List(graphene.String)
 
     @login_required
     def mutate(
         self,
         info: ResolveInfo,
         id: int,
-        title: str,
-        content: str,
+        title: Optional[str],
+        content: Optional[str],
         expire_date: Optional[datetime.datetime],
-        private: bool,
-        file_delta: FileDelta,
+        private: Optional[bool],
+        file_delta: Optional[FileDelta],
+        tags: Optional[List[str]] = None,
     ) -> "UpdatePaste":
         paste = Paste.objects.get(pk=id)
         if info.context.user != paste.author:
             raise Exception("You are not the author of this paste")
-        paste.title = title
-        paste.content = content
-        paste.expire_date = expire_date
-        paste.private = private
+
+        if title is not None:
+            paste.title = title
+        if content is not None:
+            paste.content = content
+        if expire_date is not None:
+            paste.expire_date = expire_date
+        if private is not None:
+            paste.private = private
+        if tags is not None:
+            paste.set_tags(tags)
         paste.save()
 
         if file_delta:
             file_delta.apply(paste)
 
-        content = content[:15] + "..." if len(content) > 15 else content
-
-        logging.info(
-            f"Updated paste '{paste}' by user '{info.context.user}': title='{title}',"
-            f"content='{content}', private='{private}'"
-        )
+        logging.info(f"Updated paste '{paste}' by user '{info.context.user}'")
 
         return UpdatePaste(paste=paste)
 

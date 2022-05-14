@@ -98,6 +98,7 @@ export const get_paste = gql`
       isLiked
       likeCount
       expireDate
+      tags
       author {
         id
         username
@@ -130,6 +131,7 @@ export const update_paste = gql`
     $isPrivate: Boolean!
     $fileDelta: FileDelta
     $expireDate: DateTime
+    $tags: [String]
   ) {
     updatePaste(
       id: $id
@@ -138,6 +140,7 @@ export const update_paste = gql`
       private: $isPrivate
       fileDelta: $fileDelta
       expireDate: $expireDate
+      tags: $tags
     ) {
       paste {
         id
@@ -145,6 +148,7 @@ export const update_paste = gql`
         content
         private
         expireDate
+        tags
         attachments {
           id
           name
@@ -163,6 +167,7 @@ export const create_paste = gql`
     $isPrivate: Boolean!
     $fileDelta: FileDelta
     $expireDate: DateTime
+    $tags: [String]
   ) {
     createPaste(
       title: $title
@@ -170,6 +175,7 @@ export const create_paste = gql`
       private: $isPrivate
       fileDelta: $fileDelta
       expireDate: $expireDate
+      tags: $tags
     ) {
       paste {
         id
@@ -180,6 +186,7 @@ export const create_paste = gql`
         isLiked
         isPrivate: private
         expireDate
+        tags
         author {
           id
           username

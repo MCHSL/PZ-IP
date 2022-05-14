@@ -43,6 +43,7 @@ export const PasteProvider = ({ children }: { children: JSX.Element }) => {
       reports: [],
       attachments: [],
       fileDelta: { added: [], removed: [] },
+      tags: [],
     };
   }, []);
 
@@ -129,6 +130,7 @@ export const PasteProvider = ({ children }: { children: JSX.Element }) => {
           reports: [],
           attachments: [],
           fileDelta: { added: [], removed: [] },
+          tags: [],
         });
       }
     },

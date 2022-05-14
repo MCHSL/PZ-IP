@@ -13,6 +13,7 @@ export interface PasteMeta {
   isReported: boolean;
   reports: Report[];
   attachments: Attachment[];
+  tags: string[];
 }
 
 export interface Paste extends PasteMeta {

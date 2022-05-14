@@ -4,6 +4,7 @@ import ExpirationTime from "./ExpirationTime/ExpirationTime";
 import Reports from "./Reports/Reports";
 import { DateTime } from "luxon";
 import { usePaste } from "../Context/CurrentPasteContext";
+import Tags from "./Tags";
 
 interface Props {
   editable: boolean;
@@ -36,6 +37,7 @@ const RenderPaste = ({ editable, setEditable }: Props) => {
           }}
         />
       </Form.Group>
+      <Tags editable={editable} />
       <Form.Group className="mb-3">
         <label className="mb-1">Zawartość</label>
         <Form.Control

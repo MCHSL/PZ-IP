@@ -1,3 +1,6 @@
+# Standard Library
+from typing import List
+
 # Django
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -25,6 +28,10 @@ class CustomUser(AbstractUser):
         return self.username + " (" + str(self.id) + ")"
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=20)
+
+
 class Paste(models.Model):
     author = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="pastes"
@@ -37,9 +44,21 @@ class Paste(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     expire_date = models.DateTimeField(null=True)
     private = models.BooleanField(default=False)
+    tags = models.ManyToManyField(Tag, related_name="pastes", blank=True)
 
     def __str__(self) -> str:
         return self.title + " (" + str(self.id) + ")"
+
+    def add_tag(self, tag: str) -> None:
+        self.tags.add(Tag.objects.get_or_create(name=tag)[0])
+
+    def set_tags(self, tags: List[str]) -> None:
+        self.tags.clear()
+        for tag in tags:
+            self.add_tag(tag)
+
+    def get_tags(self) -> List[str]:
+        return self.tags.values_list("name", flat=True)  # type: ignore
 
 
 def get_attachment_upload_location(instance: "Attachment", filename: str) -> str:

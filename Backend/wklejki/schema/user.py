@@ -58,6 +58,9 @@ class UserType(gql_optimizer.OptimizedDjangoObjectType):
 
     @gql_optimizer.resolver_hints(model_field='avatar')
     def resolve_avatar(self, info: ResolveInfo) -> str:
+        logger.debug("returning avatar")
+        if not self.avatar:
+            return None
         return self.avatar.url
 
 

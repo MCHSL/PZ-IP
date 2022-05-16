@@ -28,6 +28,17 @@ export const get_user = gql`
   }
 `;
 
+export const get_user_profile = gql`
+  query GetUserProfile($id: Int!) {
+    user(id: $id) {
+      id
+      username
+      description
+      avatar
+    }
+  }
+`;
+
 export const get_users = gql`
   query GetUsers($skip: Int, $take: Int) {
     userCount
@@ -84,6 +95,8 @@ export const get_current_user = gql`
       username
       isStaff
       isSuperuser
+      avatar
+      description
     }
   }
 `;
@@ -347,5 +360,28 @@ export const get_unreviewed_reports = gql`
 export const get_unreviewed_reports_count = gql`
   query GetUnreviewedReportsCount {
     count
+  }
+`;
+
+export const personalize_user = gql`
+  mutation PersonalizeUser(
+    $id: Int!
+    $username: String
+    $description: String
+    $avatar: UploadedAvatar
+  ) {
+    personalizeUser(
+      id: $id
+      username: $username
+      description: $description
+      avatar: $avatar
+    ) {
+      user {
+        id
+        username
+        description
+        avatar
+      }
+    }
   }
 `;

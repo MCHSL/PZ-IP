@@ -1,14 +1,14 @@
 import { useQuery } from "@apollo/client";
 import { Stack } from "react-bootstrap";
 import { useParams } from "react-router-dom";
-import { get_user } from "../../Queries/queries";
+import { get_user, get_user_profile } from "../../Queries/queries";
 import { useUser } from "../Context/CurrentUserContext";
 import { UserPasteList } from "../Paste/PasteLists/UserPasteList";
 import UserProfileInfo from "./UserProfileInfo";
 
 const ProfilePage = () => {
   const { id } = useParams();
-  const { loading, error, data } = useQuery(get_user, {
+  const { loading, error, data } = useQuery(get_user_profile, {
     variables: {
       id: Number(id),
     },
@@ -21,9 +21,7 @@ const ProfilePage = () => {
   if (error) {
     return <p>Error: {error.message}</p>;
   }
-
   const { user } = data;
-
   return (
     <Stack gap={3} className="col-md-10 m-auto mt-5">
       <div className="row">

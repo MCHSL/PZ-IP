@@ -14,10 +14,6 @@ const CurrentUserProfilePage = () => {
     <Stack gap={3} className="col-md-10 m-auto mt-5">
       <div className="row">
         <div className="col-2 text-center">
-          {/* <img className="profilePicture" src={woman} />
-          <h3>{user.username}</h3>
-          <p>ashdjkash asdkjasgdsaj askdjsagkjd sagdasg</p>
-          <Button>Edytuj profil</Button> */}
           <UserProfileInfo user_prop={user} />
         </div>
         <div className="col-10">

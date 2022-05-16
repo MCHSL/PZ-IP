@@ -203,13 +203,13 @@ class PersonalizeUser(graphene.Mutation):
         if avatar is not None:
             if avatar.name is None or avatar.content is None:
                 user.avatar.delete()
-                user.save()
             else:
                 print("Saving")
                 user.avatar.save(
                     avatar.name, ContentFile(base64.b64decode(avatar.content))
                 )
-                user.save()
+
+        user.save()
 
         logging.info(
             f"Updated user '{user}': username='{username}', description='{description}'"

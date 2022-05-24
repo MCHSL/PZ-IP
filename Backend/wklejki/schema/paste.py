@@ -152,7 +152,6 @@ class CreatePaste(graphene.Mutation):
         file_delta = graphene.Argument(FileDelta)
         tags = graphene.List(graphene.String)
 
-    @login_required
     def mutate(
         self,
         info: ResolveInfo,
@@ -164,8 +163,13 @@ class CreatePaste(graphene.Mutation):
         tags: Optional[List[str]] = None,
     ) -> "CreatePaste":
 
+        if info.context.user.is_anonymous:
+            author = "Anonymous"
+        else:
+            author = info.context.user
+
         paste = Paste(
-            author=info.context.user,
+            author=author,
             title=title,
             content=content,
             expire_date=expire_date,

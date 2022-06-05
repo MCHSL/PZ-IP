@@ -34,7 +34,7 @@ class Tag(models.Model):
 
 class Paste(models.Model):
     author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="pastes"
+        CustomUser, on_delete=models.CASCADE, related_name="pastes", null=True
     )
     likers = models.ManyToManyField(CustomUser, related_name="liked_pastes", blank=True)
 

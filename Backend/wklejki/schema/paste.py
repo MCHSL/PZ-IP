@@ -164,7 +164,7 @@ class CreatePaste(graphene.Mutation):
     ) -> "CreatePaste":
 
         if info.context.user.is_anonymous:
-            author = "Anonymous"
+            author = None
         else:
             author = info.context.user
 

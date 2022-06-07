@@ -188,7 +188,6 @@ class PersonalizeUser(graphene.Mutation):
         description: Optional[str] = None,
         avatar: Optional[UploadedAvatar] = None,
     ) -> "PersonalizeUser":
-        print("Floopin")
         user = get_user_model().objects.get(pk=id)
         if info.context.user != user:
             raise Exception("You can only personalize your own account")

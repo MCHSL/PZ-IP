@@ -39,7 +39,7 @@ export const PasteProvider = ({ children }: { children: JSX.Element }) => {
       likeCount: 0,
       isLiked: false,
       isReported: false,
-      author: { username: "", id: null },
+      author: null,
       reports: [],
       attachments: [],
       fileDelta: { added: [], removed: [] },
@@ -51,7 +51,7 @@ export const PasteProvider = ({ children }: { children: JSX.Element }) => {
   const [pasteItself, setPasteItself] = React.useState<Paste>(emptyPaste);
   const { loading, error, refetch } = useQuery(get_paste, {
     variables: { id },
-    skip: !id,
+    skip: !id || id === -1,
     onCompleted: (data) => {
       setPasteItself(data.paste);
     },
@@ -126,7 +126,7 @@ export const PasteProvider = ({ children }: { children: JSX.Element }) => {
           likeCount: 0,
           isLiked: false,
           isReported: false,
-          author: { username: "", id: null },
+          author: null,
           reports: [],
           attachments: [],
           fileDelta: { added: [], removed: [] },

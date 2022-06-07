@@ -142,7 +142,7 @@ const ViewEditPaste = ({ id }: Props) => {
         <div className="alert alert-danger mt-3 text-center">{error}</div>
       )}
       <RenderPaste editable={isEditing} />
-      {paste.author.id === user?.id ? (
+      {paste.author && paste.author.id === user?.id ? (
         <>
           <Form.Check
             className="mt-3"

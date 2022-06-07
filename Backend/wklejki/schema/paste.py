@@ -165,6 +165,7 @@ class CreatePaste(graphene.Mutation):
 
         if info.context.user.is_anonymous:
             author = None
+            expire_date = datetime.datetime.now() + datetime.timedelta(days=3)
         else:
             author = info.context.user
 
@@ -190,7 +191,8 @@ class CreatePaste(graphene.Mutation):
         )
 
         try:
-            cache.incr("paste_count_public")
+            if not paste.private:
+                cache.incr("paste_count_public")
         except ValueError:
             cache.set("paste_count_public", Paste.objects.filter(private=False).count())
 
@@ -268,7 +270,8 @@ class DeletePaste(graphene.Mutation):
 
         paste.delete()
         try:
-            cache.decr("paste_count_public")
+            if not paste.private:
+                cache.decr("paste_count_public")
         except ValueError:
             cache.set("paste_count_public", Paste.objects.filter(private=False).count())
 

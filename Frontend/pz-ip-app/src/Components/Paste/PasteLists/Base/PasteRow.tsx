@@ -76,21 +76,28 @@ const PasteRow = ({ paste, page, itemsPerPage, refetch }: Props) => {
         </td>
 
         <td className="text-muted" style={{ verticalAlign: "middle" }}>
-          <Button
-            variant="link"
-            className="p-0"
-            onClick={() =>
-              navigate(`/profile/${paste.author.id}`, {
-                state: {
-                  returnTo: location.pathname,
-                  page,
-                  itemsPerPage,
-                },
-              })
-            }
-          >
-            {paste.author.username}
-          </Button>
+          {paste.author ? (
+            <Button
+              variant="link"
+              className="p-0"
+              onClick={() => {
+                if (!paste.author) {
+                  return;
+                }
+                navigate(`/profile/${paste.author.id}`, {
+                  state: {
+                    returnTo: location.pathname,
+                    page,
+                    itemsPerPage,
+                  },
+                });
+              }}
+            >
+              {paste.author.username}
+            </Button>
+          ) : (
+            "Anonim"
+          )}
         </td>
 
         <td className="text-muted" style={{ verticalAlign: "middle" }}>
@@ -110,7 +117,8 @@ const PasteRow = ({ paste, page, itemsPerPage, refetch }: Props) => {
           <Form.Check type="checkbox" checked={paste.isPrivate} disabled />
         </td>
 
-        {user && (user?.isStaff || user.id === paste.author.id) ? (
+        {user &&
+        (user?.isStaff || (paste.author && user.id === paste.author.id)) ? (
           <td>
             <button
               className="btn btn-danger"

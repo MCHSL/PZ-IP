@@ -365,19 +365,28 @@ class PasteCrudTests(GraphQLTestCase):
                             id
                             title
                             content
+                            private
+                            author {
+                                id
+                            }
                         }
                     }
                 }
             '''
         )
 
-        self.assertResponseHasErrors(response)
+        self.assertResponseNoErrors(response)
         content = json.loads(response.content)
 
         self.assertEqual(
-            content["errors"][0]["message"],
-            "You do not have permission to perform this action",
+            content["data"]["createPaste"]["paste"]["title"], "test_paste_create"
         )
+        self.assertEqual(
+            content["data"]["createPaste"]["paste"]["content"],
+            "test_paste_create_content",
+        )
+        self.assertEqual(content["data"]["createPaste"]["paste"]["private"], False)
+        self.assertEqual(content["data"]["createPaste"]["paste"]["author"], None)
 
     def test_paste_read(self) -> None:
         paste = Paste.objects.create(

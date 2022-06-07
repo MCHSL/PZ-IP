@@ -34,8 +34,6 @@ const ReportedPastes = () => {
   const { data } = getReportedPastesPaginated(page, itemsPerPage, {
     pollInterval: 30000,
   });
-  console.log("RERENDERING");
-  console.log(data);
 
   function paste_clicked(id: number) {
     navigate(`/paste/${id}`, {

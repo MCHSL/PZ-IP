@@ -3,7 +3,7 @@ import { User } from "../../Types/Types";
 export interface PasteMeta {
   id: number;
   title: string;
-  author: any;
+  author: Author | null;
   createdAt: Date | null;
   updatedAt: Date | null;
   expireDate: Date | null;
@@ -20,6 +20,11 @@ export interface Paste extends PasteMeta {
   content: string;
   fileDelta: FileDelta;
 }
+
+export type Author = {
+  id: number;
+  username: string;
+};
 
 // This sucks
 export type Attachment = {

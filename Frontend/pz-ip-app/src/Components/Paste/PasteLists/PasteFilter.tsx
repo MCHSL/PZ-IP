@@ -109,7 +109,6 @@ export const PasteFilter = ({ loading, onSearch }: Props) => {
                   type="date"
                   value={displayedSearchOptions.created?.before || ""}
                   onChange={(e) => {
-                    console.log(e.target.value);
                     setDisplayedSearchOptions({
                       ...displayedSearchOptions,
                       created: {
@@ -126,7 +125,6 @@ export const PasteFilter = ({ loading, onSearch }: Props) => {
                   type="date"
                   value={displayedSearchOptions.created?.after || ""}
                   onChange={(e) => {
-                    console.log(e.target.value);
                     setDisplayedSearchOptions({
                       ...displayedSearchOptions,
                       created: {
@@ -145,7 +143,6 @@ export const PasteFilter = ({ loading, onSearch }: Props) => {
                   type="date"
                   value={displayedSearchOptions.edited?.before || ""}
                   onChange={(e) => {
-                    console.log(e.target.value);
                     setDisplayedSearchOptions({
                       ...displayedSearchOptions,
                       edited: {
@@ -162,7 +159,6 @@ export const PasteFilter = ({ loading, onSearch }: Props) => {
                   type="date"
                   value={displayedSearchOptions.edited?.after || ""}
                   onChange={(e) => {
-                    console.log(e.target.value);
                     setDisplayedSearchOptions({
                       ...displayedSearchOptions,
                       edited: {
@@ -181,7 +177,6 @@ export const PasteFilter = ({ loading, onSearch }: Props) => {
                   type="number"
                   value={displayedSearchOptions.likeCount?.moreThan ?? ""}
                   onChange={(e) => {
-                    console.log(e.target.value);
                     setDisplayedSearchOptions({
                       ...displayedSearchOptions,
                       likeCount: {
@@ -201,7 +196,6 @@ export const PasteFilter = ({ loading, onSearch }: Props) => {
                   type="number"
                   value={displayedSearchOptions.likeCount?.lessThan ?? ""}
                   onChange={(e) => {
-                    console.log(e.target.value);
                     setDisplayedSearchOptions({
                       ...displayedSearchOptions,
                       likeCount: {

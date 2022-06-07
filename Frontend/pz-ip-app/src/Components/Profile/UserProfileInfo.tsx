@@ -27,8 +27,8 @@ const UserProfileInfo = (user_prop: any) => {
       personalize({
         variables: {
           id: Number(user_prop.user_prop.id),
-          username: newUsername,
-          description: newUserBio,
+          username: newUsername.trim(),
+          description: newUserBio.trim(),
           avatar: file.name ? file : null,
         },
       });
@@ -75,7 +75,11 @@ const UserProfileInfo = (user_prop: any) => {
   return (
     <>
       {!user_prop.user_prop.avatar ? null : (
-        <img className="profilePicture" src={user_prop.user_prop.avatar} />
+        <img
+          className="profilePicture"
+          alt="avatar"
+          src={user_prop.user_prop.avatar}
+        />
       )}
       {!editProfile && (
         <>
